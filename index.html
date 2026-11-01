@@ -132,24 +132,35 @@
       if(html&&!shown)reveal(html,'/'+key+'/');else if(!html)room=key;
     }).catch(function(){room=key});
   }
-  // The showcase link, home page + #new, keeps the main site as it is and lists the Back Room's games under its cards,
-  // so visitors see everything on one page without the code. This does put the Back Room's folder name in this page.
+  // The showcase link, home page + #new, keeps the main site as it is and adds a fourth card, Games, next to the others.
+  // The card opens the whole Back Room here without the code, with its Party, Online (chat) and Leaderboard panels;
+  // on a phone too, since the phone version has no Online panel. This does put the Back Room's folder name in this page.
   if(room==='new'){
     room='';
-    var BR='/e63334287a3deaa3/',main=document.querySelector('section[aria-label="Sections"]');
-    if(main)fetch(BR,{cache:'no-store'}).then(function(r){return r.ok?r.text():null}).then(function(html){
-      if(!html||shown)return;
-      var g=new DOMParser().parseFromString(html,'text/html').querySelector('section.br-games');if(!g)return;
-      g=document.importNode(g,true);
-      // The "Tell Arjun" box needs the Back Room's feedback bar, which this page doesn't load.
-      var ask=g.querySelector('.gs-ask');if(ask)ask.remove();
-      var hd=document.createElement('div');hd.style.cssText='margin:56px 0 8px';
-      hd.innerHTML='<p class="kicker" style="margin:0 0 6px">20 games · most are multiplayer</p><h2 style="margin:0;font-size:clamp(44px,7vw,72px);line-height:.95">Games</h2>'+
-        '<p style="margin:8px 0 0;color:var(--ink-2)">Original browser games. Play alone or with friends, on a computer or a phone.</p>';
-      main.after(hd,g);
-      // Play buttons and screenshots open the game over this page, the same as after the code (see the click handler below).
-      shown=true;base=BR;
-    }).catch(function(){});
+    var cats=document.querySelector('.cats');
+    if(cats){
+      var BR='/e63334287a3deaa3/',card=document.createElement('article'),st=document.createElement('style');
+      st.textContent='@media (min-width:980px){.cats.with-games{grid-template-columns:repeat(2,minmax(0,1fr))}}';
+      document.head.appendChild(st);cats.classList.add('with-games');
+      card.className='cat';
+      card.innerHTML='<a class="cat-art" href="'+BR+'" aria-label="Open the games">'+
+        ['rumble-karts','shell-crackers','slipstream'].map(function(g){return '<img src="'+BR+'m/thumbs/'+g+'.jpg" alt="" loading="lazy" style="object-position:center">'}).join('')+'</a>'+
+        '<div class="body"><span class="count">20 games · most are multiplayer</span><h3>Games</h3>'+
+        '<p>Original browser games for a computer or a phone. Make a party with friends, see who else is online, chat, send invites, and climb the leaderboards.</p>'+
+        '<ul class="cat-list">'+
+        '<li><a href="'+BR+'"><b>Rumble Karts</b><span>Kart battles, up to 12</span></a></li>'+
+        '<li><a href="'+BR+'"><b>Shell Crackers</b><span>Egg shooter, ranked</span></a></li>'+
+        '<li><a href="'+BR+'"><b>Showdown</b><span>Texas Hold\'em, up to 8</span></a></li>'+
+        '</ul><div class="actions"><a class="btn primary" href="'+BR+'">Open the games</a></div></div>';
+      card.addEventListener('click',function(e){
+        var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        e.preventDefault();
+        fetch(BR,{cache:'no-store'}).then(function(r){return r.ok?r.text():null}).then(function(html){
+          if(!html)location.href=BR;else if(!shown)reveal(html,BR,true);
+        }).catch(function(){location.href=BR});
+      });
+      cats.appendChild(card);
+    }
   }
   async function h(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ascoding11:'+s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('').slice(0,16)}
   function close(){if(box){box.remove();box=null;miss=0}}
@@ -166,8 +177,9 @@
   }
 
   // Show the hidden page's games right here, without changing the address.
-  function reveal(html,dir){
-    if(matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches)return revealPhone(dir);
+  // full: show the whole hidden page even on a phone (the #new Games card), instead of the phone version.
+  function reveal(html,dir,full){
+    if(!full&&matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches)return revealPhone(dir);
     var d=new DOMParser().parseFromString(html,'text/html');
     var hd=document.querySelector('header'),sec=document.querySelector('section[aria-label="Sections"]');
     hd.replaceWith(document.importNode(d.querySelector('header'),true));
