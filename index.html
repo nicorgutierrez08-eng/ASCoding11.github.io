@@ -161,6 +161,9 @@
       });
       cats.appendChild(card);
     }
+    // The "Tell Arjun" feedback bar (feedback.js, in the Back Room folder) goes at the top of the page, so showcase
+    // visitors can send a note before opening the games. reveal() loads it again later; it only draws the bar once.
+    var fbs=document.createElement('script');fbs.src='/e63334287a3deaa3/feedback.js';document.body.appendChild(fbs);
   }
   async function h(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ascoding11:'+s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('').slice(0,16)}
   function close(){if(box){box.remove();box=null;miss=0}}
