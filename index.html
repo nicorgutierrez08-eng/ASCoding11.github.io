@@ -132,6 +132,29 @@
       if(html&&!shown)reveal(html,'/'+key+'/');else if(!html)room=key;
     }).catch(function(){room=key});
   }
+  // The showcase link, home page + #new, keeps the main site as it is and adds a Back Room card above the others,
+  // whose button opens the Back Room here without the code. This does put the Back Room's folder name in this page.
+  if(room==='new'){
+    room='';
+    var cats=document.querySelector('.cats');
+    if(cats){
+      var BR='/e63334287a3deaa3/',card=document.createElement('article');
+      card.className='cat';card.style.gridColumn='1/-1';
+      card.innerHTML='<a class="cat-art" href="'+BR+'" aria-label="Open the Back Room" style="aspect-ratio:auto;height:clamp(140px,22vw,240px)">'+
+        ['shell-crackers','slipstream','boostball'].map(function(g){return '<img src="'+BR+'m/thumbs/'+g+'.jpg" alt="" style="object-position:center">'}).join('')+'</a>'+
+        '<div class="body"><span class="count">20 games · most are multiplayer</span><h3>The Back Room</h3>'+
+        '<p>Games that aren\'t on the main site: kart racing, hide and seek, poker, obbies and more. Make a party with friends and play together in the browser, on a computer or a phone.</p>'+
+        '<div class="actions"><a class="btn primary" href="'+BR+'">Open the Back Room</a></div></div>';
+      card.addEventListener('click',function(e){
+        var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        e.preventDefault();
+        fetch(BR,{cache:'no-store'}).then(function(r){return r.ok?r.text():null}).then(function(html){
+          if(!html)location.href=BR;else if(!shown)reveal(html,BR);
+        }).catch(function(){location.href=BR});
+      });
+      cats.insertBefore(card,cats.firstChild);
+    }
+  }
   async function h(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ascoding11:'+s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('').slice(0,16)}
   function close(){if(box){box.remove();box=null;miss=0}}
 
