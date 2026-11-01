@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+// On ascoding11.com (not ascoding11.github.io) the landing page is the showcase (showcase/). Only a bare visit goes there:
+// anything after the address (#new, invite links like #br-1234, #pt- parties, ?game=) still opens this page.
+if(/^(www\.)?ascoding11\.com$/.test(location.hostname)&&!location.hash&&!location.search)location.replace('/showcase/');
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Arjun's Projects – Free Browser Games &amp; Productivity Tools</title>
 <meta name="description" content="Arjun's projects: free browser games, including Hype Cycle Exchange, a stock market game, and Boxed, a competition math game, plus Docket, a study planner for Canvas.">
