@@ -124,6 +124,14 @@
   // Party invites start with pt-: they don't open a game, they join the party in the Back Room's Party panel (party.js).
   var m=/^#([a-z0-9-]{1,20})$/.exec(location.hash);
   if(m&&m[1]!=='notrack'&&m[1]!=='track'){room=m[1];history.replaceState(null,'',location.pathname+location.search)}
+  // A share link (home page + # + the hidden folder's name) opens the hidden page without the code. The folder name
+  // isn't written here: the page only goes there if a folder with that name exists. If it doesn't, it's kept as a room code.
+  if(/^[0-9a-f]{16}$/.test(room)){
+    var key=room;room='';
+    fetch('/'+key+'/',{cache:'no-store'}).then(function(r){return r.ok?r.text():null}).then(function(html){
+      if(html&&!shown)reveal(html,'/'+key+'/');else if(!html)room=key;
+    }).catch(function(){room=key});
+  }
   async function h(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ascoding11:'+s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('').slice(0,16)}
   function close(){if(box){box.remove();box=null;miss=0}}
 
