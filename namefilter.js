@@ -20,7 +20,7 @@
  *
  * The words are stored in ROT13 (like social.js), so the file doesn't read as a list of swear words. To add one, add
  * its ROT13 form (each letter moved 13 places: a<->n, b<->o, ...). WORST words are also looked for hidden inside
- * names; keep that list to words that don't turn up inside ordinary names.
+ * names; ordinary words that contain one of them go in SAFE (plain text), so they still pass.
  */
 (function () {
   'use strict';
@@ -31,7 +31,7 @@
   var WORDS = ['shpx', 'fuvg', 'ovgpu', 'phag', 'fyhg', 'juber', 'avtt', 'snttbg', 'ergneq', 'nffubyr', 'onfgneq', 'gjng', 'jnax',
     'zbgureshpx', 'cravf', 'intvan', 'cbea', 'encr', 'encvfg', 'uvgyre', 'xxx', 'qvyqb', 'fcrez', 'betnfz', 'pyvg',
     'qvpxurnq', 'pbpxfhpx', 'wvmm', 'unaqwbo', 'oybjwbo', 'uragnv', 'shx'].map(rot);
-  var WORST = ['shpx', 'fuvg', 'avtt', 'snttbg', 'juber', 'ovgpu', 'zbgureshpx', 'cbea', 'encvfg', 'uvgyre', 'pbpxfhpx', 'oybjwbo'].map(rot);
+  var WORST = ['shpx', 'fuvg', 'avtt', 'snttbg', 'juber', 'ovgpu', 'zbgureshpx', 'cbea', 'encr', 'encvfg', 'uvgyre', 'pbpxfhpx', 'oybjwbo'].map(rot);
   var WORD_RE = new RegExp('(^|[^a-z])(' + WORDS.join('|') + ')[a-z]*', 'g');
   var LEET = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '@': 'a', '$': 's', '!': 'i', '|': 'l' };
 
@@ -46,17 +46,20 @@
   // Letters only, letters repeated three or more times squashed: "F.u.u.u.c k" -> "fuck". Doubles stay, so "Shiitake" is fine.
   function squash(n) { return n.replace(/[^a-z]/g, '').replace(/(.)\1{2,}/g, '$1'); }
   var WORST_SQ = WORST.map(squash);
+  // Ordinary words that contain a WORST word; they're taken out before looking for hidden words (grapes, therapist).
+  var SAFE = ['grape', 'drape', 'trapez', 'scrape', 'therap', 'parapet'];
+  function unsafe(sq) { for (var i = 0; i < SAFE.length; i++) sq = sq.split(SAFE[i]).join('_'); return sq; }
 
   function clean(name) {
     if (name == null) return name;
     var s = String(name);
     if (!s) return s;
     var n = norm(s);
-    var sq = squash(n);
+    var sq = unsafe(squash(n));
     for (var i = 0; i < WORST_SQ.length; i++) if (sq.indexOf(WORST_SQ[i]) !== -1) {
       // Masking can't cover a word spread across the name, so the whole name goes.
       var masked = mask(s, n);
-      if (squash(norm(masked)).indexOf(WORST_SQ[i]) !== -1 || masked === s) return 'Player';
+      if (unsafe(squash(norm(masked))).indexOf(WORST_SQ[i]) !== -1 || masked === s) return 'Player';
     }
     return n.length === s.length ? mask(s, n) : s;
   }
