@@ -54,6 +54,15 @@
  *
  * Firebase comes from party.js (window.Party.boot()), the same sign-in the panels use; it only
  * writes when that account is the Google account SiteAccount shows, and never signs anyone in.
+ *
+ * 3. The leaderboard link. Signing in with Google makes a new account (the games had signed this
+ *    browser in anonymously), so the anonymous account's Leaderboards entry would stay behind as a
+ *    second row with the same name. While the page is signed in anonymously this keeps that
+ *    anonymous user (party.js's), and when a Google sign-in arrives on this page it loads stats.js
+ *    as a library (data-lib) and calls BackRoomStatsLib.link(): the old entry is marked as merged
+ *    into the Google one (written as the old account, which only this page can still do) and the
+ *    Google entry takes its hours and bests in. Nothing happens for an account signed in when the
+ *    page opened, or when the anonymous account has no entry.
  */
 (function () {
   'use strict';
@@ -429,10 +438,38 @@
     hideStatus();
   }
 
+  // ---- The leaderboard link ----
+  var ANON = null, anonWatch = false;
+  function watchAnon() {
+    if (anonWatch) return;
+    anonWatch = true;
+    waitFor(function () { return window.Party && window.Party.boot ? window.Party : null; }, 15000).then(function (P) {
+      if (!P) { anonWatch = false; return; }
+      return P.boot().then(function (b) {
+        var a = b.app && b.app.auth ? b.app.auth() : null; if (!a) return;
+        var keep = function (u) { if (u && u.isAnonymous) ANON = u; };
+        keep(a.currentUser); a.onAuthStateChanged(keep);
+      });
+    }).catch(function () { anonWatch = false; });
+  }
+  function statsLib() {
+    if (window.BackRoomStatsLib) return Promise.resolve(window.BackRoomStatsLib);
+    return new Promise(function (res) {
+      var s = document.createElement('script'); s.src = '/e63334287a3deaa3/stats.js'; s.setAttribute('data-lib', '');
+      s.onload = function () { res(window.BackRoomStatsLib || null); }; s.onerror = function () { res(null); };
+      document.head.appendChild(s);
+    });
+  }
+  function linkAnon(u) {
+    var old = ANON; ANON = null;
+    if (!old || old.uid === u.uid || !window.Party) return;
+    statsLib().then(function (L) { return L && L.link(old, window.Party, u.uid); }).catch(function () {});
+  }
+
   // ---- Wire it up ----
   function onUser(u) {
-    if (u && u.uid && !u.isAnonymous) { hideCard(); startSave(u); }
-    else { stopSave(); showCard(); }
+    if (u && u.uid && !u.isAnonymous) { hideCard(); startSave(u); linkAnon(u); }
+    else { stopSave(); showCard(); watchAnon(); }
   }
   function start() {
     var head = document.querySelector('header');
@@ -455,6 +492,7 @@
     get state() { return { on: SY.on, uid: SY.uid, busy: SY.busy, lastSave: SY.lastSave, restored: SY.restored, meta: SY.meta, conn: !!SY.conn }; },
     get card() { return !!card; }, get status() { return status && status.parentNode ? status.textContent : ''; },
     check: function () { return check(); }, flush: flush, sync: sync, onUser: onUser, stop: stopSave, place: place,
+    get anon() { return ANON ? ANON.uid : ''; }, statsLib: statsLib,
     setLimits: function (v, n) { if (v) MAX_VAL = v; if (n) MAX_NODE = n; }
   };
 })();

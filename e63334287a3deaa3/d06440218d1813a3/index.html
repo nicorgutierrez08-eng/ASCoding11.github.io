@@ -142,6 +142,8 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
 .from b{color:var(--ink);font-weight:600}
 .from a{color:var(--accent)}
 .acts{display:flex;flex-wrap:wrap;gap:8px}
+.dup{flex-direction:row!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px!important}
+.dup .meta{flex:1 1 280px}
 .acts .sm{min-height:32px;padding:4px 10px}
 .empty-l{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:22px;color:var(--ink-2);text-align:center}
 @media (max-width:600px){
@@ -209,6 +211,11 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
           <div class="filters"><label>Find<input type="search" id="sFind" placeholder="Name, seat or account"></label></div>
           <div class="scroll"><table id="sPeople"></table></div>
           <button class="sm more" id="sMore" type="button" hidden>Show more</button>
+        </div>
+        <div class="card" id="sDupCard" hidden>
+          <h2>Same person?</h2>
+          <p class="hint">Entries with the same name where one (usually from before a Google sign-in) has nothing the other doesn't: every game it has, the other has too, with at least as many hours, and it was last seen first. Merging shows them as one row on every board (per game the larger hours and the better bests; nothing is added up, so no hours are counted twice). Names aren't unique, so check before merging; you can undo it from the merged account's details.</p>
+          <ul class="list" id="sDups"></ul>
         </div>
       </div>
 
@@ -431,6 +438,8 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
     catch(e){if(seq!==S.seq)return;S.nodes={};S.now=Date.now();S.loadedAt=Date.now();say('sStatus','Couldn\'t load the play-time data: '+((e&&e.message)||'error'),true)}
     var keys=Object.keys(S.nodes),out=[],skip=0;
     for(var i=0;i<keys.length;i++){if(i>=LB.MAX_NODES){skip++;continue}var p=person(keys[i],S.nodes[keys[i]],S.now);if(p)out.push(p);else skip++}
+    // One row per person where that's proven (an owner's merge) or the admin merged them: merged entries stay listed, marked.
+    if(LB.collapse)out=LB.collapse(out);
     S.people=out;S.skipped=skip;
     $('sRefresh').disabled=false;S.open={};S.show=PAGE;fillGames();renderStats();
   }
@@ -460,12 +469,12 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
       var per={},top='',topS=0;
       LB.GAMES.forEach(function(g){var s=secs(p,g.d,days);if(s>0){per[g.d]=s;if(s>topS){topS=s;top=g.n}}});
       var v=gv==='all'?secs(p,'all',days):(per[gv]||0);
-      if(!(v>0)&&!p.reset&&!p.hidden)return;
+      if(!(v>0)&&!p.reset&&!p.hidden&&!p.into)return;
       // The status tier ("miles with us", miles.js) from this same checked node.
       var mi=null;if(window.BackRoomMiles){try{mi=BackRoomMiles.of(p)}catch(e){mi=null}}
       list.push({p:p,v:v,per:per,top:top,n:Object.keys(per).length,mi:mi,miles:mi?mi.miles:0});
-      // accounts removed from the boards are listed (to undo it) but left out of the totals
-      if(p.hidden)return;
+      // accounts removed from the boards or merged into another are listed (to undo it) but left out of the totals
+      if(p.hidden||p.into)return;
       Object.keys(per).forEach(function(d){gs[d]=(gs[d]||0)+per[d];gp[d]=(gp[d]||0)+1});
       total+=v;if(p.ga)google++;
     });
@@ -492,7 +501,38 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
       b.append(el('span','nm',g.n),tr,n);li.appendChild(b);ul.appendChild(li);
     });
     $('sPeopleHint').textContent='One row per account: the Google name when the account signed in with Google (the badge), else the Online name, with the seat tag the Online panel shows, and the status tier with its miles (all time, self-reported like everything here). Hours are '+when+(st.gv==='all'?'':' in '+where)+'. Tap a row for their games, bests and the last 30 days.';
-    renderPeople(st);
+    renderPeople(st);renderDups();
+  }
+  // Entries that look like one person: the same name (not the default ones), and one (x) holds nothing the other (t) doesn't.
+  // Only suggestions: the admin decides, and the merge is signed like a reset.
+  function dupPairs(){
+    var by={},out=[];
+    S.people.forEach(function(p){if(p.into||p.hidden)return;var k=String(p.n||'').toLowerCase();if(!k||k==='player'||k==='guest')return;(by[k]=by[k]||[]).push(p)});
+    Object.keys(by).forEach(function(k){
+      var g=by[k];if(g.length<2)return;
+      g.forEach(function(x){
+        var gs=Object.keys(x.g);if(!gs.length)return;
+        var best=null;
+        g.forEach(function(t){
+          if(t===x||+t.ts<+x.ts||(x.ga&&!t.ga))return;
+          if(!gs.every(function(d){return t.g[d]&&t.g[d].s>=x.g[d].s}))return;
+          if(!best||(t.ga&&!best.ga)||(!!t.ga===!!best.ga&&t.total>best.total))best=t;
+        });
+        if(best)out.push({x:x,t:best});
+      });
+    });
+    return out.sort(function(a,b){return a.x.n<b.x.n?-1:a.x.n>b.x.n?1:0});
+  }
+  function who2(p){return p.name+' · '+p.seat+' · account '+p.uid.slice(0,6)+(p.ga?' (Google)':'')}
+  function renderDups(){
+    var ps=dupPairs(),ul=$('sDups');ul.textContent='';$('sDupCard').hidden=!ps.length;
+    ps.forEach(function(d){
+      var li=el('li','item dup'),m=el('div','meta');
+      m.append(el('b',null,who2(d.x)),document.createTextNode(' → '),el('b',null,who2(d.t)),
+        el('span',null,Object.keys(d.x.g).length+(Object.keys(d.x.g).length===1?' game, ':' games, ')+fmtDur(d.x.total)+' (the other: '+fmtDur(d.t.total)+'), last seen '+ago(d.x.ts)));
+      var b=el('button','sm','Merge');b.type='button';b.dataset.a='merge';b.dataset.u=d.x.uid;b.dataset.t=d.t.uid;
+      li.append(m,b);ul.appendChild(li);
+    });
   }
   // Everything a game's stats say about one person, as text: the boards' stats, and for Slipstream the lap and course records.
   function bestsOf(p,d){
@@ -532,6 +572,13 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
     if(p.reset){sec3.appendChild(el('span',null,'Hours counted from '+new Date(p.reset).toLocaleString()+' '));var u=el('button','sm','Undo hours reset');u.type='button';u.dataset.a='unreset';u.dataset.u=p.uid;sec3.appendChild(u)}
     else{var rb=el('button','sm','Reset hours to 0');rb.type='button';rb.dataset.a='reset';rb.dataset.u=p.uid;sec3.appendChild(rb)}
     box.appendChild(sec3);
+    // Merged into another entry: by its owner (stats.js, at a Google sign-in) or by the admin (undo here).
+    if(p.into){
+      var t=S.people.filter(function(x){return x.uid===p.into})[0],sec5=el('div','acts');
+      sec5.appendChild(el('span',null,'Merged into '+(t?who2(t):'account '+p.into.slice(0,6))+(p.intoOwn?' by its owner at a Google sign-in (its hours are in that entry). ':' (shown as one row). ')));
+      if(!p.intoOwn){var ux=el('button','sm','Undo merge');ux.type='button';ux.dataset.a='unmerge';ux.dataset.u=p.uid;sec5.appendChild(ux)}
+      box.appendChild(sec5);
+    }
     // Remove from the leaderboards (fake or junk accounts): every board skips this account. Also signed with the admin key.
     var sec4=el('div','acts');
     if(p.hidden){sec4.appendChild(el('span',null,'Removed from the leaderboards '+new Date(p.hidden).toLocaleString()+' '));var ub=el('button','sm','Put back on the leaderboards');ub.type='button';ub.dataset.a='unhide';ub.dataset.u=p.uid;sec4.appendChild(ub)}
@@ -540,16 +587,19 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
     return box;
   }
   // Save the hours resets: the ones in force (from every admin node) plus this change, signed, in this browser's own node.
-  // what: 'reset' / 'unreset' (hours from zero) or 'hide' / 'unhide' (removed from the leaderboards).
-  async function setReset(uid,what){
+  // what: 'reset' / 'unreset' (hours from zero), 'hide' / 'unhide' (removed from the leaderboards) or 'merge' / 'unmerge'
+  // (shown as one row with the account `to`).
+  async function setReset(uid,what,to){
     if(!PRIVS)throw new Error('Unlock the page again to change resets.');
-    var all={},cur=LB.resets;Object.keys(cur).forEach(function(u){var e={t:cur[u].t};if(cur[u].b)e.b=cur[u].b;if(cur[u].h)e.h=1;all[u]=e});
-    var now=Math.round(S.now+(Date.now()-S.loadedAt)),e=all[uid]?{b:all[uid].b,h:all[uid].h}:{};
+    var all={},cur=LB.resets;Object.keys(cur).forEach(function(u){var e={t:cur[u].t};if(cur[u].b)e.b=cur[u].b;if(cur[u].h)e.h=1;if(cur[u].a)e.a=cur[u].a;all[u]=e});
+    var now=Math.round(S.now+(Date.now()-S.loadedAt)),e=all[uid]?{b:all[uid].b,h:all[uid].h,a:all[uid].a}:{};
     if(what==='reset'){var v=S.nodes[uid],g=v&&v.g,b={};if(g&&typeof g==='object')Object.keys(g).forEach(function(k){var x=g[k]&&Math.floor(+g[k].s);if(LB.BY[k]&&x>0)b[k]=x});e.b=b}
     else if(what==='unreset')delete e.b;
     else if(what==='hide')e.h=1;
+    else if(what==='merge'){if(!/^[A-Za-z0-9_-]{6,128}$/.test(to||'')||to===uid)throw new Error('No account to merge into.');e.a=to}
+    else if(what==='unmerge')delete e.a;
     else delete e.h;
-    e.t=now;if(!e.b)delete e.b;if(!e.h)delete e.h;all[uid]=e;
+    e.t=now;if(!e.b)delete e.b;if(!e.h)delete e.h;if(!e.a)delete e.a;all[uid]=e;
     var r=JSON.stringify(all);
     var sig=new Uint8Array(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},PRIVS,new TextEncoder().encode(r)));
     var s='';for(var i=0;i<sig.length;i++)s+=String.fromCharCode(sig[i]);
@@ -581,6 +631,7 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
       if(window.BackRoomAvatar){try{who.appendChild(BackRoomAvatar.el(p.uid,26))}catch(e){}}
       who.appendChild(document.createTextNode(p.name));
       if(p.hidden){var hd=el('span','badge','Removed');hd.title='Removed from the leaderboards: no board shows this account';who.appendChild(hd)}
+      if(p.into){var mg=el('span','badge','Merged');mg.title='Shown as one person with another account (see details)';who.appendChild(mg)}
       if(p.ga){var bd=el('span','badge google','Google');bd.title='Signed in with Google';who.appendChild(bd)}
       if(r.mi){try{who.appendChild(BackRoomMiles.badge(r.mi,{miles:true}))}catch(e){}}
       td.appendChild(who);
@@ -601,17 +652,21 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
     var b=e.target.closest('button[data-game]');if(!b)return;
     $('sGame').value=$('sGame').value===b.dataset.game?'all':b.dataset.game;S.show=PAGE;renderStats();
   });
+  async function onAct(ab){
+    var what=ab.dataset.a,r=S.people.filter(function(x){return x.uid===ab.dataset.u})[0],who=r?r.name+' · '+r.seat:'this account';
+    var t=ab.dataset.t&&S.people.filter(function(x){return x.uid===ab.dataset.t})[0];
+    if(what==='reset'&&!confirm('Reset the hours for '+who+' to 0? Their personal bests stay, and you can undo this.'))return;
+    if(what==='hide'&&!confirm('Remove '+who+' from the leaderboards? Every board will skip this account, and you can put it back.'))return;
+    if(what==='merge'&&!confirm('Show '+(r?who2(r):'this account')+' and '+(t?who2(t):'that account')+' as one person on every board? You can undo this.'))return;
+    ab.disabled=true;say('sStatus',{reset:'Resetting…',unreset:'Undoing…',hide:'Removing…',unhide:'Putting back…',merge:'Merging…',unmerge:'Undoing…'}[what]);
+    try{await setReset(ab.dataset.u,what,ab.dataset.t);say('sStatus','');loadStats()}
+    catch(err){ab.disabled=false;say('sStatus','Couldn\'t save the change: '+((err&&err.message)||'error'),true)}
+  }
+  var ACTS='button[data-a="reset"],button[data-a="unreset"],button[data-a="hide"],button[data-a="unhide"],button[data-a="merge"],button[data-a="unmerge"]';
+  $('sDups').addEventListener('click',function(e){var ab=e.target.closest(ACTS);if(ab)onAct(ab)});
   $('sPeople').addEventListener('click',async function(e){
-    var ab=e.target.closest('button[data-a="reset"],button[data-a="unreset"],button[data-a="hide"],button[data-a="unhide"]');
-    if(ab){
-      var what=ab.dataset.a,r=S.people.filter(function(x){return x.uid===ab.dataset.u})[0],who=r?r.name+' · '+r.seat:'this account';
-      if(what==='reset'&&!confirm('Reset the hours for '+who+' to 0? Their personal bests stay, and you can undo this.'))return;
-      if(what==='hide'&&!confirm('Remove '+who+' from the leaderboards? Every board will skip this account, and you can put it back.'))return;
-      ab.disabled=true;say('sStatus',{reset:'Resetting…',unreset:'Undoing…',hide:'Removing…',unhide:'Putting back…'}[what]);
-      try{await setReset(ab.dataset.u,what);say('sStatus','');loadStats()}
-      catch(err){ab.disabled=false;say('sStatus','Couldn\'t save the change: '+((err&&err.message)||'error'),true)}
-      return;
-    }
+    var ab=e.target.closest(ACTS);
+    if(ab){onAct(ab);return}
     var sb=e.target.closest('button[data-sort]');
     if(sb){var k=sb.dataset.sort;if(S.sort===k)S.dir=S.dir==='asc'?'desc':'asc';else{S.sort=k;S.dir=k==='name'||k==='top'?'asc':'desc'}if(last)renderPeople(last);return}
     var tr=e.target.closest('tr.prow');if(!tr)return;
@@ -870,7 +925,8 @@ tr.prow .bra-tier{margin-left:6px;vertical-align:1px}
       },
       get unlocked(){return !!PRIV},
       get stats(){return last&&{total:last.total,players:last.list.length,google:last.google,accounts:S.people.length,skipped:S.skipped,games:last.games.map(function(g){return [g.d,g.s,g.people]}),
-        people:last.list.map(function(r){return {uid:r.p.uid,name:r.p.name,n:r.p.n,gn:r.p.gn,ga:r.p.ga,seat:r.p.seat,v:r.v,top:r.top,n_games:r.n,days:Object.keys(r.p.d).length,miles:r.miles,tier:r.mi?r.mi.tier.k:''}})}},
+        people:last.list.map(function(r){return {into:r.p.into||'',uid:r.p.uid,name:r.p.name,n:r.p.n,gn:r.p.gn,ga:r.p.ga,seat:r.p.seat,v:r.v,top:r.top,n_games:r.n,days:Object.keys(r.p.d).length,miles:r.miles,tier:r.mi?r.mi.tier.k:''}})}},
+      get dups(){return dupPairs().map(function(d){return [d.x.uid,d.t.uid]})},
       get chat(){return {rows:C.rows.length,shown:chatShown().length,capped:C.capped,unopened:C.rows.filter(function(r){return !r.opened}).length}},
       get feedback(){return F.rows.map(function(r){return {id:r.id,done:r.done,sealed:r.sealed,msg:r.msg}})}
     };

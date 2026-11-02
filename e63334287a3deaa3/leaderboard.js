@@ -7,7 +7,12 @@
  * screen (or someone picks a board), then reads rooms/lb-all/players once (Refresh reads it again).
  *
  * The data is written by stats.js inside each game: rooms/lb-all/players/<uid> =
- *   { n, c, x, z, h, ts, v: 1, st, g: { <game folder>: { s: seconds played, <stat>: number } } }
+ *   { n, c, x, z, h, ts, v: 1 or 2, st, g: { <game folder>: { s: seconds played, <stat>: number } }, … }
+ * (v 2 adds q, lg, al and to; see stats.js). One person, two accounts: an anonymous account whose owner merged it into a
+ * Google account says so in its own node (to: <uid>), and the Google node lists it (al: { <uid>: ms }) once it has taken
+ * its hours in. Only when both agree is the anonymous entry left out (so nobody can hide someone else's); the admin page
+ * can also merge two entries it judges to be one person (a signed `a`, below), which shows them as one row: per game the
+ * larger hours and the better bests.
  * Every value is self-reported by the player's own browser, so everything is checked here before it's shown:
  * nodes that are too big, too old, from the future or the wrong shape are skipped, play time can't exceed 24 hours for
  * every day since the boards started (EPOCH), counts can't grow faster than RATE allows for the time played in that game,
@@ -22,11 +27,12 @@
  * The admin page (d06440218d1813a3/) reads the same nodes and loads this file with data-lib: it then only exposes the
  * checks, the games table and the formatters as window.BackRoomBoards and adds nothing to the page.
  *
- * Hours resets: the admin page can set someone's play time back to zero. Totals only ever grow (stats.js keeps the larger
- * of each device's count), so a reset is a zero point instead: the seconds each game had at that moment, which are
+ * Hours resets: the admin page can set someone's play time back to zero. Totals only ever grow (stats.js adds each device's
+ * new seconds and never lowers a total), so a reset is a zero point instead: the seconds each game had at that moment, which are
  * subtracted from then on. Resets live at rooms/lb-rs/players/<the admin's uid> as { n, c, x, z, h, ts, v: 1, r, sig },
- * where r is the JSON of { <uid>: { t: when, b: { <game folder>: seconds }, h: 1 } } (no b: no reset; h: 1, the account is
- * removed from the boards altogether, for fake or junk accounts) and sig is
+ * where r is the JSON of { <uid>: { t: when, b: { <game folder>: seconds }, h: 1, a: <uid> } } (no b: no reset; h: 1, the account is
+ * removed from the boards altogether, for fake or junk accounts; a: the same person as that account, shown as one row with it)
+ * and sig is
  * an ECDSA P-256 / SHA-256 signature of r by the admin key (adminkey.js; the same key pair as the ECDH one there). Anyone
  * can write a node there, so only nodes whose signature checks out count; for each uid the latest t wins.
  * Renames show live: social.js and party.js fire `backroom:name` ({ uid, n, mine }) when you rename yourself or when
@@ -194,14 +200,21 @@
 
   // ---------------- Reading the boards ----------------
   // One player's node, checked field by field. Returns null for anything stale or malformed.
+  function okUid(u) { return typeof u === 'string' && /^[A-Za-z0-9_-]{6,128}$/.test(u); }
   function parse(uid, v, now) {
-    if (!/^[A-Za-z0-9_-]{6,128}$/.test(uid) || !v || typeof v !== 'object' || Array.isArray(v)) return null;
+    if (!okUid(uid) || !v || typeof v !== 'object' || Array.isArray(v)) return null;
     var ts = num(v.ts);
     if (!(ts >= EPOCH - 86400000) || ts > now + 600000 || now - ts > STALE) return null;
     var size; try { size = JSON.stringify(v).length; } catch (e) { return null; }
     if (size > NODE_MAX || !v.g || typeof v.g !== 'object' || Array.isArray(v.g)) return null;
     var cap = Math.max(86400, (now - EPOCH) / 1000 + 86400);   // 24 hours a day since the boards started
     var p = { uid: uid, n: mask(cleanName(v.n)) || 'Player', seat: seatOf(uid), total: 0, top: '', topS: 0, g: {} };
+    // Merged accounts (stats.js): the one this was merged into, by its owner, and the ones merged into this.
+    if (okUid(v.to) && v.to !== uid) p.to = v.to;
+    if (v.al && typeof v.al === 'object' && !Array.isArray(v.al)) {
+      var al = Object.keys(v.al).filter(function (u) { return okUid(u) && u !== uid && num(v.al[u]) > 0; }).slice(0, 8);
+      if (al.length) { p.al = {}; al.forEach(function (u) { p.al[u] = 1; }); }
+    }
     var keys = Object.keys(v.g); if (keys.length > 40) return null;
     for (var i = 0; i < keys.length; i++) {
       var meta = BY[keys[i]], src = v.g[keys[i]];
@@ -258,6 +271,43 @@
     return p;
   }
 
+  // One row per person where that's proven: an entry whose owner merged it into another (its to, and the other's al) is left
+  // out (the other already has its hours); an entry the admin merged into another (a signed a) is folded into it, per game
+  // the larger hours and the better bests. Left-out entries are kept, marked with `into`, only when hidden ones are shown
+  // (the admin page). One step only: an entry that is itself merged into another isn't a target.
+  function better(st, a, b) { return !(a > 0) ? b : !(b > 0) ? a : low(st) ? Math.min(a, b) : Math.max(a, b); }
+  function fold(t, p) {
+    Object.keys(p.g).forEach(function (k) {
+      var o = p.g[k], to = t.g[k] || (t.g[k] = { s: 0 }), meta = BY[k];
+      to.s = Math.max(to.s, o.s);
+      Object.keys(o).forEach(function (sk) {
+        if (sk === 's') return;
+        var st = meta && meta.st.filter(function (x) { return x.k === sk; })[0];
+        to[sk] = better(st || { f: /^(lap|rec):/.test(sk) ? 'lap' : 'n' }, to[sk], o[sk]);
+      });
+    });
+    t.total = 0; t.top = ''; t.topS = 0;
+    Object.keys(t.g).forEach(function (k) { var s = t.g[k].s; t.total += s; if (s > t.topS) { t.topS = s; t.top = BY[k].n; } });
+  }
+  function collapse(list) {
+    var by = {};
+    list.forEach(function (p) { by[p.uid] = p; });
+    function target(p) {
+      var t = p.to && by[p.to];
+      if (t && t.al && t.al[p.uid] && !t.to) return { t: t, own: true };
+      var a = RESETS[p.uid] && RESETS[p.uid].a, ta = a && by[a];
+      if (ta && ta !== p && !ta.to && !(RESETS[ta.uid] && RESETS[ta.uid].a)) return { t: ta, own: false };
+      return null;
+    }
+    return list.filter(function (p) {
+      var m = target(p);
+      if (!m) return true;
+      if (!m.own) fold(m.t, p);
+      p.into = m.t.uid; p.intoOwn = m.own;
+      return SHOW_HIDDEN;
+    });
+  }
+
   // ---------------- Hours resets (signed by the admin key) ----------------
   function loadKey() {
     if (window.BackRoomAdminKey) return Promise.resolve(window.BackRoomAdminKey);
@@ -285,10 +335,10 @@
       if (!m || typeof m !== 'object' || Array.isArray(m)) continue;
       Object.keys(m).forEach(function (u) {
         var e = m[u], t = e && num(e.t);
-        if (!/^[A-Za-z0-9_-]{6,128}$/.test(u) || !(t > 0) || (latest[u] && latest[u].t >= t)) return;
+        if (!okUid(u) || !(t > 0) || (latest[u] && latest[u].t >= t)) return;
         var b = null;
         if (e.b && typeof e.b === 'object' && !Array.isArray(e.b)) { b = {}; Object.keys(e.b).forEach(function (k) { var x = Math.floor(num(e.b[k])); if (BY[k] && x > 0) b[k] = x; }); }
-        latest[u] = { t: t, b: b, h: e.h === 1 };
+        latest[u] = { t: t, b: b, h: e.h === 1, a: okUid(e.a) && e.a !== u ? e.a : '' };
       });
     }
     return latest;
@@ -362,7 +412,7 @@
   }
 
   // For the admin page: the same checks and names, so what it shows is what the boards would show. With data-lib, that's all.
-  window.BackRoomBoards = { RS_PATH: RS_PATH, readResets: readResets, get resets() { return RESETS; }, showHidden: function (v) { SHOW_HIDDEN = !!v; }, parse: parse, GAMES: GAMES, BY: BY, TRACKS: TRACKS, trackRows: trackRows, EPOCH: EPOCH, PATH: PATH, MAX_NODES: MAX_NODES, NODE_MAX: NODE_MAX, fmt: fmt, fmtHours: fmtHours, cleanName: cleanName, mask: mask, seatOf: seatOf };
+  window.BackRoomBoards = { RS_PATH: RS_PATH, readResets: readResets, get resets() { return RESETS; }, showHidden: function (v) { SHOW_HIDDEN = !!v; }, parse: parse, collapse: collapse, GAMES: GAMES, BY: BY, TRACKS: TRACKS, trackRows: trackRows, EPOCH: EPOCH, PATH: PATH, MAX_NODES: MAX_NODES, NODE_MAX: NODE_MAX, fmt: fmt, fmtHours: fmtHours, cleanName: cleanName, mask: mask, seatOf: seatOf };
   if (me && me.hasAttribute('data-lib')) return;
 
   // ---------------- Styles ----------------
@@ -479,7 +529,7 @@
       // MAX_NODES counts players shown, not nodes read: stale nodes (which pile up, as nothing removes them) cost one
       // comparison each in parse and mustn't crowd out current players further down the list.
       for (var i = 0; i < keys.length && out.length < MAX_NODES; i++) { var p = parse(keys[i], val[keys[i]], now); if (p) out.push(p); }
-      people = out; lastLoad = Date.now();
+      people = collapse(out); lastLoad = Date.now();
       say('');
     } catch (e) {
       say(e && e.message && e.message !== 'timeout' ? e.message : 'Couldn’t reach the leaderboards. If you’re on a school or work network it may be blocking the game database.', true);
@@ -629,5 +679,5 @@
   } else load();
 
   // Test hook for the automated checks; harmless in normal play.
-  if (navigator.webdriver) window.__lb = { get people() { return people; }, get view() { return view; }, get myUid() { return myUid; }, parse: parse, rows: rows, trackRows: trackRows, boardsFor: boardsFor, fmt: fmt, BY: BY, load: function () { lastLoad = 0; return load(); }, draw: draw, set top(n) { TOP = n; }, PATH: PATH, EPOCH: EPOCH };
+  if (navigator.webdriver) window.__lb = { get people() { return people; }, get view() { return view; }, get myUid() { return myUid; }, parse: parse, collapse: collapse, rows: rows, trackRows: trackRows, boardsFor: boardsFor, fmt: fmt, BY: BY, load: function () { lastLoad = 0; return load(); }, draw: draw, set top(n) { TOP = n; }, PATH: PATH, EPOCH: EPOCH };
 })();
