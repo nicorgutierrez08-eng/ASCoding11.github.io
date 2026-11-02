@@ -42,6 +42,19 @@
  */
 (function () {
   var NEWS = [
+    {date: '2026-10-29', version: '1.11', title: 'Turbo Trail, Escapade and Spire', kind: 'game', games: ['Turbo Trail', 'Escapade'], items: [
+      'Turbo Trail: a speedrun obby with 25 short levels across five worlds. Race the clock for gold medals and your own ghost, try all 25 in one full run, or race up to 12 friends online.',
+      'Escapade: parkour your way out of eight escape rooms. Hop the desks over lava, dodge the lasers, find the key and crack the keypad code to reach the EXIT, on your own or with up to 12 in a room.',
+      'Spire is back, with a checkpoint at every landing, four new sections, and coins to grab on the way up and spend on hats.'
+    ]},
+    {date: '2026-10-29', version: '1.10', title: 'New Backrooms every round', kind: 'feature', items: [
+      'Backrooms: Level 0 gets a fresh random layout every round, with corridors, offices, pillar halls and dark patches, so no two rounds play the same.',
+      'Gridpop: blocks are easier to place. The piece floats above your finger, snaps to the nearest free spot and lands exactly where its outline shows.',
+      'Shell Crackers runs smoother on slow laptops, other eggs are never drawn inside walls, and nobody spawns inside a wall or gets launched onto a roof when stuck.',
+      'Slipstream: every lap you finish now counts for the fastest-lap boards, and cutting the track only adds time to your race, not to your laps.',
+      'Change your name and it now shows everywhere within a few seconds: Online, Party and the Leaderboards.',
+      'The site\'s owners now wear a Captain badge, one step above Private Jet.'
+    ]},
     {date: '2026-10-29', version: '1.9', title: 'Avatars and status tiers', kind: 'feature', items: [
       'Everyone now has an avatar: a little face drawn from your account, the same wherever your name shows (Online, Party, Leaderboards).',
       'Miles with us: play time and wins add up to a status tier next to your name, from Economy through Business Class and First Class to Private Jet. Your own card says how far you are from the next one.',
