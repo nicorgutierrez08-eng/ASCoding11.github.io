@@ -152,7 +152,9 @@
     } catch (e) { return null; }
   }
   function num(v) { var n = typeof v === 'number' ? v : NaN; return isFinite(n) ? n : NaN; }
-  function cleanName(s) { return String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX); }
+  // Rude words in names are masked by the shared name filter (/namefilter.js) when the page has loaded it.
+  function byFilter(v) { return window.NameFilter ? window.NameFilter.clean(v) : v; }
+  function cleanName(s) { return byFilter(String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX)); }
   function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
   // The same seat social.js (Online) shows, worked out from the uid, so nobody can claim someone else's.
   function seatOf(uid) { var h = hash('seat:' + uid); return (1 + h % 40) + 'ABCDEF'.charAt(Math.floor(h / 40) % 6); }
