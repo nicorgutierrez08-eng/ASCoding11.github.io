@@ -132,7 +132,9 @@
     } catch (e) { return null; }
   }
   function json(s, d) { try { var v = JSON.parse(s); return v == null ? d : v; } catch (e) { return d; } }
-  function cleanName(s) { return String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX); }
+  // Rude words in names are masked by the shared name filter (/namefilter.js) when the page has loaded it.
+  function byFilter(v) { return window.NameFilter ? window.NameFilter.clean(v) : v; }
+  function cleanName(s) { return byFilter(String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX)); }
   function cleanText(s) { return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000b-\u001f\u007f‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, TEXT_MAX); }
   function num(v) { var n = Number(v); return isFinite(n) ? n : NaN; }
   function rid() { var a = 'abcdefghijkmnpqrstuvwxyz23456789', s = ''; for (var i = 0; i < 8; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
@@ -286,6 +288,7 @@
   var meRow = el('div', 'onl-me');
   var nameLbl = el('label'); nameLbl.append(el('span', 'onl-lbl', 'You'));
   var $name = el('input'); $name.type = 'text'; $name.maxLength = NAME_MAX; $name.autocomplete = 'nickname'; $name.spellcheck = false; $name.placeholder = 'Your name'; $name.setAttribute('aria-label', 'Your name in the Online list');
+  $name.setAttribute('data-name-filter', ''); // /namefilter.js cleans this box too
   nameLbl.append($name);
   var $seat = el('span', 'onl-seat'); $seat.title = 'Your seat: a tag that tells people apart when names match';
   // Your avatar (filled in once we know who you are) and your status tier with your miles.

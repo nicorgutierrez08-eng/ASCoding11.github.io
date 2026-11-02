@@ -626,7 +626,7 @@ $('mFree').onclick=()=>{if(G.mode!=='free'&&!G.busy)startFree(false)};
 
 function shareText(){
   const n=G.guesses.length,hard=G.hard?'*':'';
-  const head=G.mode==='daily'?(CFG.name+' #'+puzzleNo(G.day)):(CFG.name+' Unlimited');
+  const pn=puzzleNo(G.day),head=G.mode==='daily'?(CFG.name+(pn>=1?' #'+pn:' (preview)')):(CFG.name+' Unlimited');
   const sq={hit:S.hc?'🟧':'🟩',near:S.hc?'🟦':'🟨',miss:'⬛'};
   let body='';
   if(BOARDS===1){body=G.guesses.map(g=>score(g,G.ans[0]).map(s=>sq[s]).join('')).join('\n')}
