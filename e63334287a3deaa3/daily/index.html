@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Daily Puzzles</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="daily" defer></script>
+<style>
+/* Daily Puzzles: every daily game on one page, with today's status read from each game's daily:<slug> record.
+   The same dark navy look as Deepword and the daily games. The list of games is DAILY_GAMES in the script below. */
+:root{
+  --ink:#f1f7ff;
+  --ink-2:rgba(241,247,255,.66);
+  --ink-3:rgba(241,247,255,.42);
+  --aqua:#4fe3c1;
+  --aqua-ink:#042a22;
+  --sun:#ffd166;
+  --coral:#ff7a59;
+  --red:#ff5c7a;
+  --green:#5ef08f;
+  --violet:#b48bff;
+  --night:#04111f;
+  --panel:rgba(8,22,46,.82);
+  --panel-2:rgb(10,27,55);
+  --line:rgba(241,247,255,.13);
+  --f-d:'Fredoka',ui-rounded,system-ui,sans-serif;
+  --f-u:'Nunito',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--night)}
+body{margin:0;min-height:100%;background:radial-gradient(110% 60% at 50% -8%,#0d2850 0%,var(--night) 62%) no-repeat,var(--night);color:var(--ink);font-family:var(--f-u);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--aqua);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(36px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px))}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(5,16,34,.78);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font:700 13px var(--f-u);color:var(--ink-2);white-space:nowrap;text-decoration:none}
+.pill:hover{color:var(--ink)}
+.top .date{margin-left:auto;font:800 12px var(--f-u);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+
+/* header + summary */
+.kicker{font:800 12px var(--f-u);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-2);margin:0}
+.kicker b{color:var(--coral)}
+h1{margin:4px 0 6px;font:700 clamp(40px,8vw,64px)/.95 var(--f-d);letter-spacing:-.02em;background:linear-gradient(100deg,#7df5dc 0%,var(--aqua) 40%,#5aa9ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin:0 0 18px;font:600 16px/1.45 var(--f-u);color:var(--ink-2);max-width:620px}
+.sum{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px 18px;min-width:0}
+.box small{display:block;font:800 11px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.box .big{display:block;margin-top:4px;font:700 32px/1.05 var(--f-d);font-variant-numeric:tabular-nums;white-space:nowrap}
+.box .big em{font-style:normal;color:var(--ink-3);font-size:22px}
+.box .sub{display:block;margin-top:2px;font:700 13px var(--f-u);color:var(--ink-2)}
+.prog{display:flex;align-items:center;gap:16px}
+.ring{flex:none;width:68px;height:68px}
+.ring circle{fill:none;stroke-width:8}
+.ring .bg{stroke:rgba(255,255,255,.08)}
+.ring .fg{stroke:url(#rg);stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+.fire .big{color:var(--sun)}
+.next .big{color:var(--ink)}
+
+/* all done */
+.done-all{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:16px 18px;border-radius:20px;border:1px solid rgba(94,240,143,.4);background:linear-gradient(110deg,rgba(94,240,143,.16),rgba(79,227,193,.08) 50%,rgba(255,209,102,.14))}
+.done-all .em{font-size:38px;line-height:1;animation:wob 1.6s ease-in-out infinite}
+.done-all b{display:block;font:700 24px/1.1 var(--f-d)}
+.done-all span{font:700 14px/1.4 var(--f-u);color:var(--ink-2)}
+.done-all i{position:absolute;top:-14px;font-style:normal;font-size:16px;animation:fall 3.2s linear infinite;opacity:.9;pointer-events:none}
+@keyframes wob{50%{transform:rotate(-10deg) scale(1.08)}}
+@keyframes fall{to{transform:translateY(120px) rotate(300deg);opacity:0}}
+
+/* categories */
+.cat{margin-top:26px}
+.cat-h{display:flex;align-items:center;gap:12px;margin:0 0 12px}
+.cat-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:13px;font-size:21px;background:color-mix(in srgb,var(--c) 22%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.cat-h h2{margin:0;font:700 26px/1 var(--f-d)}
+.cat-h p{margin:3px 0 0;font:700 13px var(--f-u);color:var(--ink-3)}
+.cat-n{margin-left:auto;flex:none;font:800 11px var(--f-u);letter-spacing:.12em;text-transform:uppercase;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border-radius:999px;padding:5px 11px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tile{position:relative;display:flex;align-items:center;gap:13px;min-width:0;padding:13px 14px;border-radius:18px;background:var(--panel);border:1px solid var(--line);text-decoration:none;transition:transform .15s,border-color .15s,background .15s}
+.tile:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--c) 55%,var(--line))}
+.tile:active{transform:scale(.98)}
+.tile .ic{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:15px;font-size:27px;background:color-mix(in srgb,var(--c) 18%,rgba(255,255,255,.03));border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.tile .tx{flex:1;min-width:0}
+.tile b{display:block;font:700 19px/1.15 var(--f-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .bl{display:block;margin-top:1px;font:600 13px/1.35 var(--f-u);color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.st{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;font:800 11.5px/1 var(--f-u);letter-spacing:.02em;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--ink-2);white-space:nowrap}
+.chip.todo::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink-3)}
+.chip.win{background:rgba(94,240,143,.16);color:var(--green)}
+.chip.miss{background:rgba(255,92,122,.15);color:#ff8fa3}
+.chip.part{background:rgba(255,209,102,.14);color:var(--sun)}
+.chip.fire{background:rgba(255,160,70,.14);color:#ffb366}
+.tile.is-done{background:linear-gradient(120deg,color-mix(in srgb,var(--c) 10%,var(--panel)),var(--panel))}
+.tile.is-done .ic::after{content:"✓";position:absolute;transform:translate(19px,-19px);width:20px;height:20px;border-radius:50%;background:var(--green);color:#042a14;font:800 12px/20px var(--f-u);text-align:center;box-shadow:0 0 0 3px var(--night)}
+.tile .ic{position:relative}
+.tile .ic::after{display:block}
+.soon{display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:18px;border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line));color:var(--ink-3);font:700 14px/1.4 var(--f-u)}
+.soon .ic{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:15px;font-size:22px;background:rgba(255,255,255,.03)}
+.soon b{display:block;color:var(--ink-2);font:700 17px var(--f-d)}
+
+/* together + footer */
+.more{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile.off{cursor:default;opacity:.72}
+.tile.off:hover{transform:none;border-color:var(--line)}
+.foot{margin-top:30px;font:600 12.5px/1.5 var(--f-u);color:var(--ink-3);text-align:center}
+.foot a{color:var(--ink-3)}
+
+@media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){
+  .sum{grid-template-columns:1fr 1fr}
+  .sum .box:first-child{grid-column:1/-1}
+}
+@media (max-width:560px){
+  .grid,.more{grid-template-columns:minmax(0,1fr)}
+  .top .date{font-size:11px;letter-spacing:.1em}
+  .box{padding:13px 14px;border-radius:16px}
+  .box .big{font-size:26px}
+  .ring{width:58px;height:58px}
+  .cat-h h2{font-size:23px}
+  .tile{padding:11px 12px;border-radius:16px}
+  .tile .ic{width:46px;height:46px;font-size:24px;border-radius:13px}
+  .tile .bl{-webkit-line-clamp:1}
+}
+@media (max-height:500px) and (orientation:landscape){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sum{grid-template-columns:1.3fr 1fr 1fr}
+  .sum .box:first-child{grid-column:auto}
+  h1{font-size:40px}
+}
+@media (prefers-reduced-motion:reduce){.done-all .em,.done-all i{animation:none}.done-all i{display:none}.tile{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="pill" href="/e63334287a3deaa3/">‹ Back Room</a>
+    <span class="date" id="date"></span>
+  </div>
+  <p class="kicker"><b>●</b> New every midnight</p>
+  <h1>Daily Puzzles</h1>
+  <p class="lede">A fresh set every day, the same for everyone. Word games, geography, logic and soccer: play one or play them all, and keep your streak going.</p>
+
+  <div class="sum">
+    <div class="box prog">
+      <svg class="ring" viewBox="0 0 80 80" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#7df5dc"/><stop offset="1" stop-color="#5aa9ff"/></linearGradient></defs><circle class="bg" cx="40" cy="40" r="34"/><circle class="fg" id="ringFg" cx="40" cy="40" r="34" transform="rotate(-90 40 40)" stroke-dasharray="213.6" stroke-dashoffset="213.6"/></svg>
+      <div><small>Done today</small><span class="big" id="doneN">0 <em>of 0</em></span><span class="sub" id="doneSub">Pick any puzzle to start.</span></div>
+    </div>
+    <div class="box fire"><small>Daily streak</small><span class="big" id="streak">🔥 0</span><span class="sub" id="streakSub">days in a row</span></div>
+    <div class="box next"><small>New puzzles in</small><span class="big" id="cd">--:--:--</span><span class="sub">at midnight, your time</span></div>
+  </div>
+  <div class="done-all" id="allDone" hidden>
+    <span class="em" aria-hidden="true">🎉</span>
+    <div><b>All done today!</b><span id="allDoneSub">Every puzzle solved or played. Come back after midnight for a new set.</span></div>
+  </div>
+
+  <div id="cats"></div>
+
+  <section class="cat" style="--c:#b48bff" aria-labelledby="more-h">
+    <div class="cat-h"><span class="cat-ic" aria-hidden="true">🫧</span><div><h2 id="more-h">Play together</h2><p>Daily puzzles with friends, live.</p></div></div>
+    <div class="more" id="more"></div>
+  </section>
+
+  <p class="foot">Your results stay in this browser. Each puzzle has its own stats and share button. · <a href="/privacy.html">Privacy</a></p>
+</div>
+
+<script>
+(function(){
+'use strict';
+// =====================================================================
+//  Every daily game, in the order shown. To add one: a line here, with ready:true once its folder exists.
+//  slug = the folder in e63334287a3deaa3/ and the storage key daily:<slug> the game writes when a daily ends:
+//  { v:1, days:{ YYYYMMDD:{ done, win, score, tries, time } }, played, wins, streak, maxStreak, last, dist }.
+//  ready:false hides the tile (it counts toward "coming soon" only). read:'deepword' reads Deepword's own keys.
+// =====================================================================
+const DAILY_GAMES=[
+  // Word
+  {slug:'hunch',      name:'Hunch',        icon:'🟩', cat:'word',   blurb:'Guess the five-letter word in six tries.', ready:true},           // like Wordle
+  {slug:'fourcast',   name:'Fourcast',     icon:'🔲', cat:'word',   blurb:'Four words at once, nine guesses.', ready:true},                  // like Quordle
+  {slug:'mini-cross', name:'Mini Cross',   icon:'✏️', cat:'word',   blurb:'A five-by-five crossword. Beat the clock.', ready:false},          // like the NYT Mini
+  {slug:'cryptic',    name:'One Clue',     icon:'🕵️', cat:'word',   blurb:'One cryptic clue a day, with hints if you need them.', ready:false}, // like Minute Cryptic
+  {slug:'poopdle',    name:'Poopdle',      icon:'💩', cat:'word',   blurb:'Change one letter at a time until you reach POOP.', ready:false},  // a word ladder to POOP
+  {slug:'nearword',   name:'Nearword',     icon:'🧭', cat:'word',   blurb:'Find the secret word: every guess shows how close it is.', ready:false}, // like Contexto
+  {slug:'warmword',   name:'Warmword',     icon:'🌡️', cat:'word',   blurb:'Hot or cold: home in on the word by meaning.', ready:false},      // like Semantle
+  {slug:'deepword',   name:'Deepword',     icon:'🐡', cat:'word',   blurb:'Eight prompts. The rarer your answer, the deeper you dive.', ready:true, read:'deepword'}, // the Back Room's own daily dive
+  // Geography
+  {slug:'globe-hunt', name:'Globe Hunt',   icon:'🌍', cat:'geo',    blurb:'Find the mystery country. Closer guesses glow hotter.', ready:false}, // like Globle
+  {slug:'shapeguess', name:'Outline',      icon:'🗺️', cat:'geo',    blurb:'Name the country from its shape.', ready:false},                  // like Worldle
+  {slug:'flagdle',    name:'Flag Reveal',  icon:'🏳️', cat:'geo',    blurb:'Guess the flag as it’s revealed piece by piece.', ready:false},   // like Flagle
+  {slug:'border-hop', name:'Border Hop',   icon:'🚗', cat:'geo',    blurb:'Get from one country to another, border by border.', ready:false}, // like Travle
+  // Logic
+  {slug:'linkup',     name:'Linkup',       icon:'🔗', cat:'logic',  blurb:'Sort sixteen words into four hidden groups.', ready:false},       // like Connections
+  {slug:'sudoku',     name:'Sudoku',       icon:'🔢', cat:'logic',  blurb:'One grid a day, easy on Monday, tough by Sunday.', ready:false},   // Sudoku
+  // Soccer
+  {slug:'transfer-trail',name:'Transfer Trail',icon:'💸',cat:'soccer',blurb:'Guess the player from a big-money move.', ready:false},        // transfer guess
+  {slug:'career-path',name:'Career Path',  icon:'🧳', cat:'soccer', blurb:'Name the player from the clubs he played for.', ready:false},     // career path
+  {slug:'who-is-he',  name:'Mystery Player',icon:'🕵️',cat:'soccer', blurb:'Guess the player from nation, club, position and age.', ready:false}, // like Who Are Ya
+  {slug:'pitch-grid', name:'Pitch Grid',   icon:'#️⃣', cat:'soccer', blurb:'Fill the grid with players who fit both clues.', ready:false},  // football grid
+  {slug:'missing-xi', name:'Missing XI',   icon:'👕', cat:'soccer', blurb:'Fill in a famous starting line-up.', ready:false},                // missing XI
+  {slug:'soccer-links',name:'Football Links',icon:'⚽',cat:'soccer',blurb:'Four groups of four football names.', ready:false},             // football connections
+  {slug:'higher-lower',name:'Higher or Lower',icon:'↕️',cat:'soccer',blurb:'More goals or fewer? Keep the run going.', ready:false},       // higher or lower
+  {slug:'top-ten',    name:'Top 10',       icon:'🔟', cat:'soccer', blurb:'Name all ten in today’s football list.', ready:false}             // top 10
+];
+const CATS={
+  word:{name:'Word',sub:'Letters, clues and lucky guesses.',icon:'🔤',c:'#4fe3c1'},
+  geo:{name:'Geography',sub:'Countries, shapes, flags and borders.',icon:'🌎',c:'#5aa9ff'},
+  logic:{name:'Logic',sub:'Groups and grids.',icon:'🧩',c:'#ffd166'},
+  soccer:{name:'Soccer',sub:'Players, clubs and line-ups.',icon:'⚽',c:'#5ef08f'}
+};
+// Link cards under the categories (not counted in today's total).
+const EXTRA=[
+  {slug:'puffer-party',name:'Puffer Party',icon:'🐡',blurb:'Race your friends through today’s puzzles, live. Coming soon.',ready:false}
+];
+
+const B='/e63334287a3deaa3/';
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const ls={get(k){try{const v=localStorage.getItem(k);return v==null?null:JSON.parse(v)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let TODAY_TEST='';
+function keyOf(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())}
+function todayKey(){return TODAY_TEST||keyOf(new Date())}
+function keyAdd(k,n){const d=new Date(Date.UTC(+k.slice(0,4),+k.slice(4,6)-1,+k.slice(6,8))+n*86400000);return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())}
+const okDay=k=>/^\d{8}$/.test(k);
+
+// ---- one game's record, cleaned (everything in storage is treated as untrusted) ----
+function readRec(g){
+  if(g.read==='deepword'){
+    // Deepword keeps { YYYYMMDD: depth in metres } under deepword:days
+    const d=ls.get('deepword:days'),days={};
+    if(d&&typeof d==='object')for(const k in d)if(okDay(k)&&+d[k]>=0)days[k]={done:true,win:true,score:Math.round(+d[k]),depth:Math.round(+d[k])};
+    return {days,streak:runFrom(days,todayKey())};
+  }
+  const r=ls.get('daily:'+g.slug);
+  if(!r||typeof r!=='object'||!r.days||typeof r.days!=='object')return {days:{},streak:0};
+  const days={};
+  for(const k in r.days){const x=r.days[k];if(okDay(k)&&x&&typeof x==='object')days[k]={done:x.done===true,win:x.win===true,score:num(x.score),tries:num(x.tries),time:num(x.time)}}
+  // the game's streak counts only while its last win was today or yesterday
+  const t=todayKey(),last=typeof r.last==='string'?r.last:'',lw=days[last];
+  const streak=(last===t||last===keyAdd(t,-1))&&lw&&lw.win?Math.max(0,Math.floor(+r.streak||0)):0;
+  return {days,streak};
+}
+function num(v){return typeof v==='number'&&isFinite(v)?v:null}
+function runFrom(days,t){let n=0,k=days[t]&&days[t].done?t:keyAdd(t,-1);while(days[k]&&days[k].done&&n<5000){n++;k=keyAdd(k,-1)}return n}
+function fmtTime(s){s=Math.round(s);return s>=3600?Math.floor(s/3600)+':'+pad(Math.floor(s/60)%60)+':'+pad(s%60):Math.floor(s/60)+':'+pad(s%60)}
+
+// today's status chip for a game: [class, text]
+function status(g,rec){
+  const r=rec.days[todayKey()];
+  if(!r)return ['todo','Not played'];
+  if(!r.done)return ['part','In progress'];
+  if(g.read==='deepword')return ['win','Dived '+(r.depth||0).toLocaleString('en-US')+' m'];
+  if(!r.win)return ['miss','Missed'];
+  if(r.tries!=null&&r.tries>0)return ['win','Solved in '+r.tries];
+  if(r.time!=null&&r.time>0)return ['win','Solved in '+fmtTime(r.time)];
+  if(r.score!=null)return ['win','Score '+r.score];
+  return ['win','Done'];
+}
+
+// ---- the overall streak: days in a row (ending today or yesterday) with at least one daily done ----
+// Each game keeps 60 days, so the page also remembers every day it has seen with a puzzle done (daily-hub:days).
+function doneDays(recs){
+  const set=new Set(),kept=ls.get('daily-hub:days');
+  if(Array.isArray(kept))kept.forEach(k=>{if(okDay(k))set.add(k)});
+  recs.forEach(rec=>{for(const k in rec.days)if(rec.days[k].done&&k<=todayKey())set.add(k)});
+  const arr=[...set].sort().slice(-800);
+  if(!TODAY_TEST)ls.set('daily-hub:days',arr);
+  return new Set(arr);
+}
+function streakOverall(set){const t=todayKey();let n=0,k=set.has(t)?t:keyAdd(t,-1);while(set.has(k)&&n<5000){n++;k=keyAdd(k,-1)}return n}
+
+// ---- stats.js (Leaderboards): the overall streak, and one "done" per game per day ----
+function withStats(fn){if(window.BackRoomStats){try{fn(window.BackRoomStats)}catch(e){}return}let n=0;const t=setInterval(()=>{if(window.BackRoomStats||++n>40){clearInterval(t);if(window.BackRoomStats){try{fn(window.BackRoomStats)}catch(e){}}}},250)}
+function report(doneSlugs,overall){
+  if(TODAY_TEST)return;
+  const t=todayKey(),c=ls.get('daily-hub:counted');
+  const counted=(c&&typeof c==='object'&&c.d===t&&Array.isArray(c.s))?c.s:[];
+  const fresh=doneSlugs.filter(s=>counted.indexOf(s)<0);
+  if(fresh.length)ls.set('daily-hub:counted',{d:t,s:counted.concat(fresh)});
+  withStats(st=>{if(overall>0)st.max('streak',overall);if(fresh.length)st.add('done',fresh.length)});
+}
+
+// =====================================================================
+//  Drawing
+// =====================================================================
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function tile(g,rec,c){
+  const a=el('a','tile');a.href=B+g.slug+'/';a.style.setProperty('--c',c);
+  const [cls,txt]=status(g,rec);
+  if(cls==='win'||cls==='miss')a.classList.add('is-done');
+  const ic=el('span','ic',g.icon);ic.setAttribute('aria-hidden','true');
+  const tx=el('span','tx');tx.append(el('b',null,g.name),el('span','bl',g.blurb));
+  const st=el('span','st');st.append(el('span','chip '+cls,txt));
+  if(rec.streak>0)st.append(el('span','chip fire','🔥 '+rec.streak));
+  tx.append(st);a.append(ic,tx);
+  a.setAttribute('aria-label',g.name+': '+txt+(rec.streak>0?', streak '+rec.streak:''));
+  return a;
+}
+let lastSig='';
+function render(force){
+  const t=todayKey(),ready=DAILY_GAMES.filter(g=>g.ready);
+  const recs=new Map(ready.map(g=>[g.slug,readRec(g)]));
+  const doneSlugs=ready.filter(g=>{const r=recs.get(g.slug).days[t];return r&&r.done}).map(g=>g.slug);
+  const sig=t+'|'+ready.map(g=>{const r=recs.get(g.slug);return JSON.stringify(r.days[t]||0)+r.streak}).join('|');
+  if(sig===lastSig&&!force)return;lastSig=sig;
+
+  // header and summary
+  const d=new Date(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8));
+  $('date').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const n=doneSlugs.length,tot=ready.length;
+  $('doneN').innerHTML='';$('doneN').append(String(n)+' ',el('em',null,'of '+tot));
+  $('doneSub').textContent=n===0?'Pick any puzzle to start.':n===tot?'Every puzzle done. Nice!':(tot-n)+' left today.';
+  $('ringFg').setAttribute('stroke-dashoffset',String(213.6*(1-(tot?n/tot:0))));
+  const overall=streakOverall(doneDays([...recs.values()]));
+  $('streak').textContent='🔥 '+overall;
+  $('streakSub').textContent=overall===1?'day in a row':'days in a row'+(overall&&!doneSlugs.length?' · play today to keep it':'');
+  const all=$('allDone');
+  if(tot&&n===tot){
+    if(all.hidden){all.hidden=false;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){all.querySelectorAll('i').forEach(x=>x.remove());for(let i=0;i<14;i++){const c=el('i',null,['✨','⭐','🎊','💫'][i%4]);c.style.left=(4+i*7)+'%';c.style.animationDelay=(i*.23%3)+'s';all.append(c)}}}
+    const wins=ready.filter(g=>{const r=recs.get(g.slug).days[t];return r&&r.win}).length;
+    $('allDoneSub').textContent=(wins===tot?'All '+tot+' solved. ':wins+' of '+tot+' solved. ')+'Come back after midnight for a new set.';
+  }else all.hidden=true;
+
+  // categories
+  const box=$('cats');box.innerHTML='';
+  for(const key in CATS){
+    const C=CATS[key],games=DAILY_GAMES.filter(g=>g.cat===key),on=games.filter(g=>g.ready),soon=games.length-on.length;
+    const sec=el('section','cat');sec.style.setProperty('--c',C.c);sec.setAttribute('aria-labelledby','cat-'+key);
+    const h=el('div','cat-h'),ic=el('span','cat-ic',C.icon);ic.setAttribute('aria-hidden','true');
+    const hd=el('div');const h2=el('h2',null,C.name);h2.id='cat-'+key;hd.append(h2,el('p',null,C.sub));
+    const doneHere=on.filter(g=>doneSlugs.indexOf(g.slug)>=0).length;
+    h.append(ic,hd,el('span','cat-n',on.length?doneHere+' / '+on.length+' done':'Coming soon'));
+    const grid=el('div','grid');
+    on.forEach(g=>grid.append(tile(g,recs.get(g.slug),C.c)));
+    if(soon){const s=el('div','soon');const si=el('span','ic','⏳');si.setAttribute('aria-hidden','true');const st=el('div');st.append(el('b',null,soon+(soon===1?' more puzzle':' more puzzles')+' on the way'),document.createTextNode(on.length?'New '+C.name.toLowerCase()+' puzzles are being built.':'Being built right now. Check back soon.'));s.append(si,st);grid.append(s)}
+    sec.append(h,grid);box.append(sec);
+  }
+  // together
+  const more=$('more');more.innerHTML='';
+  EXTRA.forEach(g=>{
+    if(g.ready){more.append(tile(g,{days:{},streak:0},'#b48bff'));return}
+    const a=el('div','tile off');a.style.setProperty('--c','#b48bff');
+    const ic=el('span','ic',g.icon);ic.setAttribute('aria-hidden','true');
+    const tx=el('span','tx');tx.append(el('b',null,g.name),el('span','bl',g.blurb));const st=el('span','st');st.append(el('span','chip part','Coming soon'));tx.append(st);
+    a.append(ic,tx);more.append(a);
+  });
+  report(doneSlugs,overall);
+}
+
+// countdown to midnight; a new day redraws everything
+function tick(){
+  const now=new Date(),mid=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),s=Math.max(0,Math.floor((mid-now)/1000));
+  $('cd').textContent=pad(Math.floor(s/3600))+':'+pad(Math.floor(s/60)%60)+':'+pad(s%60);
+  render(false);
+}
+render(true);tick();setInterval(tick,1000);
+// another tab finishing a puzzle, or coming back from a game
+addEventListener('storage',e=>{if(!e.key||/^daily:|^deepword:days/.test(e.key))render(true)});
+addEventListener('pageshow',()=>render(true));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render(true)});
+
+if(navigator.webdriver)window.__dh={DAILY_GAMES,CATS,render,readRec,status,streakOverall,doneDays,setToday(k){TODAY_TEST=/^\d{8}$/.test(k)?k:'';render(true)}};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="daily" defer></script>
+</body>
+</html>
