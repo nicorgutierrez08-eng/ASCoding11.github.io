@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Crossbar</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="crossbar" defer></script>
+<link rel="stylesheet" href="../football-data/kit.css">
+<style>
+/* 3x3 grid with row and column headers; tap a cell, then name a player who fits both. */
+.top3{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.lives{font-size:18px;letter-spacing:2px}
+.grid{display:grid;grid-template-columns:minmax(64px,.8fr) repeat(3,1fr);gap:6px}
+.hd{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;padding:6px 3px;min-height:58px;border-radius:12px;background:rgba(255,255,255,.04);font:800 12px/1.15 var(--f-u)}
+.hd small{font:800 9px var(--f-u);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.hd .sw{width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.35)}
+.hd b{font-weight:800;word-break:break-word;hyphens:auto}
+.corner{background:none}
+.cell{aspect-ratio:1/.92;border-radius:12px;border:2px solid var(--line);background:rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;text-align:center;cursor:pointer;font:700 13px/1.15 var(--f-d);color:var(--ink);transition:border-color .15s,background .15s;min-width:0;overflow:hidden}
+.cell:hover{background:rgba(255,255,255,.09)}
+.cell.sel{border-color:var(--aqua);background:rgba(79,227,193,.12);box-shadow:0 0 0 3px rgba(79,227,193,.15)}
+.cell.ok{background:linear-gradient(180deg,rgba(47,191,113,.3),rgba(47,191,113,.16));border-color:rgba(94,240,143,.55)}
+.cell.ok small{font:800 10px var(--f-u);color:var(--green)}
+.cell.gone{color:var(--ink-3);font:700 12px var(--f-u)}
+.cell .nm{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.where{font:700 14px/1.35 var(--f-u);color:var(--ink-2);margin-bottom:8px;min-height:1.35em}
+.where b{color:var(--ink)}
+.answers{margin-top:8px;font:700 13px/1.6 var(--f-u);color:var(--ink-2)}
+.answers b{color:var(--ink)}
+@media (max-width:400px){.hd{font-size:11px;min-height:50px}.cell{font-size:12px}}
+@media (max-height:460px) and (orientation:landscape){.wrap.wide{width:min(900px,100%)!important;display:grid;grid-template-columns:minmax(380px,1.15fr) minmax(260px,1fr);gap:12px;align-items:start}.wrap.wide>.modes,.wrap.wide>.meta,.wrap.wide>.note{grid-column:1/-1}#side{position:sticky;top:64px}.cell{aspect-ratio:auto;min-height:52px}.hd{min-height:46px}}
+</style>
+</head>
+<body>
+<main class="wrap wide" style="width:min(640px,100%)">
+  <div class="modes" id="modes"><button type="button" data-m="daily" class="on">Daily</button><button type="button" data-m="unl">Unlimited</button></div>
+  <div class="meta" id="meta"></div>
+  <section class="card" id="board">
+    <div class="top3"><span class="lbl" style="margin:0" id="score"></span><span class="lives" id="lives" aria-label="Lives"></span></div>
+    <div class="grid" id="grid"></div>
+  </section>
+  <div id="side">
+    <section class="card" id="askCard"><div class="where" id="where"></div><div id="pick"></div><div class="row"><button class="ghost sm" id="giveUp" type="button">Finish now</button></div></section>
+    <section class="card result" id="res" hidden></section>
+  </div>
+</main>
+<script src="../football-data/players.js"></script>
+<script src="../football-data/kit.js"></script>
+<script src="../football-data/cats.js"></script>
+<script src="grids.js"></script>
+<script>
+(function(){
+'use strict';
+const K=window.FBK,C=window.FBCAT,$=K.$,esc=K.esc,SLUG='crossbar',LIVES=3,PASS=6;
+const G=window.FB_GRIDS||[];
+K.setup({slug:SLUG,name:'Crossbar',kicker:'Fill the grid',distKeys:['0','1','2','3','4','5','6','7','8','9'],distLabel:'Cells filled',
+  how:'<ul><li>Each square sits where a <b>row</b> and a <b>column</b> cross. Tap a square and name a player who fits <b>both</b>, for example played for Chelsea <i>and</i> is from France.</li><li>A player can only be used once per grid. You have <b>'+LIVES+' lives</b>: a wrong name costs one, and the square stays open to try again.</li><li>"Played for" counts any first-team spell, loans included. "Played in Spain" means any club in that country\'s league. World Cup and Ballon d\'Or squares count winners up to 2022 and 2025.</li><li>Fill <b>'+PASS+' or more</b> to count as a win and keep your streak. Afterwards, tap any square to see every player in our list who fits; each filled square says how many could have gone there.</li><li>Answers are judged against <b>this game\'s own list</b> of famous players only, so a real player who isn\'t in it won\'t count.</li></ul>',
+  shareText:()=>shareText()});
+let mode='daily',S=null,sel=-1;
+const dayKeyS=()=>SLUG+':day:'+K.today();
+const newState=i=>({i,c:[null,null,null,null,null,null,null,null,null],lives:LIVES,done:false});
+function load(){
+  if(mode==='daily'){const i=K.dailyIndex(G.length,SLUG),sv=K.store.get(dayKeyS(),null);S=sv&&sv.i===i?sv:newState(i)}
+  else{const sv=K.store.get(SLUG+':unlcur',null);S=sv&&!sv.done&&G[sv.i]?sv:newState(Math.floor(Math.random()*G.length))}
+  sel=S.done?-1:S.c.indexOf(null);render();
+}
+function save(){K.store.set(mode==='daily'?dayKeyS():SLUG+':unlcur',S)}
+const rowsOf=()=>G[S.i][0],colsOf=()=>G[S.i][1];
+const fits=(p,k)=>C.test(p,rowsOf()[Math.floor(k/3)])&&C.test(p,colsOf()[k%3]);
+const valid=k=>K.PL.filter(p=>fits(p,k));
+function head(id){
+  const l=C.label(id),t=C.parts(id);
+  if(t[0]==='c'){const k=K.club(t[1]);return '<div class="hd"><span class="sw" style="background:linear-gradient(135deg,'+k[2]+' 50%,'+k[3]+' 50%)"></span><b>'+esc(l[0])+'</b></div>'}
+  return '<div class="hd"><small>'+esc(l[1])+'</small><b>'+esc(l[0])+'</b></div>';
+}
+const filled=()=>S.c.filter(x=>x!=null).length;
+function render(){
+  $('meta').innerHTML=mode==='daily'?'<span><b>●</b> Daily '+esc(K.label())+'</span><span>'+esc(K.dateText())+'</span>':'<span><b>●</b> Unlimited</span><span>Best run '+K.unlimited().best+'</span>';
+  $('score').textContent=filled()+' / 9 filled';
+  $('lives').textContent='❤️'.repeat(S.lives)+'🖤'.repeat(LIVES-S.lives);
+  const R=rowsOf(),Cc=colsOf();let h='<div class="hd corner"></div>'+Cc.map(head).join('');
+  for(let r=0;r<3;r++){h+=head(R[r]);for(let c=0;c<3;c++){const k=r*3+c,id=S.c[k];
+    if(id!=null){const n=valid(k).length;h+='<button type="button" class="cell ok'+(k===sel?' sel':'')+'" data-k="'+k+'"><span class="nm">'+esc(K.PL[id].name)+'</span><small>1 of '+n+'</small></button>'}
+    else h+='<button type="button" class="cell'+(S.done?' gone':'')+(k===sel?' sel':'')+'" data-k="'+k+'" aria-label="'+esc(C.label(R[r])[0]+' and '+C.label(Cc[c])[0])+'">'+(S.done?'—':'')+'</button>'}}
+  $('grid').innerHTML=h;
+  $('askCard').hidden=S.done;$('res').hidden=!S.done;
+  if(!S.done){
+    if(sel<0||S.c[sel]!=null)sel=S.c.indexOf(null);
+    $('where').innerHTML=sel<0?'':'<span class="lbl" style="margin:0 0 3px">Square '+(sel+1)+'</span><b>'+esc(C.long(R[Math.floor(sel/3)]))+'</b> and <b>'+esc(C.long(Cc[sel%3]))+'</b>';
+  } else showResult();
+}
+$('grid').addEventListener('click',e=>{const b=e.target.closest('.cell');if(!b)return;sel=+b.getAttribute('data-k');render();if(!S.done&&S.c[sel]==null&&!matchMedia('(pointer: coarse)').matches)picker.focus()});
+const used=it=>S.c.indexOf(it.key)>=0;
+const picker=K.picker($('pick'),{placeholder:'Name a player for this square…',used,onPick:it=>{guess(it.p);return true}});
+function guess(p){
+  if(S.done||sel<0||S.c[sel]!=null)return;
+  const r=rowsOf()[Math.floor(sel/3)],c=colsOf()[sel%3];
+  if(fits(p,sel)){S.c[sel]=p.id;K.toast(p.name+' fits! 1 of '+valid(sel).length+' in our list.');sel=S.c.indexOf(null)}
+  // his career in our list is incomplete ("+"), so a club or league we don't have could be the missing piece: no life lost
+  else if((C.test(p,r)||C.unsure(p,r))&&(C.test(p,c)||C.unsure(p,c))){K.toast('We can\u2019t confirm that one from our records \u2014 try another player',2800);return}
+  else{S.lives--;K.toast(p.name+' doesn\'t fit that square.');$('board').classList.remove('shake');void $('board').offsetWidth;$('board').classList.add('shake')}
+  if(filled()===9||S.lives<=0)S.done=true;
+  save();if(S.done){sel=-1;end()}render();
+}
+$('giveUp').addEventListener('click',()=>{if(S.done)return;if(!confirm('Finish with '+filled()+' of 9 filled?'))return;S.done=true;sel=-1;save();end();render()});
+function end(){
+  const n=filled();
+  if(mode==='daily'){K.finish({win:n>=PASS,score:n,tries:LIVES-S.lives,dist:n,best:B=>{if(n>0)B.max('cells',n)}});setTimeout(K.openStats,1400)}
+  else K.unlimited(n>=PASS);
+}
+const sq=st=>[0,1,2].map(r=>[0,1,2].map(c=>st.c[r*3+c]!=null?'🟩':'⬛').join('')).join('\n');
+function shareText(){
+  if(!K.todayDone())return '';const st=K.store.get(dayKeyS(),null)||S;
+  return K.shareHead()+' '+st.c.filter(x=>x!=null).length+'/9\n'+sq(st)+'\n'+'❤️'.repeat(st.lives)+'🖤'.repeat(LIVES-st.lives)+'\n'+K.SITE;
+}
+function showResult(){
+  const n=filled(),R=rowsOf(),Cc=colsOf();
+  let ans='';
+  if(sel>=0){const v=valid(sel);ans='<div class="answers"><span class="lbl">Everyone in our list for square '+(sel+1)+' ('+esc(C.label(R[Math.floor(sel/3)])[0])+' × '+esc(C.label(Cc[sel%3])[0])+')</span>'+v.map(p=>S.c[sel]===p.id?'<b>'+esc(p.name)+'</b>':esc(p.name)).join(', ')+'</div>'}
+  else ans='<p class="muted" style="font-weight:700;margin:8px 0 0">Tap any square to see every player in our list who fits it.</p>';
+  $('res').innerHTML='<span class="lbl">'+(n===9?'Perfect grid':n>=PASS?'Nice grid':'Grid over')+'</span><div class="big pop">'+n+' / 9</div><div class="sq">'+sq(S)+'</div>'+
+   '<div class="row">'+(mode==='daily'?'<button class="cta" id="shareB" type="button">Share</button><button class="ghost" id="statsB" type="button">Stats</button><button class="ghost" id="unlB" type="button">Play unlimited</button>':'<button class="cta" id="nextB" type="button">New grid</button><button class="ghost" id="dailyB" type="button">Back to daily</button>')+'</div><p class="pmsg" id="shareMsg"></p>'+ans;
+  if(mode==='daily'){$('shareB').onclick=()=>K.share(shareText(),$('shareMsg'));$('statsB').onclick=K.openStats;$('unlB').onclick=()=>setMode('unl')}
+  else{$('nextB').onclick=()=>{K.store.del(SLUG+':unlcur');load()};$('dailyB').onclick=()=>setMode('daily')}
+}
+function setMode(m){mode=m;Array.prototype.forEach.call($('modes').children,b=>b.classList.toggle('on',b.getAttribute('data-m')===m));load();scrollTo(0,0)}
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b&&b.getAttribute('data-m')!==mode)setMode(b.getAttribute('data-m'))});
+load();
+if(navigator.webdriver)window.__game={G,get S(){return S},valid,fits,guess,setMode,load,shareText,select:k=>{sel=k;render()}};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="crossbar" defer></script>
+</body>
+</html>

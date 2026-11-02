@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Scout Report</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="scout-report" defer></script>
+<link rel="stylesheet" href="../football-data/kit.css">
+<style>
+/* Each guess is one row: the name, then six tiles compared with the mystery player. */
+.mystery{display:flex;align-items:center;gap:14px}
+.shirt{flex:none;width:64px;height:64px;position:relative}
+.shirt svg{width:100%;height:100%}
+.shirt b{position:absolute;inset:16px 0 0;text-align:center;font:700 22px var(--f-d);color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font:700 12px var(--f-u);color:var(--ink-3)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.heads,.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.heads{margin:2px 0 6px}
+.heads span{font:800 10px var(--f-u);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:center}
+.grow{margin-top:10px}
+.grow .nm{font:700 15px var(--f-d);margin:0 0 5px 2px;display:flex;justify-content:space-between;gap:8px}
+.grow .nm small{font:800 11px var(--f-u);color:var(--ink-3)}
+.t{min-height:58px;border-radius:10px;background:var(--miss);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 3px;text-align:center;font:800 12px/1.15 var(--f-u);overflow:hidden;animation:flip .45s both}
+.t big{display:block;font:700 15px/1.1 var(--f-d)}
+.t.g{background:var(--ok);color:#03261a}
+.t.y{background:var(--near);color:#2a1d00}
+.t .ar{font-size:15px;line-height:1}
+.t .sw{display:block;width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,.4);margin-bottom:3px}
+.t .cl,.t .nt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:normal;overflow-wrap:normal;font-size:10px;letter-spacing:-.03em;max-width:100%}
+@keyframes flip{from{transform:rotateX(90deg);opacity:0}}
+.grow:nth-child(n) .t:nth-child(2){animation-delay:.06s}.grow .t:nth-child(3){animation-delay:.12s}.grow .t:nth-child(4){animation-delay:.18s}.grow .t:nth-child(5){animation-delay:.24s}.grow .t:nth-child(6){animation-delay:.3s}
+.old .t{animation:none}
+@media (max-width:420px){#gridCard{padding:12px 8px}.heads,.tiles{gap:4px}}
+@media (max-width:380px){.t{min-height:52px;font-size:11px}.t big{font-size:14px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="modes" id="modes"><button type="button" data-m="daily" class="on">Daily</button><button type="button" data-m="unl">Unlimited</button></div>
+  <div class="meta" id="meta"></div>
+  <section class="card">
+    <div class="mystery">
+      <div class="shirt" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M20 6l-14 8 5 13 7-3v34h28V24l7 3 5-13-14-8c-2 5-6 8-12 8S22 11 20 6z" fill="#21375e" stroke="rgba(255,255,255,.35)" stroke-width="2"/></svg><b id="shirtQ">?</b></div>
+      <div><span class="lbl" style="margin:0">Mystery player</span><div class="big" id="left"></div></div>
+    </div>
+    <div class="legend"><span><i style="background:var(--ok)"></i>match</span><span><i style="background:var(--near)"></i>close</span><span>↑↓ mystery is higher / lower</span></div>
+  </section>
+  <section class="card" id="askCard"><div id="pick"></div></section>
+  <section class="card result" id="res" hidden></section>
+  <section class="card" id="gridCard" hidden>
+    <div class="heads"><span>Nation</span><span>League</span><span>Club</span><span>Pos</span><span>Born</span><span>Shirt</span></div>
+    <div id="rows"></div>
+  </section>
+</main>
+<script src="../football-data/players.js"></script>
+<script src="../football-data/kit.js"></script>
+<script>
+(function(){
+'use strict';
+const K=window.FBK,$=K.$,esc=K.esc,SLUG='scout-report',MAX=8;
+// Mystery players: everyone with a known shirt number at his main club, sorted by name for a stable daily order.
+const POOL=K.PL.filter(p=>p.no>0&&p.main).sort((a,b)=>a.name<b.name?-1:1);
+const LGS={ENG:'England',ESP:'Spain',ITA:'Italy',GER:'Germany',FRA:'France',NED:'Neth.',POR:'Portugal',SCO:'Scotland',TUR:'Turkey',SAU:'Saudi',MLS:'MLS',BRA:'Brazil',ARG:'Argentina',NASL:'NASL',RUS:'Russia',UKR:'Ukraine',SUI:'Switz.',HUN:'Hungary'};
+const lgOf=p=>K.club(p.main)[1];
+// Short names so tiles stay readable on a 360px phone.
+const SHORT={'Manchester United':'Man Utd','Manchester City':'Man City','Tottenham Hotspur':'Spurs','Borussia Dortmund':'Dortmund','Bayern Munich':'Bayern','Paris Saint-Germain':'PSG','Atlético Madrid':'Atlético','Bayer Leverkusen':'Leverkusen','Borussia Mönchengladbach':'Gladbach','Newcastle United':'Newcastle','West Ham United':'West Ham','Leicester City':'Leicester','Wolverhampton Wanderers':'Wolves','Brighton & Hove Albion':'Brighton','Nottingham Forest':'Forest','Blackburn Rovers':'Blackburn','Real Sociedad':'Sociedad','PSV Eindhoven':'PSV','Eintracht Frankfurt':'Frankfurt','Werder Bremen':'Bremen','Hamburger SV':'Hamburg','Los Angeles FC':'LAFC','New York Red Bulls':'NY Red Bulls','New York City FC':'NYCFC','Red Bull Salzburg':'Salzburg','Sporting CP':'Sporting','Dynamo Kyiv':'Dyn. Kyiv','Dynamo Moscow':'Dyn. Moscow','Boca Juniors':'Boca','Argentinos Juniors':'Argentinos','Queens Park Rangers':'QPR','Aston Villa':'Villa','Barcelona':'Barça','Fenerbahçe':'Fener','Galatasaray':'Gala','Juventus':'Juve','Netherlands':'Neth.','Ivory Coast':'Ivory C.','Northern Ireland':'N. Ireland','Soviet Union':'USSR','Switzerland':'Switz.','South Korea':'S. Korea','Saudi Arabia':'Saudi','Argentina':'Argent.','Cameroon':'Cameroon','Trinidad and Tobago':'Trinidad','Costa Rica':'Costa Rica'};
+const sh=n=>SHORT[n]||n;
+const lgName=c=>LGS[c]||K.league(c);
+K.setup({slug:SLUG,name:'Scout Report',kicker:'Mystery player',distKeys:['1','2','3','4','5','6','7','8','X'],distName:k=>k==='X'?'✗':k,
+  how:'<ul><li>Find today\'s <b>mystery player</b> in '+MAX+' guesses. Every guess is compared with him on six things:</li><li><b>Nation</b> green if the same, yellow if from the same continent. <b>League</b> and <b>Club</b> are each player\'s main club (where he played longest, or is best known); club is yellow when the mystery player also played for that club at some point.</li><li><b>Pos</b> goalkeeper, defender, midfielder or forward. <b>Born</b> year: yellow within 2 years. <b>Shirt</b> the number he\'s best known for at his main club: yellow within 2. The arrows say whether the mystery player\'s number is higher ↑ or lower ↓.</li><li>One mystery player a day for everyone; <b>Unlimited</b> doesn\'t touch your stats.</li></ul>',
+  shareText:()=>shareText()});
+let mode='daily',S=null;
+const dayKeyS=()=>SLUG+':day:'+K.today();
+const newState=id=>({id,g:[],done:false,win:false});
+function load(){
+  if(mode==='daily'){const id=POOL[K.dailyIndex(POOL.length,SLUG)].id,sv=K.store.get(dayKeyS(),null);S=sv&&sv.id===id?sv:newState(id)}
+  else{const sv=K.store.get(SLUG+':unlcur',null);S=sv&&!sv.done&&POOL.some(p=>p.id===sv.id)?sv:newState(POOL[Math.floor(Math.random()*POOL.length)].id)}
+  render(true);
+}
+function save(){K.store.set(mode==='daily'?dayKeyS():SLUG+':unlcur',S)}
+// Compare a guess g with the mystery player m: [class, html] per column.
+function compare(g,m){
+  const out=[];
+  out.push([g.nat===m.nat?'g':K.continent(g.nat)===K.continent(m.nat)?'y':'','<span class="nt">'+esc(sh(K.nation(g.nat)))+'</span>']);
+  out.push([lgOf(g)===lgOf(m)?'g':'','<span class="nt">'+esc(lgName(lgOf(g)))+'</span>']);
+  const k=K.club(g.main);
+  out.push([g.main===m.main?'g':m.clubs.indexOf(g.main)>=0?'y':'','<span class="sw" style="background:linear-gradient(135deg,'+k[2]+' 50%,'+k[3]+' 50%)"></span><span class="cl">'+esc(sh(k[0]))+'</span>']);
+  out.push([g.pos===m.pos?'g':'','<big>'+g.pos+'</big>']);
+  const db=m.born-g.born;out.push([db===0?'g':Math.abs(db)<=2?'y':'','<big>'+g.born+'</big>'+(db?'<span class="ar">'+(db>0?'↑':'↓')+'</span>':'')]);
+  if(!g.no)out.push(['','<big>–</big>']);
+  else{const dn=m.no-g.no;out.push([dn===0?'g':Math.abs(dn)<=2?'y':'','<big>'+g.no+'</big>'+(dn?'<span class="ar">'+(dn>0?'↑':'↓')+'</span>':'')])}
+  return out;
+}
+function render(all){
+  const m=K.PL[S.id];
+  $('meta').innerHTML=mode==='daily'?'<span><b>●</b> Daily '+esc(K.label())+'</span><span>'+esc(K.dateText())+'</span>':'<span><b>●</b> Unlimited</span><span>Streak '+K.unlimited().streak+'</span>';
+  $('left').textContent=S.done?(S.win?'Found in '+S.g.length:'Not found'):(MAX-S.g.length)+' guesses left';
+  $('shirtQ').textContent=S.done?m.no:'?';
+  $('gridCard').hidden=!S.g.length;
+  $('rows').innerHTML=S.g.slice().reverse().map((id,i)=>{
+    const g=K.PL[id],c=compare(g,m);
+    return '<div class="grow'+(all||i>0?' old':'')+'"><div class="nm">'+esc(g.name)+(id===S.id?' ✓':'')+'<small>#'+(S.g.length-i)+'</small></div><div class="tiles">'+c.map(x=>'<div class="t '+x[0]+'">'+x[1]+'</div>').join('')+'</div></div>';
+  }).join('');
+  $('askCard').hidden=S.done;$('res').hidden=!S.done;
+  if(S.done)showResult();
+}
+K.picker($('pick'),{placeholder:'Guess a player…',used:it=>S.g.indexOf(it.key)>=0,onPick:it=>{guess(it.p.id);return true}});
+function guess(id){
+  if(S.done)return;
+  S.g.push(id);
+  if(id===S.id){S.done=true;S.win=true}else if(S.g.length>=MAX)S.done=true;
+  save();if(S.done)end();render(false);
+}
+function end(){
+  if(mode==='daily'){const n=S.g.length;K.finish({win:S.win,score:S.win?n:null,tries:n,dist:S.win?n:'X',best:B=>{if(S.win)B.max('spare',MAX-n+1)}});setTimeout(K.openStats,1600)}
+  else K.unlimited(S.win);
+}
+const EM={g:'🟩',y:'🟨','':'⬛'};
+const grid=st=>st.g.map(id=>compare(K.PL[id],K.PL[st.id]).map(x=>EM[x[0]]).join('')).join('\n');
+function shareText(){
+  if(!K.todayDone())return '';const st=K.store.get(dayKeyS(),null)||S;
+  return K.shareHead()+' '+(st.win?st.g.length:'X')+'/'+MAX+'\n'+grid(st)+'\n'+K.SITE;
+}
+function showResult(){
+  const m=K.PL[S.id];
+  $('res').innerHTML='<span class="lbl">'+(S.win?'Scouted!':'The mystery player was')+'</span><div class="answer pop">'+esc(m.name)+'</div><p class="muted" style="margin:6px 0 0;font-weight:700">'+esc(K.nation(m.nat))+' · '+esc(K.POS[m.pos])+' · '+K.chip(m.main)+' · No. '+m.no+'</p>'+
+   '<div class="row">'+(mode==='daily'?'<button class="cta" id="shareB" type="button">Share</button><button class="ghost" id="statsB" type="button">Stats</button><button class="ghost" id="unlB" type="button">Play unlimited</button>':'<button class="cta" id="nextB" type="button">Next player</button><button class="ghost" id="dailyB" type="button">Back to daily</button>')+'</div><p class="pmsg" id="shareMsg"></p>';
+  if(mode==='daily'){$('shareB').onclick=()=>K.share(shareText(),$('shareMsg'));$('statsB').onclick=K.openStats;$('unlB').onclick=()=>setMode('unl')}
+  else{$('nextB').onclick=()=>{K.store.del(SLUG+':unlcur');load()};$('dailyB').onclick=()=>setMode('daily')}
+}
+function setMode(m){mode=m;Array.prototype.forEach.call($('modes').children,b=>b.classList.toggle('on',b.getAttribute('data-m')===m));load();scrollTo(0,0)}
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b&&b.getAttribute('data-m')!==mode)setMode(b.getAttribute('data-m'))});
+load();
+if(navigator.webdriver)window.__game={POOL,get S(){return S},compare,guess,setMode,load,shareText};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="scout-report" defer></script>
+</body>
+</html>

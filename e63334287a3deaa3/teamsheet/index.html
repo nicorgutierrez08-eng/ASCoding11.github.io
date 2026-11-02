@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Teamsheet</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="teamsheet" defer></script>
+<link rel="stylesheet" href="../football-data/kit.css">
+<style>
+/* A pitch drawn in CSS, attack at the top; the hidden starter's shirt shows a question mark. */
+.match{text-align:center}
+.match h1{margin:0;font:700 clamp(20px,5vw,26px)/1.15 var(--f-d)}
+.match p{margin:4px 0 0;font:700 14px var(--f-u);color:var(--ink-2)}
+.match small{display:inline-block;margin-top:6px;font:800 11px var(--f-u);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.pitch{position:relative;margin-top:12px;border-radius:16px;overflow:hidden;padding:14px 4px;display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-height:440px;
+  background:repeating-linear-gradient(180deg,#1f7a43 0 44px,#1b6f3c 44px 88px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.pitch:before{content:'';position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(255,255,255,.35)}
+.pitch:after{content:'';position:absolute;left:50%;top:50%;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border:2px solid rgba(255,255,255,.35)}
+.box1,.box2{position:absolute;left:50%;width:46%;height:56px;transform:translateX(-50%);border:2px solid rgba(255,255,255,.35)}
+.box1{top:-2px;border-top:0}.box2{bottom:-2px;border-bottom:0}
+.line{position:relative;z-index:1;display:flex;justify-content:space-around;gap:2px}
+.pl{flex:1;min-width:0;max-width:96px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pl .sh{width:34px;height:34px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font:700 16px var(--f-d);color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.35)}
+.pl span{font:800 11px/1.15 var(--f-u);text-align:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);word-break:break-word;max-width:100%}
+.pl.q .sh{background:#0b1b33!important;border-color:var(--sun)!important;color:var(--sun);animation:pulse 1.6s infinite}
+.pl.q span{color:var(--sun)}
+.pl.ok .sh{border-color:var(--green)!important}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,209,102,.25)}}
+.hints{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.guesses{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.guesses li{padding:5px 10px;border-radius:999px;background:rgba(255,92,122,.14);color:#ffb3c1;font:800 13px var(--f-u)}
+.guesses li.ok{background:rgba(94,240,143,.16);color:var(--green)}
+@media (max-width:380px){.pl .sh{width:30px;height:30px;font-size:14px}.pl span{font-size:10px}.pitch{min-height:410px}}
+@media (max-height:460px) and (orientation:landscape){.wrap.ts{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,330px);gap:12px;align-items:start}.wrap.ts>.modes,.wrap.ts>.meta,.wrap.ts>.note{grid-column:1/-1}.pitch{min-height:300px;gap:4px;padding:8px 4px}.pl .sh{width:26px;height:26px;font-size:13px}.wrap.ts>div:last-of-type{position:sticky;top:64px}.match p{font-size:12px}}
+</style>
+</head>
+<body>
+<main class="wrap ts" style="width:min(720px,100%)">
+  <div class="modes" id="modes"><button type="button" data-m="daily" class="on">Daily</button><button type="button" data-m="unl">Unlimited</button></div>
+  <div class="meta" id="meta"></div>
+  <section class="card" id="board">
+    <div class="match"><h1 id="team"></h1><p id="game"></p><small id="form"></small></div>
+    <div class="pitch" id="pitch"></div>
+  </section>
+  <div>
+    <section class="card" id="askCard"><span class="lbl">Who's missing? <span id="left"></span></span><div id="pick"></div><div class="hints" id="hints"></div><ul class="guesses" id="guesses"></ul></section>
+    <section class="card result" id="res" hidden></section>
+  </div>
+</main>
+<script src="../football-data/players.js"></script>
+<script src="../football-data/kit.js"></script>
+<script src="lineups.js"></script>
+<script>
+(function(){
+'use strict';
+const K=window.FBK,$=K.$,esc=K.esc,SLUG='teamsheet',MAX=5;
+const LU=window.FB_LINEUPS||[];
+const BYN={};K.PL.forEach(p=>BYN[p.name]=p);
+// Every starter who is in players.js can be the hidden one: [line-up index, row, position in row].
+const POOL=[];LU.forEach((l,i)=>l.rows.forEach((r,ri)=>r.forEach((n,j)=>{if(BYN[n])POOL.push([i,ri,j])})));
+K.setup({slug:SLUG,name:'Teamsheet',kicker:'Fill the gap',distKeys:['1','2','3','4','5','X'],distName:k=>k==='X'?'✗':k,
+  how:'<ul><li>A famous starting line-up from a World Cup, Euros or Champions League final, laid out in its formation with <b>one player missing</b>.</li><li>Name the missing starter in up to <b>'+MAX+' guesses</b>. His spot on the pitch tells you his position.</li><li>Each miss gives a hint: the year he was born, then his country or main club, then his initials.</li><li>Line-ups are the starting elevens on the day. One gap a day for everyone; <b>Unlimited</b> doesn\'t touch your stats.</li></ul>',
+  shareText:()=>shareText()});
+let mode='daily',S=null;
+const dayKeyS=()=>SLUG+':day:'+K.today();
+const newState=k=>({k,g:[],done:false,win:false});
+function load(){
+  if(mode==='daily'){const k=K.dailyIndex(POOL.length,SLUG),sv=K.store.get(dayKeyS(),null);S=sv&&sv.k===k?sv:newState(k)}
+  else{const sv=K.store.get(SLUG+':unlcur',null);S=sv&&!sv.done&&POOL[sv.k]?sv:newState(Math.floor(Math.random()*POOL.length))}
+  render();
+}
+function save(){K.store.set(mode==='daily'?dayKeyS():SLUG+':unlcur',S)}
+const cur=()=>{const x=POOL[S.k],l=LU[x[0]];return{l,ri:x[1],j:x[2],p:BYN[l.rows[x[1]][x[2]]]}};
+const colours=l=>l.club?[K.club(l.club)[2],K.club(l.club)[3]]:l.c;
+function render(){
+  const c=cur(),l=c.l,col=colours(l),miss=S.g.filter(x=>x!==c.p.id).length;
+  $('meta').innerHTML=mode==='daily'?'<span><b>●</b> Daily '+esc(K.label())+'</span><span>'+esc(K.dateText())+'</span>':'<span><b>●</b> Unlimited</span><span>Streak '+K.unlimited().streak+'</span>';
+  $('team').innerHTML=(l.club?K.chip(l.club,l.team):esc(l.team));
+  $('game').textContent=l.comp+' '+l.year+' v '+l.vs+' · '+l.score;
+  $('form').textContent=l.f;
+  $('pitch').innerHTML='<div class="box1"></div><div class="box2"></div>'+l.rows.map((r,ri)=>({r,ri})).reverse().map(o=>'<div class="line">'+o.r.map((n,j)=>({n,j})).reverse().map(x=>{
+    const hid=o.ri===c.ri&&x.j===c.j,show=!hid||S.done;
+    return '<div class="pl'+(hid?(S.done?(S.win?' ok':' q'):' q'):'')+'"><div class="sh" style="background:'+col[0]+';border-color:'+col[1]+(col[0].toUpperCase()==='#FFFFFF'?';color:#0b1b33':'')+'">'+(hid&&!S.done?'?':'')+'</div><span>'+(show?esc(x.n):'???')+'</span></div>'}).join('')+'</div>').join('');
+  const h=[];
+  if(S.done||miss>=1)h.push('<span class="tag">Born '+c.p.born+'</span>');
+  if(S.done||miss>=2)h.push('<span class="tag">'+(l.club?esc(K.nation(c.p.nat)):'Main club: '+esc(K.club(c.p.main)[0]))+'</span>');
+  if(S.done||miss>=3)h.push('<span class="tag">'+esc(c.p.name.split(/\s+/).map(w=>w.charAt(0)+'.').join(' '))+'</span>');
+  $('hints').innerHTML=h.join('');
+  $('left').textContent=S.done?'':'· '+(MAX-S.g.length)+' guesses left';
+  $('guesses').innerHTML=S.g.map(x=>'<li'+(x===c.p.id?' class="ok"':'')+'>'+(x===c.p.id?'✓ ':'✗ ')+esc(K.PL[x].name)+'</li>').join('');
+  $('askCard').hidden=S.done;$('res').hidden=!S.done;
+  if(S.done)showResult();
+}
+K.picker($('pick'),{placeholder:'Type a player…',used:it=>S.g.indexOf(it.key)>=0,onPick:it=>{guess(it.p.id);return true}});
+function guess(id){
+  if(S.done)return;const c=cur();
+  S.g.push(id);
+  if(id===c.p.id){S.done=true;S.win=true}else if(S.g.length>=MAX)S.done=true;
+  else{K.toast('Not '+K.PL[id].name+'.');$('board').classList.remove('shake');void $('board').offsetWidth;$('board').classList.add('shake')}
+  save();if(S.done)end();render();
+}
+function end(){
+  if(mode==='daily'){const n=S.g.length;K.finish({win:S.win,score:S.win?n:null,tries:n,dist:S.win?n:'X',best:B=>{if(S.win)B.max('spare',MAX-n+1)}});setTimeout(K.openStats,1400)}
+  else K.unlimited(S.win);
+}
+const sq=st=>{const id=BYN[LU[POOL[st.k][0]].rows[POOL[st.k][1]][POOL[st.k][2]]].id;return st.g.map(x=>x===id?'🟩':'🟥').join('')+'⬜'.repeat(Math.max(0,MAX-st.g.length))};
+function shareText(){
+  if(!K.todayDone())return '';const st=K.store.get(dayKeyS(),null)||S;
+  return K.shareHead()+' '+(st.win?st.g.length:'X')+'/'+MAX+'\n'+sq(st)+'\n'+K.SITE;
+}
+function showResult(){
+  const c=cur();
+  $('res').innerHTML='<span class="lbl">'+(S.win?'Teamsheet complete':'The missing starter was')+'</span><div class="answer pop">'+esc(c.p.name)+'</div><div class="sq">'+sq(S)+'</div>'+
+   '<div class="row">'+(mode==='daily'?'<button class="cta" id="shareB" type="button">Share</button><button class="ghost" id="statsB" type="button">Stats</button><button class="ghost" id="unlB" type="button">Play unlimited</button>':'<button class="cta" id="nextB" type="button">Next teamsheet</button><button class="ghost" id="dailyB" type="button">Back to daily</button>')+'</div><p class="pmsg" id="shareMsg"></p>';
+  if(mode==='daily'){$('shareB').onclick=()=>K.share(shareText(),$('shareMsg'));$('statsB').onclick=K.openStats;$('unlB').onclick=()=>setMode('unl')}
+  else{$('nextB').onclick=()=>{K.store.del(SLUG+':unlcur');load()};$('dailyB').onclick=()=>setMode('daily')}
+}
+function setMode(m){mode=m;Array.prototype.forEach.call($('modes').children,b=>b.classList.toggle('on',b.getAttribute('data-m')===m));load();scrollTo(0,0)}
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b&&b.getAttribute('data-m')!==mode)setMode(b.getAttribute('data-m'))});
+load();
+if(navigator.webdriver)window.__game={LU,POOL,get S(){return S},cur,guess,setMode,load,shareText};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="teamsheet" defer></script>
+</body>
+</html>

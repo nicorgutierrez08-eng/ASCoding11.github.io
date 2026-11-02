@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Journeyman</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="journeyman" defer></script>
+<link rel="stylesheet" href="../football-data/kit.css">
+<style>
+/* The career as a vertical path of stops; hidden stops show as dashed placeholders. */
+.path{list-style:none;margin:0;padding:0;position:relative}
+.path:before{content:'';position:absolute;left:19px;top:14px;bottom:14px;width:3px;border-radius:3px;background:linear-gradient(180deg,var(--aqua),rgba(79,227,193,.15))}
+.stop{position:relative;display:flex;align-items:center;gap:12px;padding:6px 0}
+.stop .dot{position:relative;z-index:1;flex:none;width:41px;height:41px;border-radius:12px;border:2px solid rgba(255,255,255,.3);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.stop .tx{min-width:0;flex:1}
+.stop b{display:block;font:700 clamp(16px,4.2vw,19px)/1.2 var(--f-d);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stop small{font:800 12px var(--f-u);color:var(--ink-3);letter-spacing:.04em}
+.stop small em{font-style:normal;color:var(--sun);margin-left:6px}
+.stop.hid .dot{background:repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 6px,rgba(255,255,255,.02) 6px 12px)!important;border-style:dashed;box-shadow:none}
+.stop.hid b{color:var(--ink-3)}
+.stop.new{animation:fbpop .4s cubic-bezier(.2,1.4,.4,1)}
+.extra{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.guesses{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.guesses li{padding:5px 10px;border-radius:999px;background:rgba(255,92,122,.14);color:#ffb3c1;font:800 13px var(--f-u)}
+.guesses li.ok{background:rgba(94,240,143,.16);color:var(--green)}
+.guesses li.skip{background:rgba(255,255,255,.07);color:var(--ink-3)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+@media (max-height:460px) and (orientation:landscape){.stop{padding:3px 0}.stop .dot{width:32px;height:32px}.path:before{left:15px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="modes" id="modes"><button type="button" data-m="daily" class="on">Daily</button><button type="button" data-m="unl">Unlimited</button></div>
+  <div class="meta" id="meta"></div>
+  <section class="card" id="board">
+    <div class="toprow"><span class="lbl" style="margin:0" id="count"></span><span class="lbl" style="margin:0" id="left"></span></div>
+    <ol class="path" id="path"></ol>
+    <div class="extra" id="extra"></div>
+    <ul class="guesses" id="guesses"></ul>
+  </section>
+  <section class="card" id="askCard"><span class="lbl">Whose career is this?</span><div id="pick"></div>
+    <div class="row" style="margin-top:4px"><button class="ghost sm" id="skip" type="button">Show the next club (uses a guess)</button></div></section>
+  <section class="card result" id="res" hidden></section>
+</main>
+<script src="../football-data/players.js"></script>
+<script src="../football-data/kit.js"></script>
+<script>
+(function(){
+'use strict';
+const K=window.FBK,$=K.$,esc=K.esc,SLUG='journeyman',MAX=6;
+// Puzzle pool: players whose full senior career we list (no "+"), with at least four stops and three different clubs,
+// and no other player in the list with the same run of clubs. Sorted by name so the daily order is stable.
+const sig=p=>p.spells.map(s=>(s.loan?'~':'')+s.c).join('>');
+const sigs={};K.PL.forEach(p=>{const k=sig(p);sigs[k]=(sigs[k]||0)+1});
+const POOL=K.PL.filter(p=>!p.partial&&p.spells.length>=4&&p.clubs.length>=3&&sigs[sig(p)]===1).sort((a,b)=>a.name<b.name?-1:1);
+K.setup({slug:SLUG,name:'Journeyman',kicker:'Follow the career',distKeys:['1','2','3','4','5','6','X'],distName:k=>k==='X'?'✗':k,
+  how:'<ul><li>A player\'s senior career, club by club, with years. Only the <b>first club</b> is shown at the start.</li><li><b>Name the player</b> in up to '+MAX+' guesses. Every miss shows the next club; when the clubs run out you get his nationality, then his position.</li><li>Stuck? <b>Show the next club</b> costs one guess.</li><li>Loans are marked. Reserve and youth teams are left out.</li><li>One career a day for everyone; <b>Unlimited</b> plays random ones and doesn\'t touch your stats.</li></ul>',
+  shareText:()=>shareText()});
+let mode='daily',S=null;
+const dayKeyS=()=>SLUG+':day:'+K.today();
+const newState=id=>({id,g:[],done:false,win:false});
+function load(){
+  if(mode==='daily'){const id=POOL[K.dailyIndex(POOL.length,SLUG)].id,sv=K.store.get(dayKeyS(),null);S=sv&&sv.id===id?sv:newState(id)}
+  else{const sv=K.store.get(SLUG+':unlcur',null);S=sv&&!sv.done&&POOL.some(p=>p.id===sv.id)?sv:newState(POOL[Math.floor(Math.random()*POOL.length)].id)}
+  render();
+}
+function save(){K.store.set(mode==='daily'?dayKeyS():SLUG+':unlcur',S)}
+const ans=()=>K.PL[S.id];
+const misses=()=>S.g.filter(x=>x!==S.id).length;
+let lastShown=0;
+function render(){
+  const p=ans(),shown=S.done?p.spells.length:Math.min(p.spells.length,1+misses());
+  $('meta').innerHTML=mode==='daily'?'<span><b>●</b> Daily '+esc(K.label())+'</span><span>'+esc(K.dateText())+'</span>':'<span><b>●</b> Unlimited</span><span>Streak '+K.unlimited().streak+'</span>';
+  $('count').textContent=p.spells.length+' stops';$('left').textContent=S.done?'':(MAX-S.g.length)+' guesses left';
+  $('path').innerHTML=p.spells.map((s,i)=>{
+    const on=i<shown,k=K.club(s.c),yrs=s.from+(s.to===s.from?'':'–'+(s.to==null?'':s.to));
+    return '<li class="stop'+(on?'':' hid')+(on&&i>=lastShown&&i>0?' new':'')+'"><div class="dot"'+(on?' style="background:linear-gradient(135deg,'+k[2]+' 50%,'+k[3]+' 50%)"':'')+'></div><div class="tx"><b>'+(on?esc(k[0]):'Club '+(i+1))+'</b><small>'+(on?esc(yrs)+(s.loan?'<em>loan</em>':''):'hidden')+'</small></div></li>';
+  }).join('');
+  lastShown=shown;
+  const over=Math.max(0,misses()-(p.spells.length-1)),ex=[];
+  if(S.done||over>=1)ex.push('<span class="tag">'+esc(K.nation(p.nat))+'</span>');
+  if(S.done||over>=2)ex.push('<span class="tag">'+esc(K.POS[p.pos])+'</span>');
+  $('extra').innerHTML=ex.join('');
+  $('guesses').innerHTML=S.g.map(x=>x===-1?'<li class="skip">skipped</li>':'<li'+(x===S.id?' class="ok"':'')+'>'+(x===S.id?'✓ ':'✗ ')+esc(K.PL[x].name)+'</li>').join('');
+  $('askCard').hidden=S.done;$('res').hidden=!S.done;
+  if(S.done)showResult();
+}
+K.picker($('pick'),{placeholder:'Type a player…',used:it=>S.g.indexOf(it.key)>=0,onPick:it=>{guess(it.p.id);return true}});
+$('skip').addEventListener('click',()=>guess(-1));
+function guess(id){
+  if(S.done)return;
+  S.g.push(id);
+  if(id===S.id){S.done=true;S.win=true}
+  else if(S.g.length>=MAX)S.done=true;
+  else if(id!==-1){K.toast('Not '+K.PL[id].name+'.');$('board').classList.remove('shake');void $('board').offsetWidth;$('board').classList.add('shake')}
+  save();
+  if(S.done)end();
+  render();
+}
+function end(){
+  if(mode==='daily'){const n=S.g.length;K.finish({win:S.win,score:S.win?n:null,tries:n,dist:S.win?n:'X',best:B=>{if(S.win)B.max('spare',MAX-n+1)}});setTimeout(K.openStats,1400)}
+  else K.unlimited(S.win);
+}
+const sq=st=>st.g.map(x=>x===st.id?'🟩':x===-1?'⬛':'🟥').join('')+'⬜'.repeat(Math.max(0,MAX-st.g.length));
+function shareText(){
+  if(!K.todayDone())return '';const st=K.store.get(dayKeyS(),null)||S;
+  return K.shareHead()+' '+(st.win?st.g.length:'X')+'/'+MAX+'\n'+sq(st)+'\n'+K.SITE;
+}
+function showResult(){
+  const p=ans();
+  $('res').innerHTML='<span class="lbl">'+(S.win?'Correct':'Out of guesses')+'</span><div class="answer pop">'+esc(p.name)+'</div><p class="muted" style="margin:6px 0 0;font-weight:700">'+esc(K.nation(p.nat))+' · '+esc(K.POS[p.pos])+' · born '+p.born+'</p><div class="sq">'+sq(S)+'</div>'+
+   '<div class="row">'+(mode==='daily'?'<button class="cta" id="shareB" type="button">Share</button><button class="ghost" id="statsB" type="button">Stats</button><button class="ghost" id="unlB" type="button">Play unlimited</button>':'<button class="cta" id="nextB" type="button">Next career</button><button class="ghost" id="dailyB" type="button">Back to daily</button>')+'</div><p class="pmsg" id="shareMsg"></p>';
+  if(mode==='daily'){$('shareB').onclick=()=>K.share(shareText(),$('shareMsg'));$('statsB').onclick=K.openStats;$('unlB').onclick=()=>setMode('unl')}
+  else{$('nextB').onclick=()=>{K.store.del(SLUG+':unlcur');lastShown=0;load()};$('dailyB').onclick=()=>setMode('daily')}
+}
+function setMode(m){mode=m;lastShown=0;Array.prototype.forEach.call($('modes').children,b=>b.classList.toggle('on',b.getAttribute('data-m')===m));load();scrollTo(0,0)}
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b&&b.getAttribute('data-m')!==mode)setMode(b.getAttribute('data-m'))});
+load();
+if(navigator.webdriver)window.__game={POOL,get S(){return S},ans,guess,setMode,load,shareText};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="journeyman" defer></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Deadline Day</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="deadline-day" defer></script>
+<link rel="stylesheet" href="../football-data/kit.css">
+<style>
+/* The transfer card: from-club -> to-club, then year and fee; hints unlock under it as guesses miss. */
+.move{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;text-align:center}
+.club{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.club .sw{width:54px;height:54px;border-radius:14px;border:2px solid rgba(255,255,255,.3);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.club b{font:700 clamp(15px,4vw,19px)/1.15 var(--f-d);word-break:break-word}
+.club small{font:800 10px var(--f-u);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.arrow{font:700 28px var(--f-d);color:var(--aqua)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.facts div{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+.facts b{display:block;font:700 19px/1.2 var(--f-d)}
+.facts .fee{grid-column:1/-1}
+.facts .fee b{font-size:17px;line-height:1.3}
+.hints{display:grid;gap:6px;margin-top:12px}
+.hint{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:12px;border:1px dashed var(--line);color:var(--ink-3);font:700 14px var(--f-u)}
+.hint b{color:var(--ink);font-weight:800}
+.hint.on{border-style:solid;background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.35);color:var(--ink-2)}
+.hint .n{flex:none;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);font:800 11px var(--f-u)}
+.guesses{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.guesses li{padding:5px 10px;border-radius:999px;background:rgba(255,92,122,.14);color:#ffb3c1;font:800 13px var(--f-u)}
+.guesses li.ok{background:rgba(94,240,143,.16);color:var(--green)}
+.left{font:800 12px var(--f-u);color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+@media (max-height:460px) and (orientation:landscape){.club .sw{width:40px;height:40px}.facts{margin-top:8px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="modes" id="modes"><button type="button" data-m="daily" class="on">Daily</button><button type="button" data-m="unl">Unlimited</button></div>
+  <div class="meta" id="meta"></div>
+  <section class="card" id="board">
+    <div class="move">
+      <div class="club"><small>From</small><div class="sw" id="fromSw"></div><b id="fromN"></b></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="club"><small>To</small><div class="sw" id="toSw"></div><b id="toN"></b></div>
+    </div>
+    <div class="facts"><div><span class="lbl">Year</span><b id="yr"></b></div><div><span class="lbl">Guesses left</span><b id="left"></b></div><div class="fee"><span class="lbl">Reported fee</span><b id="fee"></b></div></div>
+    <div class="hints" id="hints"></div>
+    <ul class="guesses" id="guesses"></ul>
+  </section>
+  <section class="card" id="askCard"><span class="lbl">Who made the move?</span><div id="pick"></div></section>
+  <section class="card result" id="res" hidden></section>
+</main>
+<script src="../football-data/players.js"></script>
+<script src="../football-data/kit.js"></script>
+<script src="transfers.js"></script>
+<script>
+(function(){
+'use strict';
+const K=window.FBK,$=K.$,esc=K.esc,SLUG='deadline-day',MAX=6;
+const BY={};K.PL.forEach(p=>BY[p.name]=p);
+const T=(window.FB_TRANSFERS||[]).map((r,i)=>({i,p:BY[r[0]],from:r[1],to:r[2],year:r[3],fee:r[4]})).filter(t=>t.p);
+const HINTS=[
+  ['Nationality',t=>K.nation(t.p.nat)],
+  ['Position',t=>K.POS[t.p.pos]],
+  ['Age',t=>'Turned '+(t.year-t.p.born)+' in '+t.year],
+  ['Initials',t=>t.p.name.split(/\s+/).map(w=>w.charAt(0)+'.').join(' ')]
+];
+K.setup({slug:SLUG,name:'Deadline Day',kicker:'Name the transfer',distKeys:['1','2','3','4','5','6','X'],distName:k=>k==='X'?'✗':k,
+  how:'<ul><li>You see a famous transfer: the club he left, the club he joined, the year and the fee that was reported.</li><li><b>Name the player</b> in up to '+MAX+' guesses. Start typing and pick him from the list.</li><li>Each miss unlocks a hint: nationality, then position, then his age that year, then his initials.</li><li>A new transfer every day, the same for everyone. <b>Unlimited</b> gives you random ones that don\'t count towards your stats.</li></ul>',
+  shareText:()=>shareText()});
+let mode='daily',S=null;
+const dayKeyS=()=>SLUG+':day:'+K.today();
+function newState(idx){return{i:idx,g:[],done:false,win:false}}
+function load(){
+  if(mode==='daily'){const idx=T[K.dailyIndex(T.length,SLUG)].i,sv=K.store.get(dayKeyS(),null);S=sv&&sv.i===idx?sv:newState(idx)}
+  else{const sv=K.store.get(SLUG+':unlcur',null);S=sv&&!sv.done&&T.some(t=>t.i===sv.i)?sv:newState(T[Math.floor(Math.random()*T.length)].i)}
+  render();
+}
+function save(){K.store.set(mode==='daily'?dayKeyS():SLUG+':unlcur',S)}
+const cur=()=>T.find(t=>t.i===S.i);
+function sw(el,c){const k=K.club(c);el.style.background='linear-gradient(135deg,'+k[2]+' 50%,'+k[3]+' 50%)'}
+function render(){
+  const t=cur();
+  $('meta').innerHTML=mode==='daily'?'<span><b>●</b> Daily '+esc(K.label())+'</span><span>'+esc(K.dateText())+'</span>':'<span><b>●</b> Unlimited</span><span>Streak '+K.unlimited().streak+'</span>';
+  sw($('fromSw'),t.from);sw($('toSw'),t.to);$('fromN').textContent=K.club(t.from)[0];$('toN').textContent=K.club(t.to)[0];
+  $('yr').textContent=t.year;$('fee').textContent=t.fee;$('left').textContent=S.done?'–':String(MAX-S.g.length);
+  const miss=S.g.filter(id=>id!==t.p.id).length;
+  $('hints').innerHTML=HINTS.map((h,i)=>{const on=S.done||miss>i;return '<div class="hint'+(on?' on':'')+'"><span class="n">'+(i+1)+'</span>'+esc(h[0])+': '+(on?'<b>'+esc(h[1](t))+'</b>':'unlocks after '+(i+1)+' miss'+(i?'es':''))+'</div>'}).join('');
+  $('guesses').innerHTML=S.g.map(id=>'<li'+(id===t.p.id?' class="ok"':'')+'>'+(id===t.p.id?'✓ ':'✗ ')+esc(K.PL[id].name)+'</li>').join('');
+  $('askCard').hidden=S.done;$('res').hidden=!S.done;
+  if(S.done)showResult();
+}
+const picker=K.picker($('pick'),{placeholder:'Type a player…',used:it=>S.g.indexOf(it.key)>=0,onPick:it=>{guess(it.p);return true}});
+function guess(p){
+  if(S.done)return;const t=cur();
+  S.g.push(p.id);
+  if(p.id===t.p.id){S.done=true;S.win=true}
+  else if(S.g.length>=MAX){S.done=true}
+  else{K.toast('Not '+p.name+'. Hint unlocked.');$('board').classList.remove('shake');void $('board').offsetWidth;$('board').classList.add('shake')}
+  save();
+  if(S.done)end();
+  render();
+}
+function end(){
+  if(mode==='daily'){const n=S.g.length;K.finish({win:S.win,score:S.win?n:null,tries:n,dist:S.win?n:'X',best:B=>{if(S.win)B.max('spare',MAX-n+1)}});setTimeout(K.openStats,1400)}
+  else K.unlimited(S.win);
+}
+function squares(){const t=cur();return S.g.map(id=>id===t.p.id?'🟩':'🟥').join('')+'⬜'.repeat(Math.max(0,MAX-S.g.length))}
+function shareText(){
+  const d=K.todayDone();if(!d)return '';
+  const st=K.store.get(dayKeyS(),null)||S,t=T.find(x=>x.i===st.i)||cur();
+  const sq=st.g.map(id=>id===t.p.id?'🟩':'🟥').join('')+'⬜'.repeat(Math.max(0,MAX-st.g.length));
+  return K.shareHead()+' '+(st.win?st.g.length:'X')+'/'+MAX+'\n'+sq+'\n'+K.SITE;
+}
+function showResult(){
+  const t=cur(),r=$('res');
+  r.innerHTML='<span class="lbl">'+(S.win?'Got him':'Out of guesses')+'</span><div class="answer pop">'+esc(t.p.name)+'</div>'+
+   '<p class="muted" style="margin:6px 0 0;font-weight:700">'+esc(K.nation(t.p.nat))+' · '+esc(K.POS[t.p.pos])+' · '+K.chip(t.from)+' → '+K.chip(t.to)+' ('+t.year+')</p>'+
+   '<div class="sq">'+squares()+'</div>'+
+   '<div class="row">'+(mode==='daily'?'<button class="cta" id="shareB" type="button">Share</button><button class="ghost" id="statsB" type="button">Stats</button><button class="ghost" id="unlB" type="button">Play unlimited</button>':'<button class="cta" id="nextB" type="button">Next transfer</button><button class="ghost" id="dailyB" type="button">Back to daily</button>')+'</div><p class="pmsg" id="shareMsg"></p>';
+  if(mode==='daily'){$('shareB').onclick=()=>K.share(shareText(),$('shareMsg'));$('statsB').onclick=K.openStats;$('unlB').onclick=()=>setMode('unl')}
+  else{$('nextB').onclick=()=>{K.store.del(SLUG+':unlcur');load()};$('dailyB').onclick=()=>setMode('daily')}
+}
+function setMode(m){mode=m;Array.prototype.forEach.call($('modes').children,b=>b.classList.toggle('on',b.getAttribute('data-m')===m));load();scrollTo(0,0)}
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b&&b.getAttribute('data-m')!==mode)setMode(b.getAttribute('data-m'))});
+load();
+if(navigator.webdriver)window.__game={T,get S(){return S},cur,guess,setMode,load,shareText};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="deadline-day" defer></script>
+</body>
+</html>
