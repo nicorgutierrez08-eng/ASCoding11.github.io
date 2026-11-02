@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fourcast</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="fourcast" defer></script>
+<style>
+/* Fourcast: one daily word puzzle. The same dark navy look as Deepword and the other daily puzzles: a top bar
+   (Back, name, how to play, stats, settings), the board in the middle and the on-screen keyboard at the bottom.
+   On a sideways phone the keyboard moves to the right of the board. Tile sizes are worked out in JS (fit()). */
+:root{
+  --ink:#f1f7ff;
+  --ink-2:rgba(241,247,255,.66);
+  --ink-3:rgba(241,247,255,.4);
+  --aqua:#4fe3c1;
+  --aqua-ink:#042a22;
+  --sun:#ffd166;
+  --coral:#ff7a59;
+  --red:#ff5c7a;
+  --night:#04111f;
+  --panel:rgba(5,16,34,.78);
+  --panel-2:rgb(8,22,46);
+  --line:rgba(241,247,255,.14);
+  --f-d:'Fredoka',ui-rounded,system-ui,sans-serif;
+  --f-u:'Nunito',system-ui,sans-serif;
+  /* tile colours: right letter in the right place, right letter in the wrong place, not in the word */
+  --hit:#2fae66;--hit-ink:#fff;
+  --near:#d4a017;--near-ink:#fff;
+  --miss:#26324a;--miss-ink:rgba(241,247,255,.8);
+  --key:#1b2a47;--key-ink:#f1f7ff;
+  --tile:56px;
+  color-scheme:dark;
+}
+body.hc{--hit:#f5793a;--near:#5aa9ff}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--ink)}
+body{font-family:var(--f-u);-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid var(--aqua);outline-offset:3px}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:radial-gradient(120% 80% at 50% -10%,#0b2142 0%,var(--night) 60%)}
+
+/* top bar */
+#top{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) 8px calc(12px + env(safe-area-inset-left,0px))}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font:700 13px var(--f-u);color:var(--ink-2);white-space:nowrap;text-decoration:none;cursor:pointer}
+.pill:hover{color:var(--ink)}
+.ico{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;font:700 17px var(--f-d)}
+.ico svg{width:18px;height:18px}
+#ttl{flex:1;min-width:0;text-align:center;line-height:1.05}
+#ttl b{display:block;font:700 22px var(--f-d);letter-spacing:.01em;background:linear-gradient(100deg,#7df5dc 0%,var(--aqua) 40%,#5aa9ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#ttl small{display:block;font:800 10.5px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;gap:6px}
+#seg{order:5;flex:1 0 100%;display:flex;justify-content:center;margin-top:-2px}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;border-radius:999px;padding:5px 14px;font:800 12px var(--f-u);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);cursor:pointer}
+.seg button.on{background:rgba(79,227,193,.16);color:var(--aqua)}
+
+/* play area: boards, then the keyboard */
+#main{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;padding:0 calc(8px + env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px))}
+#boardsWrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+#boards{display:grid;gap:calc(var(--tile)*.32);padding-bottom:calc(var(--tile)*.3)}
+.board{display:grid;gap:calc(var(--tile)*.09);grid-template-columns:repeat(5,var(--tw,var(--tile)));grid-auto-rows:var(--tile);position:relative;padding:calc(var(--tile)*.1);border-radius:calc(var(--tile)*.22)}
+.multi .board{background:rgba(255,255,255,.025);border:1px solid rgba(241,247,255,.06)}
+.multi .board.won{border-color:rgba(47,174,102,.45);background:rgba(47,174,102,.06)}
+.multi .board.lost{border-color:rgba(255,92,122,.35)}
+.tile{display:flex;align-items:center;justify-content:center;border:2px solid rgba(241,247,255,.13);border-radius:calc(var(--tile)*.12);font:700 calc(var(--tile)*.56)/1 var(--f-d);font-size:min(calc(var(--tile)*.6),calc(var(--tw,var(--tile))*.5));text-transform:uppercase;color:var(--ink);background:rgba(255,255,255,.02)}
+.tile.typed{border-color:rgba(241,247,255,.42);animation:pop .12s}
+.tile.cur{border-color:rgba(241,247,255,.24)}
+.tile.hit,.tile.near,.tile.miss{border-color:transparent}
+.tile.hit{background:var(--hit);color:var(--hit-ink)}
+.tile.near{background:var(--near);color:var(--near-ink)}
+.tile.miss{background:var(--miss);color:var(--miss-ink)}
+.tile.flip{animation:flip .42s ease both}
+.tile.win{animation:bounce .5s ease both}
+.row.shake{animation:shake .4s}
+.row{display:contents}
+@keyframes pop{50%{transform:scale(1.1)}}
+@keyframes flip{0%,49%{background:rgba(255,255,255,.02);border-color:rgba(241,247,255,.42);color:var(--ink)}0%{transform:rotateX(0)}49%,51%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+@keyframes bounce{40%{transform:translateY(-30%)}70%{transform:translateY(4%)}}
+@keyframes shake{20%{transform:translateX(-6px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
+.board .ans{position:absolute;left:50%;bottom:calc(var(--tile)*-.15);transform:translate(-50%,50%);background:var(--red);color:#2a0710;font:800 calc(var(--tile)*.32)/1 var(--f-u);letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:999px;white-space:nowrap;z-index:2}
+
+/* keyboard */
+#kb{flex:none;width:100%;max-width:560px;display:flex;flex-direction:column;gap:7px;padding-top:8px}
+.kr{display:flex;gap:6px;justify-content:center}
+.k{flex:1 1 0;min-width:0;height:56px;border:0;border-radius:9px;background:var(--key);color:var(--key-ink);font:700 18px var(--f-u);text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0;transition:background .2s,transform .06s}
+.k:active{transform:scale(.95)}
+.k.wide{flex:1.55 1 0;font-size:12.5px;letter-spacing:.06em}
+.k.wide svg{width:22px;height:22px}
+.k.sp{flex:.5 1 0;visibility:hidden}
+.k.hit{background:var(--hit);color:var(--hit-ink)}
+.k.near{background:var(--near);color:var(--near-ink)}
+.k.miss{background:#101a2d;color:rgba(241,247,255,.38)}
+/* Fourcast: each key shows the four boards' colours as quadrants */
+.k .q{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;pointer-events:none}
+.k .q i{display:block}
+.k .q i.hit{background:var(--hit)}
+.k .q i.near{background:var(--near)}
+.k .q i.miss{background:#101a2d}
+.k .q i.done{background:transparent}
+.k .kl{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.k.allmiss{color:rgba(241,247,255,.38)}
+
+/* toast */
+#toast{position:fixed;left:50%;top:calc(104px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+#toast div{background:var(--ink);color:#04111f;font:800 14px var(--f-u);padding:9px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:tin .15s ease-out;white-space:nowrap}
+#toast div.out{opacity:0;transition:opacity .35s}
+@keyframes tin{from{opacity:0;transform:translateY(-6px)}}
+
+/* modals */
+.modal{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));background:rgba(2,8,18,.66);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.card{position:relative;background:var(--panel-2);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.55);width:min(460px,100%);max-height:100%;overflow:auto;padding:22px 22px 20px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;animation:cin .18s ease-out}
+@keyframes cin{from{opacity:0;transform:translateY(10px) scale(.98)}}
+.x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer;font:700 18px/1 var(--f-u);color:var(--ink-2)}
+.kicker{font:800 12px var(--f-u);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);margin:0 40px 4px 0}
+.kicker b{color:var(--coral)}
+.card h2{margin:2px 0 10px;font:700 28px/1.1 var(--f-d)}
+.card p,.card li{font:600 15px/1.5 var(--f-u);color:var(--ink-2)}
+.card ul{margin:8px 0;padding-left:18px}
+.card li+li{margin-top:5px}
+.card b.w{color:var(--ink)}
+.ex{display:flex;gap:5px;margin:10px 0 4px}
+.ex .tile{width:38px;height:38px;font-size:21px}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 14px}
+.stats4 div{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:9px 6px;text-align:center}
+.stats4 b{display:block;font:700 26px/1.1 var(--f-d);font-variant-numeric:tabular-nums}
+.stats4 small{display:block;font:800 10px/1.2 var(--f-u);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.label{display:block;font:800 12px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin:4px 0 8px}
+#dist{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.dr{display:flex;align-items:center;gap:8px;font:800 13px var(--f-u);color:var(--ink-2)}
+.dr span{width:16px;text-align:right;font-variant-numeric:tabular-nums}
+.dr i{display:block;min-width:24px;height:22px;border-radius:6px;background:var(--miss);color:var(--ink);font-style:normal;font:800 12px/22px var(--f-u);text-align:right;padding:0 7px;font-variant-numeric:tabular-nums}
+.dr.me i{background:var(--hit);color:#fff}
+.dr.me.xr i{background:var(--red);color:#2a0710}
+.endrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px}
+.next small{display:block;font:800 11px var(--f-u);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.next b{font:700 26px var(--f-d);font-variant-numeric:tabular-nums}
+.cta{background:linear-gradient(180deg,#7af0d6,#2fcfa6);color:var(--aqua-ink);border:0;border-radius:14px;padding:11px 20px;font:700 18px var(--f-d);letter-spacing:.02em;cursor:pointer;box-shadow:0 5px 0 #148a6b,0 10px 24px rgba(79,227,193,.2);display:inline-flex;align-items:center;gap:8px}
+.cta:active{transform:translateY(3px);box-shadow:0 2px 0 #148a6b}
+.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:10px 16px;font:700 16px var(--f-d);cursor:pointer;color:var(--ink);white-space:nowrap}
+.ghost:hover{background:rgba(255,255,255,.12)}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.msg{margin:10px 0 0;font:700 14px/1.45 var(--f-u);color:var(--ink-2);min-height:1.45em}
+.result{margin:0 0 12px;font:700 17px/1.4 var(--f-u);color:var(--ink)}
+.result .word{display:inline-block;font:700 19px var(--f-d);letter-spacing:.08em;text-transform:uppercase;color:var(--sun)}
+.set{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--line)}
+.set:first-of-type{border-top:0}
+.set b{display:block;font:800 16px var(--f-u);color:var(--ink)}
+.set small{display:block;font:600 13px/1.35 var(--f-u);color:var(--ink-3)}
+.sw{flex:none;position:relative;width:50px;height:30px;border-radius:999px;border:0;background:#2a3550;cursor:pointer;transition:background .2s}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw[aria-checked="true"]{background:var(--aqua)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+.sw:disabled{opacity:.45;cursor:default}
+.foot{margin:14px 0 0;font:600 12px var(--f-u);color:var(--ink-3)}
+.foot a{color:var(--ink-3)}
+textarea.copy{width:100%;height:120px;margin-top:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;color:var(--ink);font:600 14px/1.4 var(--f-u);padding:8px;user-select:text;-webkit-user-select:text}
+
+/* sideways phones: the keyboard sits to the right of the boards */
+@media (orientation:landscape) and (max-height:520px){
+  #top{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:4px}
+  #ttl b{font-size:19px}
+  .pill{padding:6px 11px}
+  .pill.ico{width:34px;height:34px;padding:0}
+  #top{flex-wrap:nowrap}
+  #ttl{flex:none;text-align:left;margin-left:6px}
+  #seg{order:2;flex:none;margin:0 0 0 10px}
+  .tools{order:3;margin-left:auto}
+  #main{flex-direction:row;align-items:stretch;gap:12px}
+  #kb{width:min(46%,420px);max-width:none;justify-content:center;padding-top:0;gap:6px}
+  .k{height:auto;flex-basis:0;min-height:0}
+  .kr{flex:1;max-height:58px;gap:5px}
+  .k{font-size:16px}
+  #toast{top:calc(56px + env(safe-area-inset-top,0px))}
+  .card{padding:16px 18px}
+  .card h2{font-size:22px}
+  /* Fourcast needs the width for four boards, so its keyboard stays underneath, in short rows */
+  .multi #main{flex-direction:column;align-items:center;gap:0}
+  .multi #kb{width:100%;max-width:640px;padding-top:6px;gap:5px}
+  .multi .kr{flex:none}
+  .multi .k{height:34px;flex:1 1 0}
+  .multi .k.wide{flex:1.55 1 0}
+  .multi .k.sp{flex:.5 1 0}
+}
+@media (max-width:380px){
+  .stats4 b{font-size:22px}
+  .k{font-size:16px}
+  .kr{gap:5px}
+}
+@media (max-height:700px) and (orientation:portrait){.k{height:50px}}
+@media (max-height:600px) and (orientation:portrait){.k{height:44px}}
+/* small phones: Fourcast gives the boards every pixel it can */
+@media (max-height:700px) and (orientation:portrait){.multi .k{height:40px}.multi #kb{gap:5px;padding-top:5px}.multi #ttl b{font-size:19px}.multi #top{padding-bottom:4px;gap:4px 8px}.multi .pill.ico{width:34px;height:34px}}
+@media (prefers-reduced-motion:reduce){.tile.flip,.tile.win,.tile.typed,.row.shake,.card{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <a id="back" class="pill" href="/e63334287a3deaa3/daily/">‹ Back</a>
+    <div id="ttl"><b>Fourcast</b><small id="sub">Daily</small></div>
+    <div class="tools">
+      <button id="helpBtn" class="pill ico" type="button" aria-label="How to play" title="How to play">?</button>
+      <button id="statsBtn" class="pill ico" type="button" aria-label="Statistics" title="Statistics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg></button>
+      <button id="setBtn" class="pill ico" type="button" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+    <div id="seg"><div class="seg" role="tablist" aria-label="Mode"><button id="mDaily" class="on" type="button" role="tab" aria-selected="true">Daily</button><button id="mFree" type="button" role="tab" aria-selected="false">Unlimited</button></div></div>
+  </div>
+  <div id="main">
+    <div id="boardsWrap"><div id="boards" aria-label="Board"></div></div>
+    <div id="kb" aria-label="Keyboard"></div>
+  </div>
+</div>
+<div id="toast" aria-live="polite"></div>
+
+<!-- How to play -->
+<section id="help" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="helpH">
+  <div class="card">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <div class="kicker"><b>?</b> How to play</div>
+    <h2 id="helpH">Four words, nine tries</h2>
+    <p>Four hidden five-letter words, nine guesses. Every word you guess goes on <b class="w">all four boards</b> at once, so one guess can help with every word.</p><div class="ex" aria-hidden="true"><div class="tile hit">C</div><div class="tile">R</div><div class="tile near">A</div><div class="tile">N</div><div class="tile">E</div></div><p>Green: right letter, right spot. Yellow: in that word, but elsewhere. Dark: not in that word.</p><ul><li>A board stops once you solve it; keep going until all four are done.</li><li>Each key is split into four corners, one per board, in reading order: board 1 top left, 2 top right, 3 bottom left, 4 bottom right.</li><li>Solve all four within nine guesses to win. Repeated letters work as in Hunch: greens first, then yellows for as many as the word has.</li><li>On a computer, just type: Enter checks a word, Backspace deletes.</li></ul>
+    <div class="btns" style="margin-top:14px"><button class="cta" type="button" data-close>Let's play</button></div>
+    <p class="foot">A new puzzle every day at midnight, your time. Unlimited mode is for practice and doesn't change your stats.</p>
+  </div>
+</section>
+
+<!-- Stats (also the end-of-game screen) -->
+<section id="stats" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsH">
+  <div class="card">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <div class="kicker" id="stKick">Daily · Statistics</div>
+    <h2 id="statsH">Your stats</h2>
+    <p class="result" id="result" hidden></p>
+    <div class="stats4">
+      <div><b id="sPlayed">0</b><small>Played</small></div>
+      <div><b id="sPct">0</b><small>Win %</small></div>
+      <div><b id="sStreak">0</b><small>Streak</small></div>
+      <div><b id="sMax">0</b><small>Best streak</small></div>
+    </div>
+    <span class="label">Guesses to solve all four</span>
+    <div id="dist"></div>
+    <div class="endrow">
+      <div class="next"><small>Next puzzle in</small><b id="cd">--:--:--</b></div>
+      <div class="btns"><button id="share" class="cta" type="button" hidden>Share <span aria-hidden="true">↗</span></button><button id="playFree" class="ghost" type="button">Unlimited</button></div>
+    </div>
+    <p class="msg" id="shareMsg"></p>
+    <textarea class="copy" id="shareBox" readonly hidden></textarea>
+  </div>
+</section>
+
+<!-- Settings -->
+<section id="settings" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="setH">
+  <div class="card">
+    <button class="x" type="button" data-close aria-label="Close">×</button>
+    <div class="kicker">Settings</div>
+    <h2 id="setH">Settings</h2>
+    <div class="set" id="hardRow"><div><b>Hard mode</b><small id="hardNote">Letters you've found must be used in every later guess.</small></div><button class="sw" id="hardSw" type="button" role="switch" aria-checked="false" aria-label="Hard mode"></button></div>
+    <div class="set"><div><b>High contrast colours</b><small>Orange and blue instead of green and yellow.</small></div><button class="sw" id="hcSw" type="button" role="switch" aria-checked="false" aria-label="High contrast colours"></button></div>
+    <p class="foot">The words are checked against the game's own lists, written for this site. · <a href="/privacy.html">Privacy</a></p>
+  </div>
+</section>
+
+<script src="/e63334287a3deaa3/hunch/words.js"></script>
+<script>
+(function(){
+'use strict';
+// =====================================================================
+//  Settings for this game. The same engine runs Hunch (one board) and Fourcast (four boards).
+// =====================================================================
+const CFG={slug: 'fourcast', name: 'Fourcast', boards: 4, rows: 9, offset: 777, minWin: 4};
+const SLUG=CFG.slug, BOARDS=CFG.boards, ROWS=CFG.rows, LEN=5;
+const LAUNCH=Date.UTC(2026,10,1);   // 1 November 2026 is puzzle #1
+const KEEP_DAYS=60;                 // days kept in the daily:<slug> record
+
+const $=id=>document.getElementById(id);
+const W=window.WORDS5||{ANSWERS:'',GUESSES:''};
+const ANSWERS=W.ANSWERS.split(' ').filter(Boolean);
+const VALID=new Set(ANSWERS.concat(W.GUESSES.split(' ').filter(Boolean)));
+
+// Storage: daily:<slug> is the shared record the Daily Puzzles page reads; <slug>:… keys are this game's own.
+const ls={
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+// ---- dates: the player's local day ----
+let TODAY_TEST='';  // webdriver tests set a fake day
+const pad=n=>String(n).padStart(2,'0');
+function keyOf(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())}
+function todayKey(){return TODAY_TEST||keyOf(new Date())}
+function dayNum(k){return Math.round((Date.UTC(+k.slice(0,4),+k.slice(4,6)-1,+k.slice(6,8))-LAUNCH)/86400000)}
+function keyAdd(k,n){const d=new Date(Date.UTC(+k.slice(0,4),+k.slice(4,6)-1,+k.slice(6,8))+n*86400000);return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())}
+const mod=(a,n)=>((a%n)+n)%n;
+// Today's answers: day n uses ANSWERS[n % length] (Hunch) or four words from a fixed offset (Fourcast), so adding answers
+// at the end of the list never changes a day that has already been played.
+function answersFor(k){
+  const n=dayNum(k),out=[];
+  for(let b=0;b<BOARDS;b++)out.push(ANSWERS[mod(CFG.offset+n*BOARDS+b,ANSWERS.length)]);
+  return out;
+}
+const puzzleNo=k=>dayNum(k)+1;
+
+// ---- scoring one guess against one answer (repeated letters: greens first, then yellows while letters are left) ----
+function score(guess,ans){
+  const res=Array(LEN).fill('miss'),left={};
+  for(let i=0;i<LEN;i++){if(guess[i]===ans[i])res[i]='hit';else left[ans[i]]=(left[ans[i]]||0)+1}
+  for(let i=0;i<LEN;i++){if(res[i]!=='hit'&&left[guess[i]]>0){res[i]='near';left[guess[i]]--}}
+  return res;
+}
+const RANK={miss:1,near:2,hit:3};
+// Hard mode: every green stays put and every found letter is used (as many times as it was found).
+function hardProblem(guess,prev,ans){
+  const ord=n=>n+(['th','st','nd','rd'][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||'th');
+  for(const g of prev){
+    const s=score(g,ans),need={};
+    for(let i=0;i<LEN;i++){
+      if(s[i]==='hit'&&guess[i]!==g[i])return ord(i+1)+' letter must be '+g[i].toUpperCase();
+      if(s[i]!=='miss')need[g[i]]=(need[g[i]]||0)+1;
+    }
+    for(const c in need){const have=guess.split('').filter(x=>x===c).length;if(have<need[c])return 'Guess must contain '+c.toUpperCase()+(need[c]>1?' (×'+need[c]+')':'')}
+  }
+  return '';
+}
+
+// =====================================================================
+//  Game state
+// =====================================================================
+const G={mode:'daily',day:'',ans:[],guesses:[],cur:'',done:false,win:false,busy:false,hard:false,t0:0,freeN:0};
+const S=Object.assign({hard:false,hc:false},ls.get(SLUG+':settings',{}));
+
+function solvedAt(b){const i=G.guesses.indexOf(G.ans[b]);return i}
+function allSolved(){for(let b=0;b<BOARDS;b++)if(solvedAt(b)<0)return false;return true}
+
+function saveProgress(){
+  if(G.mode==='daily')ls.set(SLUG+':day',{d:G.day,g:G.guesses,hard:G.hard,t0:G.t0});
+  else ls.set(SLUG+':free',{a:G.ans,g:G.guesses,hard:G.hard,n:G.freeN});
+}
+function startDaily(){
+  G.mode='daily';G.day=todayKey();G.ans=answersFor(G.day);G.cur='';G.busy=false;
+  const p=ls.get(SLUG+':day',null);
+  if(p&&p.d===G.day&&Array.isArray(p.g)){G.guesses=p.g.filter(w=>typeof w==='string'&&VALID.has(w)).slice(0,ROWS);G.hard=!!p.hard;G.t0=+p.t0||0}
+  else{G.guesses=[];G.hard=S.hard;G.t0=0}
+  // A finished daily stays finished even if the in-progress save was lost.
+  const rec=loadRec(),r=rec.days[G.day];
+  finishState();
+  if(r&&r.done&&!G.done){G.done=true;G.win=!!r.win}
+  else if(G.done&&!(r&&r.done))recordDaily();   // finished, but the page closed before the result was saved
+  render();
+}
+function startFree(fresh){
+  G.mode='free';G.cur='';G.busy=false;
+  const p=!fresh&&ls.get(SLUG+':free',null);
+  if(p&&Array.isArray(p.a)&&p.a.length===BOARDS&&p.a.every(w=>VALID.has(w))&&Array.isArray(p.g)){G.ans=p.a;G.guesses=p.g.filter(w=>VALID.has(w)).slice(0,ROWS);G.hard=!!p.hard;G.freeN=+p.n||0}
+  else{
+    const a=[];while(a.length<BOARDS){const w=ANSWERS[Math.floor(Math.random()*ANSWERS.length)];if(a.indexOf(w)<0)a.push(w)}
+    G.ans=a;G.guesses=[];G.hard=S.hard;G.freeN=(p&&+p.n||ls.get(SLUG+':free',{}).n||0)+1;saveProgress();
+  }
+  finishState();render();
+}
+function finishState(){
+  G.win=allSolved();
+  G.done=G.win||G.guesses.length>=ROWS;
+}
+
+// ---- the daily record (shared contract with the Daily Puzzles page) ----
+function loadRec(){
+  const r=ls.get('daily:'+SLUG,null);
+  const o=(r&&typeof r==='object'&&r.v===1)?r:{v:1};
+  if(!o.days||typeof o.days!=='object')o.days={};
+  ['played','wins','streak','maxStreak'].forEach(k=>{o[k]=Math.max(0,Math.floor(+o[k]||0))});
+  if(!o.dist||typeof o.dist!=='object')o.dist={};
+  if(typeof o.last!=='string')o.last='';
+  return o;
+}
+// The streak still counts only if its last win was today or yesterday.
+function liveStreak(o,today){if(!o.streak)return 0;const t=today||todayKey();const r=o.days[o.last];return (o.last===t||o.last===keyAdd(t,-1))&&r&&r.win?o.streak:0}
+function recordDaily(){
+  const o=loadRec(),d=G.day;
+  if(o.days[d]&&o.days[d].done)return o;   // already counted (another tab, or a reload)
+  const tries=G.guesses.length,time=G.t0?Math.min(86400,Math.round((Date.now()-G.t0)/1000)):null;
+  o.days[d]={done:true,win:G.win,score:G.win?tries:null,tries:tries,time:time};
+  if(BOARDS>1)o.days[d].boards=G.ans.filter((a,b)=>solvedAt(b)>=0).length;
+  if(G.hard)o.days[d].hard=true;
+  o.played++;
+  if(G.win){o.wins++;const y=o.days[keyAdd(d,-1)];o.streak=(y&&y.win&&o.last===keyAdd(d,-1))?o.streak+1:1;o.maxStreak=Math.max(o.maxStreak,o.streak)}
+  else o.streak=0;
+  o.last=d;
+  const dk=G.win?String(tries):'x';o.dist[dk]=(o.dist[dk]||0)+1;
+  const cut=keyAdd(d,-KEEP_DAYS);for(const k in o.days)if(!(k>cut))delete o.days[k];
+  ls.set('daily:'+SLUG,o);
+  // Leaderboards (stats.js): daily wins, the current streak, and the fewest guesses in a daily win.
+  const st=window.BackRoomStats;
+  if(st){try{if(G.win){st.add('wins',1);st.min('fewest',tries)}st.max('streak',o.streak)}catch(e){}}
+  return o;
+}
+
+// =====================================================================
+//  Drawing
+// =====================================================================
+const KEYS=['qwertyuiop','asdfghjkl','+zxcvbnm-'];
+let tileEls=[];  // [board][row][col]
+function buildBoards(){
+  const box=$('boards');box.innerHTML='';tileEls=[];
+  document.body.classList.toggle('multi',BOARDS>1);
+  for(let b=0;b<BOARDS;b++){
+    const bd=document.createElement('div');bd.className='board';bd.setAttribute('role','grid');bd.setAttribute('aria-label',BOARDS>1?'Board '+(b+1):'Board');
+    const rows=[];
+    for(let r=0;r<ROWS;r++){
+      const row=document.createElement('div');row.className='row';row.setAttribute('role','row');const cells=[];
+      for(let c=0;c<LEN;c++){const t=document.createElement('div');t.className='tile';t.setAttribute('role','gridcell');row.appendChild(t);cells.push(t)}
+      bd.appendChild(row);rows.push(cells);
+    }
+    box.appendChild(bd);tileEls.push(rows);
+  }
+}
+function buildKeys(){
+  const kb=$('kb');kb.innerHTML='';
+  KEYS.forEach((r,ri)=>{
+    const row=document.createElement('div');row.className='kr';
+    if(ri===1){const s=document.createElement('span');s.className='k sp';row.appendChild(s)}
+    for(const ch of r){
+      const k=document.createElement('button');k.type='button';k.className='k';
+      if(ch==='+'){k.classList.add('wide');k.dataset.k='enter';k.textContent='Enter';k.setAttribute('aria-label','Enter')}
+      else if(ch==='-'){k.classList.add('wide');k.dataset.k='back';k.setAttribute('aria-label','Delete');k.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H8l-6 7 6 7h13z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>'}
+      else{k.dataset.k=ch;if(BOARDS>1){const q=document.createElement('span');q.className='q';for(let b=0;b<BOARDS;b++)q.appendChild(document.createElement('i'));k.appendChild(q);const l=document.createElement('span');l.className='kl';l.textContent=ch;k.appendChild(l)}else k.textContent=ch}
+      row.appendChild(k);
+    }
+    if(ri===1){const s=document.createElement('span');s.className='k sp';row.appendChild(s)}
+    kb.appendChild(row);
+  });
+}
+function rowLimit(b){const s=solvedAt(b);return s>=0?s+1:ROWS}
+function paintRow(b,r,word,res,cls){
+  const cells=tileEls[b][r];
+  for(let c=0;c<LEN;c++){
+    const t=cells[c],ch=word?word[c]||'':'';
+    t.textContent=ch;t.className='tile'+(res?' '+res[c]:'')+(ch&&!res?' typed':'')+(cls||'');
+  }
+}
+function render(){
+  for(let b=0;b<BOARDS;b++){
+    const lim=rowLimit(b);
+    for(let r=0;r<ROWS;r++){
+      if(r<G.guesses.length&&r<lim)paintRow(b,r,G.guesses[r],score(G.guesses[r],G.ans[b]));
+      else if(r===G.guesses.length&&r<lim&&!G.done){paintRow(b,r,G.cur,null);tileEls[b][r].forEach((t,i)=>{if(!G.cur[i])t.classList.add('cur')})}
+      else paintRow(b,r,'',null);
+    }
+    const board=document.querySelectorAll('.board')[b];
+    board.classList.toggle('won',solvedAt(b)>=0);
+    board.classList.toggle('lost',G.done&&solvedAt(b)<0);
+    let tag=board.querySelector('.ans');
+    if(G.done&&solvedAt(b)<0){if(!tag){tag=document.createElement('span');tag.className='ans';board.appendChild(tag)}tag.textContent=G.ans[b]}
+    else if(tag)tag.remove();
+  }
+  paintKeys();
+  const n=puzzleNo(G.day||todayKey());
+  $('sub').textContent=G.mode==='daily'?((n>=1?'Daily #'+n:'Daily preview')+(G.hard?' · Hard':'')):('Unlimited'+(G.freeN?' #'+G.freeN:'')+(G.hard?' · Hard':''));
+  $('mDaily').classList.toggle('on',G.mode==='daily');$('mFree').classList.toggle('on',G.mode==='free');
+  $('mDaily').setAttribute('aria-selected',G.mode==='daily');$('mFree').setAttribute('aria-selected',G.mode==='free');
+  syncSettings();
+}
+function keyStates(){
+  // best known state of each letter on each board
+  const st=[];for(let b=0;b<BOARDS;b++){const m={};const lim=rowLimit(b);G.guesses.forEach((g,r)=>{if(r>=lim)return;const s=score(g,G.ans[b]);for(let i=0;i<LEN;i++){if(!m[g[i]]||RANK[s[i]]>RANK[m[g[i]]])m[g[i]]=s[i]}});st.push(m)}
+  return st;
+}
+function paintKeys(){
+  const st=keyStates();
+  document.querySelectorAll('.k[data-k]').forEach(k=>{
+    const ch=k.dataset.k;if(ch.length!==1)return;
+    if(BOARDS===1){k.className='k'+(st[0][ch]?' '+st[0][ch]:'');return}
+    const qs=k.querySelectorAll('.q i');let miss=0;
+    for(let b=0;b<BOARDS;b++){const done=solvedAt(b)>=0;const s=st[b][ch];qs[b].className=done?'done':(s||'');if(done||s==='miss')miss++}
+    k.classList.toggle('allmiss',miss===BOARDS&&G.guesses.some(g=>g.indexOf(ch)>=0));
+  });
+}
+
+// ---- tile size: as big as fits (board area above the keyboard, or beside it on a sideways phone) ----
+function fit(){
+  const wrap=$('boardsWrap'),W0=wrap.clientWidth-4,H0=wrap.clientHeight-6;  // a little room for the board borders
+  // a board is 5 tiles + 4 gaps (.09) + padding (.2) wide; boards are .32 tile apart
+  // Tiles may be a little wider than tall on Fourcast (ASPECT), so four boards use the width of a tall phone.
+  const bw=5+4*.09+.2,bh=ROWS+(ROWS-1)*.09+.2,gap=.32,ASPECT=BOARDS>1?1.45:1,CAP=BOARDS>1?52:64;
+  let best={h:0,w:0,c:1};
+  const layouts=BOARDS===1?[1]:[4,2];
+  for(const cols of layouts){
+    const rows=Math.ceil(BOARDS/cols);
+    const wMax=W0/(cols*bw+(cols-1)*gap),hMax=H0/(rows*bh+(rows-1)*gap+.3);
+    const h=Math.min(hMax,wMax,CAP),w=Math.min(wMax,h*ASPECT,CAP);
+    if(h>best.h+.5||(Math.abs(h-best.h)<=.5&&w>best.w))best={h,w,c:cols};
+  }
+  const th=Math.max(14,Math.floor(best.h)),tw=Math.max(th,Math.floor(best.w));
+  document.documentElement.style.setProperty('--tile',th+'px');
+  document.documentElement.style.setProperty('--tw',tw+'px');
+  $('boards').style.gridTemplateColumns='repeat('+best.c+',auto)';
+}
+addEventListener('resize',fit);
+
+// ---- toasts ----
+function toast(t,ms){const el=document.createElement('div');el.textContent=t;$('toast').prepend(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),400)},ms||1400)}
+
+// =====================================================================
+//  Input
+// =====================================================================
+function anyModal(){return !!document.querySelector('.modal:not([hidden])')}
+function press(k){
+  if(G.busy||G.done||anyModal())return;
+  if(k==='enter')return submit();
+  if(k==='back'){if(G.cur){G.cur=G.cur.slice(0,-1);render()}return}
+  if(/^[a-z]$/.test(k)&&G.cur.length<LEN){
+    if(!G.t0&&G.mode==='daily'&&!G.guesses.length){G.t0=Date.now()}
+    G.cur+=k;render();
+  }
+}
+function shakeRow(){
+  const r=G.guesses.length;
+  for(let b=0;b<BOARDS;b++){if(solvedAt(b)>=0)continue;const cells=tileEls[b][r];cells.forEach(t=>{t.style.animation='none';void t.offsetWidth;t.style.animation='shake .4s'})}
+  setTimeout(()=>{for(let b=0;b<BOARDS;b++)(tileEls[b][r]||[]).forEach(t=>t.style.animation='')},420);
+}
+function submit(){
+  const w=G.cur;
+  if(w.length<LEN){shakeRow();return toast('Not enough letters')}
+  if(!VALID.has(w)){shakeRow();return toast('Not in word list')}
+  if(BOARDS===1&&G.hard){const p=hardProblem(w,G.guesses,G.ans[0]);if(p){shakeRow();return toast(p,1800)}}
+  if(G.guesses.indexOf(w)>=0&&BOARDS>1){shakeRow();return toast('Already guessed')}
+  const r=G.guesses.length;
+  const live=[];for(let b=0;b<BOARDS;b++)if(solvedAt(b)<0)live.push(b);
+  G.guesses.push(w);G.cur='';
+  if(!G.t0&&G.mode==='daily')G.t0=Date.now();
+  finishState();saveProgress();
+  // reveal: flip the row's tiles one after another on every board still in play
+  G.busy=true;
+  const STEP=reduced?0:220,DUR=reduced?0:420;
+  live.forEach(b=>{
+    const res=score(w,G.ans[b]),cells=tileEls[b][r];
+    cells.forEach((t,i)=>{t.textContent=w[i];t.className='tile typed';
+      setTimeout(()=>{t.className='tile '+res[i]+(reduced?'':' flip')},i*STEP)});
+  });
+  setTimeout(()=>{
+    G.busy=false;render();
+    const solvedNow=live.filter(b=>G.ans[b]===w);
+    solvedNow.forEach(b=>{if(!reduced)tileEls[b][r].forEach((t,i)=>{t.style.animationDelay=(i*80)+'ms';t.classList.add('win');setTimeout(()=>{t.classList.remove('win');t.style.animationDelay=''},900)})});
+    if(G.done)onEnd();
+    else if(solvedNow.length&&BOARDS>1)toast(['Nice!','Got one!','Splendid!','On a roll!'][Math.min(3,BOARDS-live.length+solvedNow.length-1)],1000);
+  },(LEN-1)*STEP+DUR+20);
+}
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function onEnd(){
+  if(G.mode==='daily')recordDaily();
+  const n=G.guesses.length;
+  if(G.win)toast(BOARDS>1?(n<=6?'Brilliant!':n<=8?'Well done!':'Phew!'):(['Genius!','Magnificent!','Impressive!','Splendid!','Great!','Phew!'][n-1]||'Solved!'),1600);
+  else toast(BOARDS>1?'Out of guesses':G.ans[0].toUpperCase(),2600);
+  setTimeout(()=>openStats(true),reduced?300:1500);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='Escape'){closeModals();return}
+  if(anyModal())return;
+  const k=e.key==='Enter'?'enter':e.key==='Backspace'?'back':(e.key&&e.key.length===1?e.key.toLowerCase():'');
+  if(!k)return;
+  if(k==='enter'||k==='back'||/^[a-z]$/.test(k)){e.preventDefault();if(e.repeat&&k==='enter')return;press(k)}
+});
+$('kb').addEventListener('click',e=>{const k=e.target.closest('.k[data-k]');if(!k)return;press(k.dataset.k);k.blur()});
+
+// =====================================================================
+//  Modals: how to play, stats (with share and countdown), settings
+// =====================================================================
+function openModal(id){closeModals();$(id).hidden=false;const b=$(id).querySelector('.cta,.x');if(b&&matchMedia('(pointer: fine)').matches)b.focus()}
+function closeModals(){document.querySelectorAll('.modal').forEach(m=>{if(!m.hidden){m.hidden=true;if(m.id==='help')ls.set(SLUG+':seen',1)}})}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-close]'))closeModals()}));
+$('helpBtn').onclick=()=>openModal('help');
+$('statsBtn').onclick=()=>openStats(false);
+$('setBtn').onclick=()=>openModal('settings');
+
+function openStats(ending){
+  $('toast').innerHTML='';
+  const o=loadRec();
+  $('stKick').textContent=G.mode==='daily'?'Daily · Statistics':'Unlimited · Daily statistics';
+  $('sPlayed').textContent=o.played;
+  $('sPct').textContent=o.played?Math.round(100*o.wins/o.played):0;
+  $('sStreak').textContent=liveStreak(o);
+  $('sMax').textContent=o.maxStreak;
+  // distribution: wins by guesses, plus misses
+  const dist=$('dist');dist.innerHTML='';
+  const today=o.days[todayKey()];
+  const keys=[];for(let i=CFG.minWin;i<=ROWS;i++)keys.push(String(i));keys.push('x');
+  const max=Math.max(1,...keys.map(k=>o.dist[k]||0));
+  keys.forEach(k=>{
+    const v=o.dist[k]||0,row=document.createElement('div');row.className='dr';
+    if(G.mode==='daily'&&today&&today.done&&((today.win&&String(today.tries)===k)||(!today.win&&k==='x')))row.classList.add('me');
+    if(k==='x')row.classList.add('xr');
+    const s=document.createElement('span');s.textContent=k==='x'?'✕':k;
+    const i=document.createElement('i');i.textContent=v;i.style.width=Math.max(7,Math.round(92*v/max))+'%';
+    row.append(s,i);dist.appendChild(row);
+  });
+  // result line for a finished game in this mode
+  const res=$('result');
+  if(G.done){
+    res.hidden=false;res.innerHTML='';
+    const n=G.guesses.length;
+    if(G.win)res.append((G.mode==='daily'?'Solved today’s '+CFG.name+' in ':'Solved in ')+n+'/'+ROWS+(G.hard?' on hard mode':'')+'.');
+    else{res.append(BOARDS>1?'Out of guesses. The words were ':'Out of guesses. The word was ');G.ans.forEach((a,i)=>{if(i)res.append(i===G.ans.length-1?' and ':', ');const w=document.createElement('span');w.className='word';w.textContent=a;res.append(w)});res.append('.')}
+  }else res.hidden=true;
+  $('share').hidden=!G.done;
+  $('playFree').textContent=G.mode==='free'?(G.done?'New word'+(BOARDS>1?'s':''):'Back to Daily'):'Unlimited';
+  $('shareMsg').textContent='';$('shareBox').hidden=true;
+  openModal('stats');tick();
+}
+$('playFree').onclick=()=>{
+  closeModals();
+  if(G.mode==='free'&&G.done)startFree(true);
+  else if(G.mode==='free')startDaily();
+  else startFree(false);
+};
+$('mDaily').onclick=()=>{if(G.mode!=='daily'&&!G.busy)startDaily()};
+$('mFree').onclick=()=>{if(G.mode!=='free'&&!G.busy)startFree(false)};
+
+function shareText(){
+  const n=G.guesses.length,hard=G.hard?'*':'';
+  const pn=puzzleNo(G.day),head=G.mode==='daily'?(CFG.name+(pn>=1?' #'+pn:' (preview)')):(CFG.name+' Unlimited');
+  const sq={hit:S.hc?'🟧':'🟩',near:S.hc?'🟦':'🟨',miss:'⬛'};
+  let body='';
+  if(BOARDS===1){body=G.guesses.map(g=>score(g,G.ans[0]).map(s=>sq[s]).join('')).join('\n')}
+  else{
+    const num=['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'];
+    const cell=b=>{const s=solvedAt(b);return s>=0?num[s+1]:'🟥'};
+    body=cell(0)+cell(1)+'\n'+cell(2)+cell(3);
+  }
+  return head+' '+(G.win?n:'X')+'/'+ROWS+hard+'\n'+body+'\nascoding11.github.io';
+}
+$('share').onclick=()=>{
+  const t=shareText();
+  const ok=()=>{$('shareMsg').textContent='Copied! Paste it anywhere.'};
+  const fail=()=>{$('shareMsg').textContent='Copy this:';const b=$('shareBox');b.hidden=false;b.value=t;b.select()};
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,()=>legacy()?ok():fail());
+    else legacy()?ok():fail();
+  }catch(e){fail()}
+  function legacy(){try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0;top:0';document.body.appendChild(a);a.select();const r=document.execCommand('copy');a.remove();return r}catch(e){return false}}
+};
+
+// ---- settings ----
+function syncSettings(){
+  const hs=$('hardSw');
+  hs.setAttribute('aria-checked',String(G.hard));
+  // hard mode can only change before the first guess of a game
+  hs.disabled=G.guesses.length>0&&!G.done;
+  $('hardNote').textContent=hs.disabled?'You can switch hard mode before your first guess of a game.':'Letters you’ve found must be used in every later guess.';
+  $('hcSw').setAttribute('aria-checked',String(S.hc));
+  document.body.classList.toggle('hc',S.hc);
+}
+if(BOARDS>1)$('hardRow').hidden=true;
+$('hardSw').onclick=()=>{
+  if($('hardSw').disabled)return;
+  S.hard=!G.hard;ls.set(SLUG+':settings',S);
+  if(!G.done){G.hard=S.hard;saveProgress()}
+  render();toast(S.hard?'Hard mode on':'Hard mode off',1000);
+};
+$('hcSw').onclick=()=>{S.hc=!S.hc;ls.set(SLUG+':settings',S);render()};
+
+// ---- countdown to the next puzzle, and a new day while the page is open ----
+function tick(){
+  const now=new Date(),mid=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
+  const s=Math.max(0,Math.floor((mid-now)/1000));
+  $('cd').textContent=pad(Math.floor(s/3600))+':'+pad(Math.floor(s/60)%60)+':'+pad(s%60);
+  if(G.mode==='daily'&&!TODAY_TEST&&G.day&&G.day!==todayKey()&&!G.busy){closeModals();startDaily();toast('A new puzzle is ready',2000)}
+}
+setInterval(tick,1000);
+
+// =====================================================================
+//  Start
+// =====================================================================
+buildBoards();buildKeys();
+if(!ANSWERS.length){toast('The word list didn’t load. Try reloading.',6000)}
+const lastMode=ls.get(SLUG+':mode','daily');
+if(lastMode==='free')startFree(false);else startDaily();
+addEventListener('pagehide',()=>ls.set(SLUG+':mode',G.mode));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)ls.set(SLUG+':mode',G.mode)});
+fit();requestAnimationFrame(fit);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+if(!ls.get(SLUG+':seen',0))openModal('help');
+else if(G.mode==='daily'&&G.done)setTimeout(()=>openStats(false),300);
+
+// Test hooks for the automated checks (webdriver only).
+if(navigator.webdriver)window.__wg={G,CFG,S,score,hardProblem,answersFor,dayNum,puzzleNo,keyAdd,loadRec,liveStreak,shareText,ANSWERS,VALID,
+  setToday(k){TODAY_TEST=/^\d{8}$/.test(k)?k:''},startDaily,startFree,press,
+  type(w){for(const c of w)press(c);press('enter')},openStats,fit};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="fourcast" defer></script>
+</body>
+</html>
