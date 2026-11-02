@@ -548,10 +548,17 @@ function render(animate) {
 // ------------------------------------------------------------------ keyboard
 document.addEventListener('keydown', (e) => {
   if (openModal || e.ctrlKey || e.metaKey || e.altKey) return;
-  if (e.target && e.target.closest && e.target.closest('button') && e.key === 'Enter') return; // let Enter press a focused button
+  if (e.key === 'Enter') {
+    // Enter submits whatever is typed; with nothing typed it presses a focused button, but never Give up (that needs a second click or tap)
+    const btn = e.target && e.target.closest && e.target.closest('button');
+    if (btn && !typed && btn !== aGive) return;
+    e.preventDefault(); key('Enter'); return;
+  }
   if (e.key === 'Enter' || e.key === 'Backspace' || /^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); key(e.key); }
   else if (e.key === 'Escape' && typed) { typed = ''; renderLadder(); }
 });
+// a button clicked with the mouse doesn't keep the focus, so typing and Enter go back to the ladder
+document.addEventListener('click', (e) => { const b = e.detail && e.target && e.target.closest && e.target.closest('button'); if (b) b.blur(); });
 setInterval(() => {
   const e = $('nextIn'); if (e) e.textContent = 'Next in ' + countdown();
   if (st && st.mode === 'daily' && st.day !== today() && !typed) start('daily');

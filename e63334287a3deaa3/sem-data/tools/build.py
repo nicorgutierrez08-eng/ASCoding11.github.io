@@ -137,10 +137,12 @@ explosives grenade grenades rifle rifles pistol pistols ammunition bullet bullet
 abort abortion abortions abuse abused abuser abusers abusive assault assaults assaulted drug drugs murdering gunshot
 gunshots gunfire gunner bombed bombardment bombardments urine vomit vomiting lover lovers terror bloodshed warhead
 warheads hostage hostages kidnap kidnapped kidnapping execution executed arson arsonist sniper snipers casualties
+domination escort escorts snatch screw screws screwed knob knobs
 """.split()
 
-# In the downloaded lists but ordinary words, so kept as normal words.
-ALLOW = set('domination escort escorts snatch screw screws screwed knob knobs'.split())
+# In the downloaded lists but ordinary words, so kept as normal words. (The borderline ones that used to be here,
+# domination, escort, snatch, screw and knob, are in SOFT now: fine to type, never shown by the game.)
+ALLOW = set()
 
 # Words containing these are never guessable either.
 ROOTS = ['fuck', 'shit', 'cunt', 'nigg', 'porn', 'slut', 'whore', 'bitch', 'fagg', 'wank', 'twat', 'jizz', 'dildo',

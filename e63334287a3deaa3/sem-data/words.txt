@@ -6074,7 +6074,7 @@ dominate
 dominated
 dominates
 dominating
-domination
+domination*
 dominion
 domino
 don
@@ -6992,10 +6992,10 @@ escape
 escaped
 escapes
 escaping
-escort
+escort*
 escorted
 escorting
-escorts
+escorts*
 esoteric
 especially
 espionage
@@ -10990,7 +10990,7 @@ knights
 knit
 knitting
 knives*
-knob
+knob*
 knock
 knocked
 knocking
@@ -17269,9 +17269,9 @@ screening
 screenplay
 screenplays
 screens
-screw
-screwed
-screws
+screw*
+screwed*
+screws*
 scribbled
 scribe
 script
@@ -18174,7 +18174,7 @@ snapshot
 snapshots
 snare
 snared
-snatch
+snatch*
 snatched
 snatching
 sneak

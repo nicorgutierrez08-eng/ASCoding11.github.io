@@ -179,7 +179,7 @@ details.how[open] summary::before{content:'– '}
 .fly.ok{background:var(--green);color:#042a14}
 .fly.bad{background:var(--red);color:#2a0410}
 .fly.dup{background:var(--sun);color:#3a2a00}
-@keyframes fly{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}15%{opacity:1;transform:translate(-50%,-90%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-190%) scale(1)}}
+@keyframes fly{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,-12px))) scale(1)}}
 #say{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);max-width:92%;padding:5px 14px;border-radius:14px;background:rgba(5,16,34,.82);border:1px solid var(--line);font:700 clamp(18px,4.6vw,30px)/1.2 var(--f-d);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;z-index:3;min-width:3ch;text-align:center}
 #say.empty{color:var(--ink-3)}
 #say.bad{color:#ff8fa3;border-color:rgba(255,92,122,.6)}
@@ -1053,6 +1053,24 @@ function layout(){
   pl.forEach((u,i)=>{const want=(((i-off)%pl.length+pl.length)%pl.length)/pl.length*L;let k=1;while(k<N&&cum[k]<want)k++;const f=(want-cum[k-1])/Math.max(1e-6,cum[k]-cum[k-1]);
     const x=cx+lerp(pts[k-1][0],pts[k][0],f),y=cy+lerp(pts[k-1][1],pts[k][1],f);seatPos.set(u,{x,y:y-sh/2+sa/2+2});
     const el=seatEls.get(u);if(el){el.style.left=(x-(st.left-app.left))+'px';el.style.top=(y-(st.top-app.top))+'px'}});
+  ST.sayH=sayH;ST.sayFont=Math.round(sayH*.6);sayRoom();
+}
+// The answer pill is only as wide as the gap between the seats beside it (a long answer shrinks, then ends in "…").
+// Each seat is its avatar (grown and ringed while it's that player's turn) and its name and lives under it; a seat straight
+// above or below the pill is kept clear by the layout itself, not by the pill's width.
+let sayCur=null;
+function sayRoom(){
+  if(!ST.ok||!ST.sayH)return;
+  const app=$('app').getBoundingClientRect(),cur=B.rs&&B.rs.cur,t0=ST.sayY-ST.sayH/2-3,t1=ST.sayY+ST.sayH/2+3;let half=$('stage').getBoundingClientRect().width*.46;
+  for(const [u,el] of seatEls){const q=seatPos.get(u);if(!q)continue;const dx=Math.abs(q.x-ST.cx),ar=u===cur?ST.sa*.57+7:ST.sa/2+4;if(dx<ar)continue;
+    if(q.y-ar<t1&&q.y+ar>t0)half=Math.min(half,dx-ar-4);
+    const nr=el.children[1].getBoundingClientRect(),lr=el.children[2].getBoundingClientRect();
+    if(nr.top-app.top<t1&&Math.max(nr.bottom,lr.bottom)-app.top>t0)half=Math.min(half,dx-ST.sw/2-4)}
+  sayCur=cur;ST.sayMax=Math.max(ST.sayH*2.2,2*half);$('say').style.maxWidth=ST.sayMax+'px';fitSay();
+}
+function fitSay(){
+  const el=$('say');if(!ST.sayFont||el.hidden)return;el.style.fontSize=ST.sayFont+'px';el.style.paddingLeft=el.style.paddingRight='';
+  if(el.scrollWidth>el.clientWidth+1){el.style.paddingLeft=el.style.paddingRight='8px';el.style.fontSize=Math.max(ST.sayFont*.55,Math.floor(ST.sayFont*(el.clientWidth-16)/(el.scrollWidth-16)))+'px'}
 }
 function renderSeats(rs){
   const ring=$('ring');let added=false;
@@ -1066,12 +1084,42 @@ function renderSeats(rs){
     el.classList.toggle('cur',(rs.ph==='turn'||rs.ph==='count')&&rs.cur===u);el.classList.toggle('out',out);el.classList.toggle('me',u===Net.uid);
   }
   for(const [u,el] of seatEls)if(rs.pl.indexOf(u)<0){el.remove();seatEls.delete(u)}
-  if(added)layout();
+  if(added)layout();else if(rs.cur!==sayCur)sayRoom();
 }
 function flashSeat(u,text,cls){
   const p=seatPos.get(u);if(!p)return;const st=$('stage').getBoundingClientRect(),app=$('app').getBoundingClientRect();
   const el=document.createElement('div');el.className='fly '+cls;el.textContent=text;el.style.left=(p.x-(st.left-app.left))+'px';el.style.top=(p.y-(st.top-app.top)-ST.sa*.4)+'px';
   $('stage').appendChild(el);setTimeout(()=>el.remove(),1200);
+  // park the bubble just clear of its own seat (inwards, beside or above/below it), never on top of another seat
+  const se=seatEls.get(u);if(se){
+    const box=(e,m)=>{const r=e.getBoundingClientRect();return{l:r.left-st.left-m,t:r.top-st.top-m,r:r.right-st.left+m,b:r.bottom-st.top+m}};
+    const parts=s=>[box(s.children[0],ST.sa*.07+9),box(s.children[1],2),box(s.children[2],2)]; // avatar with its fuse ring, name, lives
+    const D=6,g=3,fw=el.offsetWidth*1.05,fh=el.offsetHeight*1.05,mine=parts(se);
+    const me={l:Math.min(...mine.map(q=>q.l)),t:Math.min(...mine.map(q=>q.t)),r:Math.max(...mine.map(q=>q.r)),b:Math.max(...mine.map(q=>q.b))};
+    const others=[];for(const [v,e] of seatEls)if(v!==u)others.push(...parts(e));
+    // the answer pill under the puffer counts as taken too, so the flash never covers what's being typed
+    const say=$('say');if(say&&say.offsetParent&&!say.hidden&&say.textContent)others.push(box(say,3));
+    const hit=(a,c)=>a.l<c.r&&c.l<a.r&&a.t<c.b&&c.t<a.b,mx=(me.l+me.r)/2,my=(me.t+me.b)/2;
+    const ix=ST.cx-(st.left-app.left)-mx,iy=ST.cy-(st.top-app.top)-my,il=Math.hypot(ix,iy)||1;
+    const dirs=[[ix/il,iy/il],[0,-1],[0,1],[-1,0],[1,0]];let best=null,least=null;
+    dirs.forEach(([dx,dy],di)=>{
+      const tx=dx?((me.r-me.l)/2+fw/2+g)/Math.abs(dx):1e9,ty=dy?((me.b-me.t)/2+fh/2+g)/Math.abs(dy):1e9,k0=Math.min(tx,ty);
+      // inwards it may slide further, up to the middle of the ring (no seats there), when the seats are crowded
+      for(let k=k0;k<=(di?k0:Math.max(k0,il));k+=3){
+        const x=mx+dx*k,y=my+dy*k;
+        // the drift at the end of the animation counts too
+        const fe={l:x-fw/2+Math.min(0,dx*D),t:y-fh/2+Math.min(0,dy*D),r:x+fw/2+Math.max(0,dx*D),b:y+fh/2+Math.max(0,dy*D)};
+        if(fe.l<0||fe.t<0||fe.r>st.width||fe.b>st.height||hit(fe,me))continue;
+        const n=others.reduce((a,c)=>a+Math.max(0,Math.min(fe.r,c.r)-Math.max(fe.l,c.l))*Math.max(0,Math.min(fe.b,c.b)-Math.max(fe.t,c.t)),0);
+        if(n){if(!least||n<least.n)least={n,x,y,dx,dy};continue}
+        const sc=(di?1:0)+(k-k0)/40;
+        if(!best||sc<best.sc)best={sc,x,y,dx,dy};
+        break;
+      }
+    });
+    const b=best||least; // a ring too cramped for a clear spot: the one that covers the least
+    if(b){el.style.left=b.x+'px';el.style.top=b.y+'px';el.style.setProperty('--dx',(b.dx*D).toFixed(1)+'px');el.style.setProperty('--dy',(b.dy*D).toFixed(1)+'px')}
+  }
   if(cls!=='ok'){const s=seatEls.get(u);if(s){s.classList.remove('nope');void s.offsetWidth;s.classList.add('nope')}}
 }
 function hitSeat(u){const s=seatEls.get(u);if(s){s.classList.remove('hit');void s.offsetWidth;s.classList.add('hit')}}
@@ -1329,7 +1377,7 @@ function frame(nowP){
     drawGame(ctx,tt,dt,now);drawParts(ctx,dt);
     const rs=B.rs;
     if(rs){const s=sayText(rs,now),el=$('say');const tx=rs.ph==='turn'?(s.t||(rs.cur===Net.uid?'Your turn!':'')):'';
-      if(el.textContent!==tx)el.textContent=tx;const cls=!s.t?'empty':s.s;if(el.className!==cls)el.className=cls;el.hidden=rs.ph!=='turn';
+      const cls=!s.t?'empty':s.s;if(el.className!==cls)el.className=cls;el.hidden=rs.ph!=='turn';if(el.textContent!==tx){el.textContent=tx;fitSay()}
       if(sayShake>0){sayShake-=dt;el.style.marginLeft=(Math.sin(sayShake*60)*6)+'px'}else if(el.style.marginLeft)el.style.marginLeft='';
       if(B.pend&&performance.now()-B.pend.t>4000){B.pend=null;hint('No reply from the host. Try again.','bad')}}
   }
@@ -1381,7 +1429,7 @@ if(!store.get('seenHelp',false)&&!inv){store.set('seenHelp',true);$('howMenu').o
 requestAnimationFrame(frame);
 
 // Test hook: only for automated browsers.
-if(navigator.webdriver)window.__pf={norm,check,CATS,CATL,cleanRS,onNode,applyRS,acceptAnswer,popTurn,afterPop,dropLeavers,judgeAttempt,newMatchRS,beginTurn,fuseFor,nextAlive,parseAttempt,aliveOf,setRS,startMatch,startSolo,joinRoom,toMenu,lobbyRS,B,G,Net,get ST(){return ST},Fish,store,seatPos,layout};
+if(navigator.webdriver)window.__pf={flashSeat,norm,check,CATS,CATL,cleanRS,onNode,applyRS,acceptAnswer,popTurn,afterPop,dropLeavers,judgeAttempt,newMatchRS,beginTurn,fuseFor,nextAlive,parseAttempt,aliveOf,setRS,startMatch,startSolo,joinRoom,toMenu,lobbyRS,B,G,Net,get ST(){return ST},Fish,store,seatPos,layout};
 })();
 </script>
 <script src="/analytics/tracker.js" data-site="puffer-party" defer></script>

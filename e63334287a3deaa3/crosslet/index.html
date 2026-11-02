@@ -323,11 +323,12 @@ function judge() {
 }
 function win() {
   st.done = true; st.win = !st.revealed; closeMenu();
+  st.t = Math.max(1, Math.floor(st.t)); // one rule for the clock, result card, share text, stats and saved time
   render();
   grid.classList.add('won');
   Z.cells.forEach((x, k) => { if (!x.blk) x.el.style.animationDelay = ((x.r + x.c) * 60) + 'ms'; });
   if (st.mode === 'daily') {
-    const secs = Math.max(1, Math.round(st.t));
+    const secs = st.t;
     K.Daily.finish(SLUG, st.day, { win: st.win, score: st.win ? secs : null, tries: st.checks, time: secs, dist: st.win ? bucket(secs) : 'R' });
     bestNote = '';
     if (st.win) {

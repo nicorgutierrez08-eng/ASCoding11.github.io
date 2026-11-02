@@ -100,7 +100,10 @@ const used=it=>S.c.indexOf(it.key)>=0;
 const picker=K.picker($('pick'),{placeholder:'Name a player for this square…',used,onPick:it=>{guess(it.p);return true}});
 function guess(p){
   if(S.done||sel<0||S.c[sel]!=null)return;
+  const r=rowsOf()[Math.floor(sel/3)],c=colsOf()[sel%3];
   if(fits(p,sel)){S.c[sel]=p.id;K.toast(p.name+' fits! 1 of '+valid(sel).length+' in our list.');sel=S.c.indexOf(null)}
+  // his career in our list is incomplete ("+"), so a club or league we don't have could be the missing piece: no life lost
+  else if((C.test(p,r)||C.unsure(p,r))&&(C.test(p,c)||C.unsure(p,c))){K.toast('We can\u2019t confirm that one from our records \u2014 try another player',2800);return}
   else{S.lives--;K.toast(p.name+' doesn\'t fit that square.');$('board').classList.remove('shake');void $('board').offsetWidth;$('board').classList.add('shake')}
   if(filled()===9||S.lives<=0)S.done=true;
   save();if(S.done){sel=-1;end()}render();

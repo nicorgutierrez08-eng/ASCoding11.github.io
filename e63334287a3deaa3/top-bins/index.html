@@ -109,10 +109,10 @@ function guess(it){
   S.f.push(free[0]);lastFound=free[0];K.toast('✓ '+l.e[free[0]][1]);
   if(S.f.length===l.e.length)finishNow();else{save();render()}
 }
-$('giveUp').addEventListener('click',()=>{if(!S.done&&confirm('Give up and see the full list?'))finishNow()});
-function finishNow(){
+$('giveUp').addEventListener('click',()=>{if(!S.done&&confirm('Give up and see the full list?'))finishNow(true)});
+function finishNow(gave){
   if(S.done)return;clearInterval(tick);
-  S.el=Math.min(SECS,Math.round((Date.now()-S.t0)/1000));S.done=true;save();
+  S.el=Math.min(SECS,Math.round((Date.now()-S.t0)/1000));S.done=true;if(gave)S.gave=1;save();
   const n=S.f.length,l=L[S.i],pass=n>=Math.ceil(l.e.length/2);
   if(mode==='daily'){K.finish({win:pass,score:n,tries:null,time:S.el,dist:Math.min(10,n),best:B=>{if(n>0)B.max('found',n)}});setTimeout(K.openStats,1400)}
   else K.unlimited(pass);
@@ -125,7 +125,7 @@ function shareText(){
 }
 function showResult(){
   const l=L[S.i],n=S.f.length;
-  $('res').innerHTML='<span class="lbl">'+(n===l.e.length?'Top bins!':'Time\'s up')+'</span><div class="big pop">'+n+' / '+l.e.length+'</div><div class="sq">'+sq(S)+'</div>'+
+  $('res').innerHTML='<span class="lbl">'+(n===l.e.length?'Top bins!':S.gave||S.el<SECS?'You gave up':'Time\'s up')+'</span><div class="big pop">'+n+' / '+l.e.length+'</div><div class="sq">'+sq(S)+'</div>'+
    '<div class="row">'+(mode==='daily'?'<button class="cta" id="shareB" type="button">Share</button><button class="ghost" id="statsB" type="button">Stats</button><button class="ghost" id="unlB" type="button">Play unlimited</button>':'<button class="cta" id="nextB" type="button">Another list</button><button class="ghost" id="dailyB" type="button">Back to daily</button>')+'</div><p class="pmsg" id="shareMsg"></p>';
   if(mode==='daily'){$('shareB').onclick=()=>K.share(shareText(),$('shareMsg'));$('statsB').onclick=K.openStats;$('unlB').onclick=()=>setMode('unl')}
   else{$('nextB').onclick=load;$('dailyB').onclick=()=>setMode('daily')}

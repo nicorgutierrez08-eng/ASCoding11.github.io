@@ -77,7 +77,7 @@ window.FB_TRANSFERS = [
   ['Kai Havertz', 'CHE', 'ARS', 2023, 'about £65m'],
   ['Rodri', 'ATM', 'MCI', 2019, 'about £63m, his release clause'],
   ['Rúben Dias', 'BEN', 'MCI', 2020, 'about £62m'],
-  ['Joško Gvardiol', 'RBL', 'MCI', 2023, 'about £77m, a record for a defender at the time'],
+  ['Joško Gvardiol', 'RBL', 'MCI', 2023, 'about £77m, one of the biggest fees ever paid for a defender'],
   ['Alexis Mac Allister', 'BRI', 'LIV', 2023, 'about £35m up front'],
   ['Luis Díaz', 'POR', 'LIV', 2022, 'about €45m plus add-ons'],
   ['Darwin Núñez', 'BEN', 'LIV', 2022, 'about £64m, rising to £85m'],

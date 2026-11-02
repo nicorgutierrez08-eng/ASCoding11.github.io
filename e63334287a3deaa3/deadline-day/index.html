@@ -128,7 +128,6 @@ function showResult(){
 function setMode(m){mode=m;Array.prototype.forEach.call($('modes').children,b=>b.classList.toggle('on',b.getAttribute('data-m')===m));load();scrollTo(0,0)}
 $('modes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b&&b.getAttribute('data-m')!==mode)setMode(b.getAttribute('data-m'))});
 load();
-if(S.done&&mode==='daily')setTimeout(K.openStats,400);
 if(navigator.webdriver)window.__game={T,get S(){return S},cur,guess,setMode,load,shareText};
 })();
 </script>

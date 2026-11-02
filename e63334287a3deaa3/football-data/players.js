@@ -441,7 +441,7 @@
     ['Dani Olmo', 'ESP', 'MF', 1998, 0, 'DZG 2014-2020; RBL 2020-2024; BAR 2024-', 'Olmo', ''],
     ['Martín Zubimendi', 'ESP', 'MF', 1999, 0, 'RSO 2019-2025; ARS 2025-', 'Zubimendi|Martin Zubimendi', ''],
     ['Fabián Ruiz', 'ESP', 'MF', 1996, 0, 'BET 2014-2018; +; NAP 2018-2022; PSG 2022-', 'Fabian Ruiz', ''],
-    ['Álvaro Morata', 'ESP', 'FW', 1992, 0, 'RMA 2010-2014; JUV 2014-2016; RMA 2016-2017; CHE 2017-2020; ~ATM 2019-2020; ATM 2020-2024; ~JUV 2020-2022; +', 'Morata|Alvaro Morata', ''],
+    ['Álvaro Morata', 'ESP', 'FW', 1992, 0, 'RMA 2010-2014; JUV 2014-2016; RMA 2016-2017; CHE 2017-2020; ~ATM 2019-2020; ATM 2020-2024; ~JUV 2020-2022; MIL 2024-2025; ~GAL 2025; +', 'Morata|Alvaro Morata', ''],
     ['Aymeric Laporte', 'ESP', 'DF', 1994, 0, 'ATH 2012-2018; MCI 2018-2023; NAS 2023-2025; +', 'Laporte', ''],
     ['Marc Cucurella', 'ESP', 'DF', 1998, 0, '+; BRI 2021-2022; CHE 2022-', 'Cucurella', ''],
     ['César Azpilicueta', 'ESP', 'DF', 1989, 28, 'OSA 2006-2010; OM 2010-2012; CHE 2012-2023; ATM 2023-2024; +', 'Azpilicueta|Azpi|Cesar Azpilicueta', ''],
@@ -636,7 +636,7 @@
     ['Luis Díaz', 'COL', 'FW', 1997, 7, 'BQA 2016-2017; JUN 2017-2019; POR 2019-2022; LIV 2022-2025; FCB 2025-', 'Luis Diaz|Lucho Diaz|Lucho', ''],
     ['James Rodríguez', 'COL', 'MF', 1991, 10, 'ENV 2006-2008; BFD 2008-2010; POR 2010-2013; ASM 2013-2014; RMA 2014-2020; ~FCB 2017-2019; EVE 2020-2021; +', 'James|James Rodriguez', 'main:RMA'],
     ['Radamel Falcao', 'COL', 'FW', 1986, 9, 'RIV 2005-2009; POR 2009-2011; ATM 2011-2013; ASM 2013-2019; ~MUN 2014-2015; ~CHE 2015-2016; GAL 2019-2021; RAY 2021-2023; +', 'Falcao|El Tigre', ''],
-    ['Alexis Sánchez', 'CHI', 'FW', 1988, 7, 'CBL 2005-2006; UDI 2006-2011; ~COC 2006-2007; ~RIV 2007-2008; BAR 2011-2014; ARS 2014-2018; MUN 2018-2020; ~INT 2019-2020; INT 2020-2022; OM 2022-2023; INT 2023-2024; UDI 2024-2025; +', 'Alexis|Alexis Sanchez', 'main:ARS'],
+    ['Alexis Sánchez', 'CHI', 'FW', 1988, 17, 'CBL 2005-2006; UDI 2006-2011; ~COC 2006-2007; ~RIV 2007-2008; BAR 2011-2014; ARS 2014-2018; MUN 2018-2020; ~INT 2019-2020; INT 2020-2022; OM 2022-2023; INT 2023-2024; UDI 2024-2025; +', 'Alexis|Alexis Sanchez', 'main:ARS'],
     ['Arturo Vidal', 'CHI', 'MF', 1987, 23, 'COC 2005-2007; B04 2007-2011; JUV 2011-2015; FCB 2015-2018; BAR 2018-2020; INT 2020-2022; FLA 2022-2023; CAP 2023; COC 2024-', 'Vidal|King Arturo', ''],
     ['Moisés Caicedo', 'ECU', 'MF', 2001, 25, 'IDV 2019-2021; BRI 2021-2023; ~BEE 2021-2022; CHE 2023-', 'Caicedo|Moises Caicedo', ''],
 
