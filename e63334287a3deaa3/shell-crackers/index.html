@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="/namefilter.js"></script> <!-- masks rude words in player names (see README) -->
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shell Crackers</title>
 <meta name="robots" content="noindex,nofollow,noarchive">
@@ -2356,7 +2357,7 @@ function updateHud(dt){
   updateDmgDirs(dt);
   // network line
   let nl='';
-  if(online){const others=ents.filter(e=>e.remote).length;if(Net.matchId==null&&Net.roundErr)nl='The database wouldn\'t start this room\'s match ('+(Net.roundErr.code||Net.roundErr.message)+')';else if(!others)nl=Net.isPublic?'Waiting for other eggs to join this lobby…':'Waiting for friends · Esc for the invite link'}
+  if(online){const others=ents.filter(e=>e.remote&&e.active).length;if(Net.matchId==null&&Net.roundErr)nl='The database wouldn\'t start this room\'s match ('+(Net.roundErr.code||Net.roundErr.message)+')';else if(!others)nl=Net.isPublic?'Waiting for other eggs to join this lobby…':'Waiting for friends · Esc for the invite link'}
   setT('netline',nl);
   setHid('lockHint',!!document.pointerLockElement||paused);
   if(touchUI)$('tAim').classList.toggle('on',!!tAct.aim);
@@ -2586,14 +2587,17 @@ const Net={
     this.joinT=this.now();
     // The shared database rules only accept a round "ends" up to 200 s ahead, so a round stores
     // its start time in "ends" and its length in "len"; the real end is ends + len.
+    // When a party lands together every browser races to start the round, each with its own random map. Only one
+    // write wins, so the transaction doesn't show this browser its own guess first (applyLocally false): acting on a
+    // losing guess put people on a different map from the rest of the room under the same match id.
     this.roundErr=null;
-    this.refs.round.transaction(cur=>{const n=this.now();if(cur&&typeof cur.ends==='number'&&typeof cur.id==='number'&&n<roundEnd(cur)+20000)return;return{id:(cur&&+cur.id||0)+1,ends:n,len:MATCH_MS,map:Math.floor(Math.random()*MAPS.length)}}).catch(err=>{this.roundErr=err});
+    const roundP=this.refs.round.transaction(cur=>{const n=this.now();if(cur&&typeof cur.ends==='number'&&typeof cur.id==='number'&&n<roundEnd(cur)+20000)return;return{id:(cur&&+cur.id||0)+1,ends:n,len:MATCH_MS,map:Math.floor(Math.random()*MAPS.length)}},undefined,false).catch(err=>{this.roundErr=err});
     const r=this.refs;
     const up=s=>{if(s.key===this.uid)return;onRemoteState(s.key,s.val())};
     r.players.on('child_added',up);r.players.on('child_changed',up);
     r.players.on('child_removed',s=>{const e=remotes.get(s.key);if(e){infoFeed(e.name+' left');removeEntity(e);remotes.delete(s.key)}});
     r.events.on('child_added',s=>{const e=s.val();if(!e||typeof e.t!=='number'||e.t<this.joinT-1500||e.by===this.uid||this.seen.has(s.key))return;this.seen.add(s.key);if(this.seen.size>1500)this.seen.delete(this.seen.values().next().value);handleEvent(e)});
-    r.round.on('value',s=>{const v=s.val();if(v&&typeof v.id==='number'&&v.id!==this.matchId)onMatch(v)});
+    r.round.on('value',s=>{const v=s.val();if(this.isNewRound(v))onMatch(v)});
     clearInterval(this.pubTimer);
     // About 12 updates a second while something changes (position, aim, health, shots); when nothing has, a
     // heartbeat a second keeps the node fresh (others drop an egg they haven't heard from for 9 s).
@@ -2606,6 +2610,11 @@ const Net={
     clearInterval(this.pruneTimer);
     this.pruneTimer=setInterval(()=>{const t=performance.now();for(const [k,e] of remotes)if(t-e.seen>9000){removeEntity(e);remotes.delete(k)}},2000);
     try{if(!isPublic)history.replaceState(null,'','#'+room)}catch(e){}
+    // Wait (up to 8 s) for the room's match, so you're dropped onto the same map as everyone else rather than
+    // the menu's random one. The transaction's result holds the round whether it started a new one or kept the old.
+    const res=await withTimeout(roundP,8000,'slow').catch(()=>null);
+    const v=res&&res.snapshot&&res.snapshot.val();
+    if(this.refs&&this.isNewRound(v))onMatch(v);
   },
   // After the last change, the same state goes out twice more at the usual rate: others then know at once that this egg
   // has stopped, instead of carrying it on (into the wall it stopped at, or through the floor it landed on) until the
@@ -2615,6 +2624,8 @@ const Net={
     if(this.settle>0||t-this.lastSent>=1000){this.settle=Math.max(0,this.settle-1);this.lastSent=t;return true}
     return false;
   },
+  // A round to switch to: a new match, or the same match on a map other than the one built here.
+  isNewRound(v){return !!v&&typeof v.id==='number'&&(v.id!==this.matchId||clamp(v.map|0,0,MAPS.length-1)!==mapIdx)},
   send(e){
     if(!online||!this.refs)return;
     const ref=this.refs.events.push();this.seen.add(ref.key);
@@ -2626,7 +2637,7 @@ const Net={
     if(!online||!this.refs)return;const id=this.matchId;
     // a missing match (the last egg out took it, see dropRound) starts a fresh one too, always numbered past this
     // browser's own match so its listener (which ignores the match it already has) picks it up
-    this.refs.round.transaction(cur=>(!cur||cur.id===id)?{id:(+id||0)+1,ends:this.now(),len:MATCH_MS,map:((+(cur&&cur.map)||0)+1)%MAPS.length}:undefined).catch(()=>{});
+    this.refs.round.transaction(cur=>(!cur||cur.id===id)?{id:(+id||0)+1,ends:this.now(),len:MATCH_MS,map:((+(cur&&cur.map)||0)+1)%MAPS.length}:undefined,undefined,false).catch(()=>{});
   },
   // The last egg out takes the room's match with it, so a code nobody uses again doesn't keep a stale node. Only when
   // no other egg is here, and only the match this browser saw; an egg that was mid-join re-creates one (its own join
@@ -2659,6 +2670,7 @@ function onRemoteState(uid,v){
     remotes.set(uid,e);ents.push(e);if(state==='playing')infoFeed(e.name+' joined');
   }
   e.net=v;e.seen=performance.now();
+  e.active=inMyMatch(v);   // an egg still on another round or map is hidden, can't be hit and makes no sound
   e.tpos.set(clamp(+v.x,0,SPAN),clamp(+v.y||0,-1,20),clamp(+v.z,0,SPAN));e.tyaw=+v.h||0;e.tpitch=+v.p||0;e.hp=clamp(+v.hp||0,0,100);
   // keep a short history to draw them from (netsmooth.js); a jump of more than 6 m is a respawn, so start afresh there
   if(!e.lag)e.lag=NetSmooth.lag();
@@ -2675,15 +2687,16 @@ function onRemoteState(uid,v){
   if(sc>e.lastSc&&e.alive){const n=Math.min(sc-e.lastSc,3),w=WEAPONS[e.wkey];for(let i=0;i<n;i++)setTimeout(()=>remoteShotFx(e),i*Math.min(70,w.cd*1000))}
   e.lastSc=sc;
 }
+function inMyMatch(v){return Net.matchId!=null&&!!v&&+v.m===Net.matchId}
 function remoteShotFx(e){
-  if(!e.alive||!e.model)return;
+  if(!e.active||!e.alive||!e.model)return;
   const w=WEAPONS[e.wkey];eyeOf(e,_o);const d=dirOf(e.yaw,e.pitch);const t=rayWorld(_o,d,w.range*3+40);
   muzzleWorld(e,_mz);tracer(_mz.clone(),_o.clone().addScaledVector(d,t),.03);
   if(e.model.flash){e.model.flash.visible=true;e.model.flashT=.05}
   sfx(e.wkey,e.pos);
 }
 function handleEvent(ev){
-  if(ev.m!==Net.matchId||state==='menu')return;
+  if(Net.matchId==null||ev.m!==Net.matchId||state==='menu')return;
   if(ev.type==='hit'&&ev.to===Net.uid){
     const att=entById(ev.by)||{id:ev.by,name:'Someone',pos:null};
     damage(player,clamp(+ev.dmg||0,0,200),att,!!ev.hd,String(ev.w||''));
@@ -2700,6 +2713,7 @@ function handleEvent(ev){
 }
 function onMatch(v){
   Net.matchId=v.id;matchEnds=roundEnd(v);
+  for(const e of remotes.values())e.active=inMyMatch(e.net);
   const mi=clamp(v.map|0,0,MAPS.length-1);
   const sameMap=mi===mapIdx;const wasIn=state==='playing'&&player.alive;
   resetFx();if(!sameMap)buildMap(mi);
