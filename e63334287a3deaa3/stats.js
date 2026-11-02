@@ -74,7 +74,9 @@
   function num(v) { var n = Number(v); return isFinite(n) ? n : NaN; }
   function okKey(k) { return typeof k === 'string' && /^[a-z][a-z0-9:-]{0,39}$/.test(k); }
   function lower(k) { return k.indexOf('lap:') === 0 || k.indexOf('rec:') === 0 || LOWER[k] === 1; }
-  function cleanName(s, n) { return String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, n || 14); }
+  // Rude words in names are masked by the shared name filter (/namefilter.js) when the page has loaded it.
+  function byFilter(v) { return window.NameFilter ? window.NameFilter.clean(v) : v; }
+  function cleanName(s, n) { return byFilter(String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, n || 14)); }
   // The same seat and colour social.js (Online) gives a uid, so a name reads the same everywhere.
   function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
   function seatOf(uid) { var h = hash('seat:' + uid); return (1 + h % 40) + 'ABCDEF'.charAt(Math.floor(h / 40) % 6); }
