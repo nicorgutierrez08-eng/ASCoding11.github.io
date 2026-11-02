@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Sleight</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/wordplay/kit.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="sleight" defer></script>
+<style>
+/* Sleight: one cryptic clue a day. The clue card, the answer boxes, hints as they're taken, and the keyboard. */
+:root{--box:46px}
+#game{background:radial-gradient(ellipse at 50% 35%,#13284f 0%,#04111f 72%)}
+#wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:10px 12px 10px;width:100%;max-width:620px;margin:0 auto}
+#main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#side{flex:none;display:flex;flex-direction:column;gap:8px}
+#card{flex:none;background:linear-gradient(160deg,rgba(180,139,255,.16),rgba(79,227,193,.08));border:1px solid rgba(180,139,255,.35);border-radius:18px;padding:16px 16px 14px;text-align:center}
+#card .lab{font:800 11px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+#clue{margin:0;font:600 clamp(21px,5.2vw,28px)/1.3 var(--f-d);color:var(--ink)}
+#clue .en{color:var(--ink-3);white-space:nowrap}
+#clue mark{background:none;color:var(--sun);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:5px}
+#clue .ind{border-bottom:2px dotted var(--aqua)}
+#boxes{display:flex;justify-content:center;flex-wrap:nowrap;gap:5px;margin-top:14px}
+#boxes .sp{width:calc(var(--box) * .35)}
+#boxes .bx{width:var(--box);height:calc(var(--box) * 1.12);border-radius:9px;border:2px solid rgba(241,247,255,.28);background:rgba(4,17,31,.55);display:flex;align-items:center;justify-content:center;font:700 calc(var(--box) * .56)/1 var(--f-d);color:var(--ink);text-transform:uppercase;cursor:pointer;flex:none;padding:0}
+#boxes .bx.cur{border-color:var(--sun);box-shadow:0 0 0 3px rgba(255,209,102,.25)}
+#boxes .bx.given{color:var(--sun)}
+#boxes.right .bx{border-color:var(--green);background:rgba(94,240,143,.18)}
+#boxes.shown .bx{border-color:var(--aqua);background:rgba(79,227,193,.14)}
+#boxes.bad{animation:shake .38s}
+@keyframes shake{20%{transform:translateX(-7px)}45%{transform:translateX(7px)}70%{transform:translateX(-3px)}}
+#acts{display:flex;gap:8px;justify-content:center;flex:none;flex-wrap:wrap}
+#hints{display:flex;flex-direction:column;gap:6px;flex:none}
+.hint{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:600 15px/1.4 var(--f-u);color:var(--ink-2);animation:pop .3s ease-out}
+.hint b.k{flex:none;font:700 13px var(--f-d);color:var(--night);background:var(--sun);border-radius:999px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;margin-top:1px}
+.hint strong{color:var(--ink)}
+@keyframes pop{0%{transform:scale(.97);opacity:.3}100%{transform:none;opacity:1}}
+.dots{display:inline-flex;gap:4px;vertical-align:middle;margin-left:6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--sun);display:inline-block}
+.dots i.off{background:rgba(241,247,255,.18)}
+.ex{flex:none;background:var(--panel-3);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ex h2{margin:0;font:700 24px/1.15 var(--f-d)}
+.ex h2.win{color:var(--green)}.ex h2.lose{color:var(--coral)}
+.ex .ans{font:700 26px var(--f-d);letter-spacing:.08em;color:var(--ink)}
+.ex dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font:600 14px/1.4 var(--f-u);color:var(--ink-2)}
+.ex dt{color:var(--ink-3);font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
+.ex dd{margin:0}
+.ex dd b{color:var(--ink)}
+.ex .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ex .next{font:700 13px var(--f-u);color:var(--ink-3);font-variant-numeric:tabular-nums}
+body:not(.touch):not(.sideways) #main{flex:0 1 auto}
+body.sideways #wrap{max-width:none;flex-direction:row;gap:14px;padding:6px 12px}
+body.sideways #main{flex:1 1 55%}
+body.sideways #side{flex:1 1 45%;justify-content:center}
+body.sideways #card{padding:10px 12px}
+body.sideways #clue{font-size:20px}
+body.sideways #boxes{margin-top:8px}
+body.sideways .kb button{height:32px}
+</style>
+</head>
+<body>
+<main id="game">
+  <div id="wrap">
+    <div id="main">
+      <div id="modeSlot"></div>
+      <section id="card" aria-label="Today's clue">
+        <div class="lab">Cryptic clue</div>
+        <p id="clue"></p>
+        <div id="boxes" role="textbox" aria-label="Your answer" tabindex="0"></div>
+      </section>
+      <div id="hints" aria-live="polite"></div>
+      <div id="endBox" hidden></div>
+    </div>
+    <div id="side">
+      <div id="acts">
+        <button type="button" class="ghost" id="hintBtn">Hint</button>
+        <button type="button" class="ghost" id="clearBtn">Clear</button>
+        <button type="button" class="cta" id="goBtn">Check</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="/e63334287a3deaa3/wordplay/kit.js"></script>
+<script src="/e63334287a3deaa3/sleight/clues.js"></script>
+<script>
+'use strict';
+(function () {
+const K = Kit, h = K.h, $ = K.$, C = window.SLEIGHT || [];
+const SLUG = 'sleight', NAME = 'Sleight', MAXH = 5;
+const HOW = '<p>Solve one <b>cryptic crossword clue</b>. Every clue has two parts:</p>' +
+  '<ul><li>a <b>definition</b>, a plain meaning of the answer, at the very start or the very end of the clue;</li>' +
+  '<li><b>wordplay</b>, another way to build the same answer: an anagram, a word hidden inside the clue, a word written backwards, small pieces joined up, and so on.</li></ul>' +
+  '<p>For example, in <b>Listen, upset and quiet (6)</b> the definition is “quiet” and the wordplay is LISTEN “upset” (rearranged): the answer is <b>SILENT</b>. The number tells you how many letters.</p>' +
+  '<p>Stuck? Take a <b>hint</b>. They come in order: 1 which part is the definition, 2 the kind of wordplay, 3 the wordplay explained, 4 the first letter, 5 the answer. Your score is the number of hints you used, so lower is better, and showing the answer (hint 5) ends your streak.</p>' +
+  '<p>After you finish you\'ll see exactly how the clue works. On a computer just type, <b>Enter</b> checks your answer.</p>';
+const DIST = [['0', 'no hints'], ['1', '1 hint'], ['2', '2 hints'], ['3', '3 hints'], ['4', '4 hints'], ['X', 'revealed']];
+const TYPE = {
+  anagram: ['Anagram', 'some letters in the clue are rearranged to make the answer'],
+  hidden: ['Hidden word', 'the answer is written inside the clue itself, running across words'],
+  double: ['Double definition', 'the clue is just two different meanings of the same word, side by side'],
+  reversal: ['Reversal', 'a word (in the clue, or one it stands for) is written backwards'],
+  homophone: ['Homophone', 'the answer sounds like a different word'],
+  charade: ['Charade', 'the answer is built from smaller pieces placed one after another'],
+  deletion: ['Deletion', 'a letter is taken away from a longer word'],
+  container: ['Container', 'one piece goes inside another'],
+  andlit: ['&lit (all-in-one)', 'the whole clue is the wordplay, and read normally the whole clue is also the definition'],
+  initials: ['First letters', 'the answer is made from the first letters of some of the words']
+};
+let st = null, kb = null;
+const S = K.shell({ slug: SLUG, name: NAME, how: HOW, dist: DIST, distTitle: 'Hints used', shareText: () => st && st.done ? shareText() : null });
+const mb = K.modeBar($('modeSlot'), m => start(m));
+const boxes = $('boxes'), endBox = $('endBox');
+
+function letters(a) { return a.replace(/[^A-Z]/g, ''); }
+function enumOf(a) { return '(' + a.split(' ').map(w => w.length).join(',') + ')'; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
+function save() { if (st.mode === 'daily') K.store.set(SLUG + ':day', { day: st.day, idx: st.idx, hints: st.hints, typed: st.typed, wrong: st.wrong, done: st.done, win: st.win, t0: st.t0, t1: st.t1 }); }
+function start(m) {
+  let saved = null;
+  if (m === 'daily') {
+    const day = K.today(); saved = K.store.get(SLUG + ':day', null);
+    let idx = K.pick(SLUG, C.length, day, true);
+    if (saved && saved.day === day && C[saved.idx]) idx = saved.idx; else saved = null;
+    st = { mode: 'daily', day, idx };
+  } else st = { mode: 'free', day: '', idx: K.randomIndex(C.length, st && st.idx) };
+  const q = C[st.idx], n = letters(q.a).length;
+  Object.assign(st, { q, n, hints: 0, typed: Array(n).fill(''), wrong: 0, done: false, win: false, t0: 0, t1: 0, cur: 0 });
+  if (saved) {
+    st.hints = Math.max(0, Math.min(MAXH, +saved.hints || 0)); st.wrong = +saved.wrong || 0;
+    if (Array.isArray(saved.typed) && saved.typed.length === n) st.typed = saved.typed.map(x => /^[A-Z]$/.test(x) ? x : '');
+    st.done = !!saved.done; st.win = !!saved.win; st.t0 = saved.t0 || 0; st.t1 = saved.t1 || 0;
+  }
+  if (st.hints >= 4) st.typed[0] = letters(q.a)[0];
+  st.cur = Math.max(0, st.typed.findIndex(x => !x)); if (st.typed.every(Boolean)) st.cur = n - 1;
+  mb.set(m, true);
+  build(); render();
+}
+// The clue with the definition (after hint 1) and, at the end, the indicator marked.
+function clueHTML() {
+  const q = st.q, c = q.c;
+  let html = esc(c);
+  const showDef = st.hints >= 1 || st.done, showInd = st.hints >= 3 || st.done;
+  if (showInd && q.i) { const j = c.toLowerCase().indexOf(q.i.toLowerCase()); if (j >= 0) html = esc(c.slice(0, j)) + '<span class="ind">' + esc(c.slice(j, j + q.i.length)) + '</span>' + esc(c.slice(j + q.i.length)); }
+  if (showDef && q.d) {
+    // the definition sits at one end of the clue
+    const atStart = c.toLowerCase().startsWith(q.d.toLowerCase());
+    const e = esc(atStart ? c.slice(0, q.d.length) : q.d);
+    if (atStart) html = '<mark>' + e + '</mark>' + html.slice(esc(c.slice(0, q.d.length)).length);
+    else { const k = html.lastIndexOf(esc(q.d)); if (k >= 0) html = html.slice(0, k) + '<mark>' + esc(q.d) + '</mark>' + html.slice(k + esc(q.d).length); }
+  }
+  if (showDef && !q.d) html = '<mark>' + html + '</mark>';
+  return html + ' <span class="en">' + enumOf(q.a) + '</span>';
+}
+function build() {
+  boxes.innerHTML = '';
+  let k = 0;
+  st.q.a.split(' ').forEach((w, wi) => {
+    if (wi) boxes.appendChild(h('span', { class: 'sp' }));
+    for (let i = 0; i < w.length; i++) { const j = k++; const b = h('button', { type: 'button', class: 'bx', tabindex: '-1', 'aria-label': 'Letter ' + (j + 1) }); b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('click', () => { if (!st.done) { st.cur = j; render(); } }); boxes.appendChild(b); }
+  });
+  layout();
+}
+function hintText(n) {
+  const q = st.q, T = TYPE[q.t] || ['Wordplay', ''];
+  if (n === 1) return q.d ? 'The <strong>definition</strong> is “' + esc(q.d) + '”, at the ' + (q.c.toLowerCase().startsWith(q.d.toLowerCase()) ? 'start' : 'end') + ' of the clue.' : 'This one is an <strong>&amp;lit</strong>: the whole clue is the definition.';
+  if (n === 2) return 'The wordplay is a <strong>' + T[0] + '</strong>: ' + T[1] + '.' + (q.i ? ' The word' + (q.i.indexOf(' ') > 0 ? 's' : '') + ' “' + esc(q.i) + '” point' + (q.i.indexOf(' ') > 0 ? '' : 's') + ' to it.' : '');
+  if (n === 3) { const re = new RegExp('\\b(' + q.a + (q.a !== letters(q.a) ? '|' + letters(q.a) : '') + ')\\b', 'g'); return esc(q.p.replace(re, 'the answer')); }
+  if (n === 4) return 'It starts with <strong>' + letters(q.a)[0] + '</strong>.';
+  return 'The answer is <strong>' + q.a + '</strong>.';
+}
+function render() {
+  const q = st.q;
+  $('clue').innerHTML = clueHTML();
+  const bx = boxes.querySelectorAll('.bx');
+  bx.forEach((b, i) => { b.textContent = st.done ? letters(q.a)[i] : st.typed[i]; b.classList.toggle('cur', !st.done && i === st.cur); b.classList.toggle('given', st.hints >= 4 && i === 0 && !st.done); });
+  boxes.classList.toggle('right', st.done && st.win); boxes.classList.toggle('shown', st.done && !st.win);
+  const hints = $('hints'); hints.innerHTML = '';
+  for (let n = 1; n <= Math.min(st.hints, 4); n++) hints.appendChild(h('div', { class: 'hint' }, [h('b', { class: 'k', text: String(n) }), h('span', { html: hintText(n) })]));
+  if (st.done) hints.innerHTML = '';
+  const left = MAXH - st.hints;
+  $('hintBtn').innerHTML = st.hints >= 4 ? 'Show answer' : 'Hint ' + (st.hints + 1) + '<span class="dots" aria-hidden="true">' + Array.from({ length: 4 }, (_, i) => '<i class="' + (i < st.hints ? '' : 'off') + '"></i>').join('') + '</span>';
+  $('hintBtn').setAttribute('aria-label', st.hints >= 4 ? 'Show the answer' : 'Hint ' + (st.hints + 1) + ' of 5');
+  $('acts').hidden = st.done; if (kb) kb.hidden = st.done;
+  $('goBtn').disabled = !st.typed.every(Boolean);
+  mb.info.innerHTML = st.done ? '' : st.hints ? '<b>' + st.hints + '</b> hint' + (st.hints === 1 ? '' : 's') + ' used' : 'No hints yet';
+  endBox.hidden = !st.done; endBox.innerHTML = '';
+  if (st.done) {
+    endBox.className = 'ex';
+    const T = TYPE[q.t] || ['Wordplay', ''];
+    endBox.append(
+      h('h2', { class: st.win ? 'win' : 'lose', text: st.win ? (st.hints === 0 ? 'Solved without a hint!' : 'Solved with ' + st.hints + ' hint' + (st.hints === 1 ? '' : 's')) : 'Here\'s the answer' }),
+      h('div', { class: 'ans', text: q.a }),
+      h('dl', null, [
+        h('dt', { text: 'Definition' }), h('dd', { html: q.d ? '“<b>' + esc(q.d) + '</b>”, at the ' + (q.c.toLowerCase().startsWith(q.d.toLowerCase()) ? 'start' : 'end') + ' of the clue' : 'The whole clue (it\'s an &amp;lit)' }),
+        h('dt', { text: 'Wordplay' }), h('dd', { html: '<b>' + T[0] + '</b>' + (q.i ? ', signalled by “' + esc(q.i) + '”' : '') }),
+        h('dt', { text: 'How it works' }), h('dd', { html: esc(q.p) })]),
+      h('div', { class: 'row' }, [
+        h('button', { type: 'button', class: 'cta', text: 'Share', onclick: () => S.share() }),
+        h('button', { type: 'button', class: 'ghost', text: st.mode === 'daily' ? 'Play unlimited' : 'Next clue', onclick: () => start('free') }),
+        st.mode === 'daily' ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + K.countdown() }) : null]));
+  }
+  save();
+}
+function layout() {
+  const sideways = innerWidth > innerHeight * 1.2 && innerHeight < 560;
+  document.body.classList.toggle('sideways', sideways);
+  if (!st) return;
+  // letter boxes as big as fit on one line
+  const n = st.n, words = st.q.a.split(' ').length;
+  const avail = Math.min($('card').clientWidth - 32, 560);
+  const box = Math.floor((avail - (n - 1) * 5 - (words - 1) * 16) / (n + (words - 1) * 0.35));
+  document.documentElement.style.setProperty('--box', Math.max(22, Math.min(sideways ? 40 : 52, box)) + 'px');
+}
+function hint() {
+  if (!st || st.done) return;
+  if (!st.t0) st.t0 = Date.now();
+  if (st.hints >= 4) { if (!confirm('Show the answer? This puzzle won\'t count as solved.')) return; st.hints = 5; finish(false); return; }
+  st.hints++;
+  if (st.hints === 4) { st.typed[0] = letters(st.q.a)[0]; if (st.cur === 0) st.cur = Math.min(1, st.n - 1); }
+  render();
+}
+function type(ch) {
+  if (!st || st.done || S.isOpen()) return;
+  if (!st.t0) st.t0 = Date.now();
+  if (st.hints >= 4 && st.cur === 0) st.cur = 1;
+  st.typed[st.cur] = ch;
+  if (st.cur < st.n - 1) st.cur++;
+  render();
+}
+function back() {
+  if (!st || st.done || S.isOpen()) return;
+  const min = st.hints >= 4 ? 1 : 0;
+  if (st.typed[st.cur] && st.cur >= min && !(st.cur === st.n - 1 && false)) { st.typed[st.cur] = ''; }
+  else if (st.cur > min) { st.cur--; st.typed[st.cur] = ''; }
+  render();
+}
+function check() {
+  if (!st || st.done || !st.typed.every(Boolean)) return;
+  if (st.typed.join('') === letters(st.q.a)) { finish(true); return; }
+  st.wrong++;
+  boxes.classList.remove('bad'); void boxes.offsetWidth; boxes.classList.add('bad');
+  S.toast(st.wrong === 1 ? 'Not quite. Try again, or take a hint' : 'Still not it', 1800);
+  save();
+}
+function finish(win) {
+  st.done = true; st.win = win; st.t1 = Date.now();
+  render();
+  if (st.mode !== 'daily') return;
+  K.Daily.finish(SLUG, st.day, { win, score: win ? st.hints : null, tries: st.wrong + (win ? 1 : 0), time: st.t0 ? (st.t1 - st.t0) / 1000 : null, dist: win ? String(st.hints) : 'X' });
+  if (win && st.hints === 0) try { window.BackRoomStats && BackRoomStats.add('clean', 1); } catch (e) {}
+  setTimeout(() => { if (!S.isOpen()) S.openStats(win ? String(st.hints) : 'X'); }, 2200);
+}
+function shareText() {
+  const line = st.win ? (st.hints === 0 ? 'solved with no hints 🧠' : 'solved with ' + st.hints + ' hint' + (st.hints === 1 ? '' : 's')) : 'answer revealed';
+  let g = ''; for (let i = 0; i < 5; i++) g += i < st.hints ? (st.win || i < 4 ? '💡' : '👀') : (st.win ? '⬜' : '⬛');
+  return K.shareText(NAME, K.dayNum(st.day || K.today()), line, (st.win ? '✅ ' : '') + g + ' ' + enumOf(st.q.a), st.mode);
+}
+if (K.touch) {
+  document.body.classList.add('touch');
+  kb = h('div', { class: 'kb', 'aria-hidden': 'true' });
+  ['qwertyuiop', 'asdfghjkl', '↵zxcvbnm⌫'].forEach(row => {
+    const r = h('div');
+    Array.from(row).forEach(ch => {
+      const b = h('button', { type: 'button', tabindex: '-1', text: ch === '↵' ? 'enter' : ch, class: ch === '⌫' ? 'w' : ch === '↵' ? 'w go' : '' });
+      b.addEventListener('pointerdown', e => e.preventDefault());
+      b.addEventListener('click', () => { if (ch === '⌫') back(); else if (ch === '↵') check(); else type(ch.toUpperCase()); });
+      r.appendChild(b);
+    });
+    kb.appendChild(r);
+  });
+  $('side').appendChild(kb);
+}
+$('hintBtn').addEventListener('click', hint);
+$('clearBtn').addEventListener('click', () => { if (st.done) return; const min = st.hints >= 4 ? 1 : 0; for (let i = min; i < st.n; i++) st.typed[i] = ''; st.cur = min; render(); });
+$('goBtn').addEventListener('click', check);
+['hintBtn', 'clearBtn', 'goBtn'].forEach(id => $(id).addEventListener('mousedown', e => e.preventDefault()));
+document.addEventListener('keydown', e => {
+  if (!st || S.isOpen() || e.ctrlKey || e.metaKey || e.altKey || st.done) return;
+  if (/^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); type(e.key.toUpperCase()); }
+  else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); back(); }
+  else if (e.key === 'Enter') { if (e.target && e.target.tagName === 'BUTTON') return; e.preventDefault(); check(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); st.cur = Math.max(st.hints >= 4 ? 1 : 0, st.cur - 1); render(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); st.cur = Math.min(st.n - 1, st.cur + 1); render(); }
+});
+window.addEventListener('resize', layout);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+setInterval(() => { const e = $('nextIn'); if (e) e.textContent = 'Next in ' + K.countdown(); if (st && st.mode === 'daily' && st.day !== K.today() && (st.done || !st.t0)) start('daily'); }, 1000);
+start('daily');
+if (navigator.webdriver) window.__sl = { get st() { return st; }, start, hint, type, back, check, C, shareText, hintText, typeWord: w => Array.from(w.replace(/ /g, '')).forEach(ch => type(ch.toUpperCase())) };
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="sleight" defer></script>
+</body>
+</html>

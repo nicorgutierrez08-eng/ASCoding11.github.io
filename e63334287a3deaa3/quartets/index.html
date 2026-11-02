@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Quartets</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/wordplay/kit.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="quartets" defer></script>
+<style>
+/* Quartets: sixteen tiles in a 4 x 4 grid; found groups become coloured bars at the top. */
+:root{--y:#ffd166;--g:#5ef08f;--b:#6cb6ff;--p:#c39bff;--gap:8px;--th:72px}
+#game{align-items:center;background:radial-gradient(ellipse at 50% 40%,#0c2547 0%,#04111f 72%)}
+#wrap{width:100%;max-width:600px;height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:10px 12px 12px}
+#board{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:var(--th);gap:var(--gap);flex:none}
+.tile{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.09);color:var(--ink);font:800 16px/1.12 var(--f-u);letter-spacing:.02em;text-transform:uppercase;cursor:pointer;padding:2px 4px;display:flex;align-items:center;justify-content:center;text-align:center;min-width:0;overflow:hidden;word-break:normal;overflow-wrap:normal;hyphens:none;transition:background .15s,color .15s,transform .12s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.tile:hover{background:rgba(255,255,255,.14)}
+.tile.on{background:var(--ink);color:var(--night);border-color:var(--ink)}
+.tile:active{transform:scale(.96)}
+.tile.jump{animation:jump .32s ease-out}
+.tile.shake{animation:shake .38s}
+@keyframes jump{40%{transform:translateY(-9px)}100%{transform:none}}
+@keyframes shake{20%{transform:translateX(-6px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
+.bar{grid-column:1/-1;border-radius:12px;color:#081627;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px 10px;min-width:0;animation:pop .35s ease-out}
+.bar b{font:800 15px/1.15 var(--f-u);letter-spacing:.06em;text-transform:uppercase}
+.bar span{font:700 14px/1.25 var(--f-u);text-transform:uppercase;opacity:.86;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.c0{background:var(--y)}.c1{background:var(--g)}.c2{background:var(--b)}.c3{background:var(--p)}
+@keyframes pop{0%{transform:scale(.94);opacity:.4}100%{transform:none;opacity:1}}
+#lives{display:inline-flex;align-items:center;gap:5px}
+#lives i{width:11px;height:11px;border-radius:50%;background:var(--ink-2);display:inline-block;transition:background .3s,transform .3s}
+#lives i.gone{background:rgba(241,247,255,.14);transform:scale(.8)}
+#controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;flex:none}
+#controls .ghost{min-width:0}
+#endBox{flex:none}
+.end .grid{font:16px/1.15 system-ui,sans-serif;letter-spacing:1px}
+@media (max-height:520px) and (min-aspect-ratio:6/5){
+  #wrap{gap:6px;padding:6px 12px 6px;max-width:720px}
+  .bar b{font-size:13px}.bar span{font-size:12px}
+  #controls .ghost,#controls .cta{padding:6px 14px;font-size:15px}
+}
+@media (max-width:380px){#controls .ghost{padding:9px 11px}:root{--gap:6px}.tile{padding:2px 2px;border-radius:10px}}
+</style>
+</head>
+<body>
+<main id="game">
+  <div id="wrap">
+    <div id="modeSlot"></div>
+    <div id="board" role="group" aria-label="Sixteen words: find four groups of four"></div>
+    <div id="controls">
+      <button type="button" class="ghost" id="shuffleBtn">Shuffle</button>
+      <button type="button" class="ghost" id="clearBtn">Deselect all</button>
+      <button type="button" class="cta" id="submitBtn">Submit</button>
+    </div>
+    <div id="endBox" hidden></div>
+  </div>
+</main>
+<script src="/e63334287a3deaa3/wordplay/kit.js"></script>
+<script src="/e63334287a3deaa3/quartets/puzzles.js"></script>
+<script>
+'use strict';
+(function () {
+const K = Kit, h = K.h, $ = K.$, P = window.QUARTETS || [];
+const SLUG = 'quartets', NAME = 'Quartets', LIVES = 4;
+const EMO = ['🟨', '🟩', '🟦', '🟪'];
+const HOW = '<p>Find the <b>four groups of four</b> words that have something in common.</p>' +
+  '<ul><li>Tap four words, then <b>Submit</b> to check them.</li>' +
+  '<li>Groups are more specific than "nouns" or "five-letter words", and some words look as if they fit more than one group. Each word belongs to exactly one.</li>' +
+  '<li>You can make <b>4 mistakes</b>. If three of your four words belong together you\'ll see <b>One away…</b></li>' +
+  '<li>Each puzzle has one group of each colour, from the most straightforward to the trickiest:</li></ul>' +
+  '<div class="ex" style="flex-direction:row;flex-wrap:wrap;gap:6px"><span class="pill" style="background:var(--y);color:#081627">Yellow</span><span class="pill" style="background:var(--g);color:#081627">Green</span><span class="pill" style="background:var(--b);color:#081627">Blue</span><span class="pill" style="background:var(--p);color:#081627">Purple</span></div>' +
+  '<p>Purple groups are often wordplay: hidden words, words that sound like other words, or words that go before or after the same word (<b>FIRE___</b> means FIREWORKS, FIREPLACE…).</p>' +
+  '<p>On a computer: click the words, <b>Enter</b> submits, <b>Esc</b> deselects.</p>';
+const DIST = [['0', '0'], ['1', '1'], ['2', '2'], ['3', '3'], ['X', '✗']];
+let st = null, busy = false;
+const S = K.shell({ slug: SLUG, name: NAME, how: HOW, dist: DIST, distTitle: 'Mistakes', shareText: () => st && st.done ? shareText() : null });
+const mb = K.modeBar($('modeSlot'), m => start(m));
+mb.info.innerHTML = '<span>Mistakes left</span> <span id="lives"></span>';
+const board = $('board'), endBox = $('endBox');
+
+function groupOf(p, w) { for (let i = 0; i < 4; i++) if (p[i][1].indexOf(w) >= 0) return i; return -1; }
+function save() {
+  if (st.mode !== 'daily') return;
+  K.store.set(SLUG + ':day', { day: st.day, idx: st.idx, order: st.order, solved: st.solved, guesses: st.guesses, mistakes: st.mistakes, done: st.done, win: st.win, t0: st.t0, t1: st.t1 });
+}
+function fresh(idx, seed) {
+  const words = [].concat(...P[idx].map(g => g[1]));
+  return K.shuffle(words, K.rng(seed));
+}
+function start(m) {
+  busy = false;
+  if (m === 'daily') {
+    const day = K.today(), saved = K.store.get(SLUG + ':day', null);
+    let idx = K.pick(SLUG, P.length, day);
+    if (saved && saved.day === day && P[saved.idx]) idx = saved.idx;
+    st = { mode: 'daily', day, idx, order: fresh(idx, SLUG + '-tiles-' + day), solved: [], guesses: [], mistakes: 0, done: false, win: false, t0: 0, t1: 0, sel: [] };
+    if (saved && saved.day === day && saved.idx === idx && Array.isArray(saved.order)) {
+      const all = new Set([].concat(...P[idx].map(g => g[1])));
+      if (saved.order.every(w => all.has(w))) st.order = saved.order.slice();
+      st.solved = (saved.solved || []).filter(g => g >= 0 && g < 4);
+      st.guesses = Array.isArray(saved.guesses) ? saved.guesses : [];
+      st.mistakes = Math.min(LIVES, +saved.mistakes || 0);
+      st.done = !!saved.done; st.win = !!saved.win; st.t0 = saved.t0 || 0; st.t1 = saved.t1 || 0;
+      const solvedWords = new Set([].concat(...st.solved.map(g => P[idx][g][1])));
+      st.order = st.order.filter(w => !solvedWords.has(w));
+      if (st.done && !st.win) { for (let g = 0; g < 4; g++) if (st.solved.indexOf(g) < 0) st.solved.push(g); st.order = []; }
+    }
+  } else {
+    const idx = K.randomIndex(P.length, st && st.idx);
+    st = { mode: 'free', day: '', idx, order: fresh(idx, Math.random() * 4294967296 >>> 0), solved: [], guesses: [], mistakes: 0, done: false, win: false, t0: 0, t1: 0, sel: [] };
+  }
+  mb.set(m, true);
+  render();
+}
+function fitText(el, w) {
+  // start from a size that suits the longest word, then shrink until nothing spills or breaks mid-word
+  const tw = el.clientWidth - 6, th = el.clientHeight - 6;
+  const longest = Math.max(...w.split(/[\s-]/).map(x => x.length));
+  let fs = Math.min(19, th * 0.36, tw / (longest * 0.62));
+  el.style.fontSize = fs.toFixed(1) + 'px';
+  el.style.letterSpacing = '';
+  while (fs > 8 && (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight)) { fs -= 0.5; el.style.fontSize = fs.toFixed(1) + 'px'; if (fs < 13) el.style.letterSpacing = '0'; }
+}
+function layout() {
+  const wrap = $('wrap'), cs = getComputedStyle(wrap);
+  const others = [$('modeSlot'), endBox.hidden ? $('controls') : endBox].reduce((a, e) => a + e.getBoundingClientRect().height, 0);
+  const gap = parseFloat(getComputedStyle(board).gap) || 8;
+  const availH = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - others - 2 * (parseFloat(cs.gap) || 10);
+  const rows = 4;
+  const w = board.clientWidth || wrap.clientWidth - 24;
+  const byW = (w - 3 * gap) / 4 * (innerWidth < innerHeight ? 1 : 0.8), byH = (availH - (rows - 1) * gap) / rows;
+  const th = Math.max(36, Math.min(96, byW, byH));
+  document.documentElement.style.setProperty('--th', th.toFixed(1) + 'px');
+  board.querySelectorAll('.tile').forEach(t => fitText(t, t.textContent));
+}
+function render(flip) {
+  const prev = {};
+  if (flip) board.querySelectorAll('.tile').forEach(t => { prev[t.textContent] = t.getBoundingClientRect(); });
+  board.innerHTML = '';
+  st.solved.forEach(g => {
+    const [cat, ws] = P[st.idx][g];
+    board.appendChild(h('div', { class: 'bar c' + g, role: 'note', 'aria-label': cat + ': ' + ws.join(', ') }, [h('b', { text: cat }), h('span', { text: ws.join(', ') })]));
+  });
+  st.order.forEach(w => {
+    const on = st.sel.indexOf(w) >= 0;
+    const b = h('button', { type: 'button', class: 'tile' + (on ? ' on' : ''), 'aria-pressed': on ? 'true' : 'false', text: w });
+    b.addEventListener('mousedown', e => e.preventDefault()); // clicks don't take focus, so Enter still submits
+    b.addEventListener('click', () => toggle(w));
+    board.appendChild(b);
+  });
+  const lives = $('lives');
+  if (lives) { lives.innerHTML = ''; for (let i = 0; i < LIVES; i++) lives.appendChild(h('i', { class: i < LIVES - st.mistakes ? '' : 'gone' })); lives.setAttribute('aria-label', (LIVES - st.mistakes) + ' mistakes left'); }
+  mb.info.style.visibility = st.done ? 'hidden' : '';
+  $('controls').hidden = st.done;
+  $('submitBtn').disabled = st.sel.length !== 4 || busy;
+  $('clearBtn').disabled = !st.sel.length || busy;
+  $('shuffleBtn').disabled = busy;
+  endBox.hidden = !st.done; endBox.innerHTML = '';
+  if (st.done) {
+    endBox.className = 'end';
+    const m = st.mistakes;
+    endBox.append(
+      h('h2', { class: st.win ? 'win' : 'lose', text: st.win ? (m === 0 ? 'Perfect!' : m === 1 ? 'Great work!' : m === 2 ? 'Nicely done!' : 'Phew, solved!') : 'Out of mistakes' }),
+      h('p', { html: st.win ? 'You found all four groups with <b>' + m + '</b> mistake' + (m === 1 ? '' : 's') + '.' : 'Here\'s how the words were grouped. Have another go tomorrow, or try an unlimited one.' }),
+      h('div', { class: 'grid', 'aria-hidden': 'true', text: st.guesses.map(gs => gs.map(w => EMO[groupOf(P[st.idx], w)]).join('')).join('\n'), style: 'white-space:pre' }),
+      h('div', { class: 'row' }, [
+        h('button', { type: 'button', class: 'cta', text: 'Share', onclick: () => S.share() }),
+        h('button', { type: 'button', class: 'ghost', text: st.mode === 'daily' ? 'Play unlimited' : 'Next one', onclick: () => start('free') }),
+        st.mode === 'daily' ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + K.countdown() }) : null]));
+  }
+  layout();
+  if (flip) board.querySelectorAll('.tile').forEach(t => {
+    const a = prev[t.textContent]; if (!a) return;
+    const b = t.getBoundingClientRect(), dx = a.left - b.left, dy = a.top - b.top;
+    if (!dx && !dy) return;
+    t.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  });
+}
+function toggle(w) {
+  if (!st || st.done || busy) return;
+  const i = st.sel.indexOf(w);
+  if (i >= 0) st.sel.splice(i, 1); else if (st.sel.length < 4) st.sel.push(w); else return;
+  board.querySelectorAll('.tile').forEach(t => { const on = st.sel.indexOf(t.textContent) >= 0; t.classList.toggle('on', on); t.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  $('submitBtn').disabled = st.sel.length !== 4;
+  $('clearBtn').disabled = !st.sel.length;
+}
+function same(a, b) { return a.length === b.length && a.every(x => b.indexOf(x) >= 0); }
+function tilesOf(ws) { return [...board.querySelectorAll('.tile')].filter(t => ws.indexOf(t.textContent) >= 0); }
+function submit() {
+  if (!st || st.done || busy || st.sel.length !== 4) return;
+  const sel = st.sel.slice();
+  if (st.guesses.some(g => same(g, sel))) { S.toast('Already guessed!'); return; }
+  if (!st.t0) st.t0 = Date.now();
+  st.guesses.push(sel);
+  const p = P[st.idx], counts = [0, 0, 0, 0];
+  sel.forEach(w => counts[groupOf(p, w)]++);
+  const g = counts.indexOf(4);
+  busy = true; $('submitBtn').disabled = true;
+  // the four selected tiles hop one after another, then the result shows
+  const ts = tilesOf(sel).sort((a, b) => sel.indexOf(a.textContent) - sel.indexOf(b.textContent));
+  ts.forEach((t, i) => setTimeout(() => { t.classList.remove('jump'); void t.offsetWidth; t.classList.add('jump'); }, i * 90));
+  setTimeout(() => {
+    if (g >= 0) {
+      // slide the group into the top free row, then turn it into a coloured bar
+      st.order = p[g][1].filter(w => st.order.indexOf(w) >= 0).sort((a, b) => sel.indexOf(a) - sel.indexOf(b)).concat(st.order.filter(w => sel.indexOf(w) < 0));
+      render(true);
+      setTimeout(() => {
+        st.solved.push(g); st.order = st.order.filter(w => sel.indexOf(w) < 0); st.sel = [];
+        if (st.solved.length === 4) finish(true);
+        busy = false; save(); render();
+      }, 380);
+    } else {
+      st.mistakes++;
+      tilesOf(sel).forEach(t => { t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake'); });
+      if (st.mistakes >= LIVES) { S.toast('Out of mistakes'); setTimeout(revealRest, 700); }
+      else S.toast(counts.indexOf(3) >= 0 ? 'One away…' : 'Not quite');
+      busy = st.mistakes >= LIVES; save(); render();
+      if (st.mistakes < LIVES) busy = false;
+      $('submitBtn').disabled = busy || st.sel.length !== 4;
+    }
+  }, 4 * 90 + 260);
+}
+// lost: show the groups that weren't found, one at a time
+function revealRest() {
+  const p = P[st.idx], left = [0, 1, 2, 3].filter(g => st.solved.indexOf(g) < 0);
+  st.sel = []; finish(false); save();
+  let k = 0;
+  (function next() {
+    if (k >= left.length) { busy = false; render(); return; }
+    const g = left[k++];
+    st.order = p[g][1].concat(st.order.filter(w => p[g][1].indexOf(w) < 0));
+    render(true);
+    setTimeout(() => { st.solved.push(g); st.order = st.order.filter(w => p[g][1].indexOf(w) < 0); save(); render(); setTimeout(next, 450); }, 380);
+  })();
+}
+function finish(win) {
+  st.done = true; st.win = win; st.t1 = Date.now();
+  if (st.mode !== 'daily') return;
+  const m = st.mistakes;
+  K.Daily.finish(SLUG, st.day, { win, score: win ? m : null, tries: st.guesses.length, time: st.t0 ? (st.t1 - st.t0) / 1000 : null, dist: win ? String(m) : 'X' });
+  if (win && m === 0) try { window.BackRoomStats && BackRoomStats.add('perfect', 1); } catch (e) {}
+  setTimeout(() => { if (!S.isOpen()) S.openStats(win ? String(m) : 'X'); }, win ? 1500 : 2600);
+}
+function shareText() {
+  const p = P[st.idx], m = st.mistakes;
+  const line = st.win ? (m === 0 ? 'Perfect!' : m + ' mistake' + (m === 1 ? '' : 's')) : 'Out of mistakes';
+  const grid = st.guesses.map(gs => gs.map(w => EMO[groupOf(p, w)]).join('')).join('\n');
+  return K.shareText(NAME, K.dayNum(st.day || K.today()), line, grid, st.mode);
+}
+['shuffleBtn', 'clearBtn', 'submitBtn'].forEach(id => $(id).addEventListener('mousedown', e => e.preventDefault()));
+$('shuffleBtn').addEventListener('click', () => { if (!st || st.done || busy) return; st.order = K.shuffle(st.order, Math.random); save(); render(true); });
+$('clearBtn').addEventListener('click', () => { if (!st || busy) return; st.sel = []; render(); });
+$('submitBtn').addEventListener('click', submit);
+document.addEventListener('keydown', e => {
+  if (S.isOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter' && !(document.activeElement && document.activeElement.tagName === 'BUTTON')) { e.preventDefault(); submit(); }
+  else if (e.key === 'Escape' || e.key === 'Backspace') { if (st && st.sel.length && !busy) { e.preventDefault(); st.sel = []; render(); } }
+});
+window.addEventListener('resize', layout);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+setInterval(() => { const e = $('nextIn'); if (e) e.textContent = 'Next in ' + K.countdown(); if (st && st.mode === 'daily' && st.day !== K.today() && !busy && !st.sel.length) start('daily'); }, 1000);
+start('daily');
+if (navigator.webdriver) window.__qt = {
+  get st() { return st; }, get busy() { return busy; }, start, submit, toggle, P,
+  groups: () => P[st.idx], pick: ws => { st.sel = []; ws.forEach(toggle); }
+};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="quartets" defer></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+/* Shared look for the daily word games (Quartets, Crosslet, Sleight): the same dark navy theme, fonts, pills,
+   modals and buttons as Deepword and the daily geography games. Each game lays out its own board in its page. */
+:root{
+  --ink:#f1f7ff;
+  --ink-2:rgba(241,247,255,.68);
+  --ink-3:rgba(241,247,255,.42);
+  --aqua:#4fe3c1;
+  --aqua-ink:#042a22;
+  --sun:#ffd166;
+  --coral:#ff7a59;
+  --red:#ff5c7a;
+  --green:#5ef08f;
+  --violet:#b48bff;
+  --night:#04111f;
+  --panel:rgba(5,16,34,.78);
+  --panel-2:rgb(8,22,46);
+  --panel-3:rgb(13,31,62);
+  --line:rgba(241,247,255,.14);
+  --f-d:'Fredoka',ui-rounded,system-ui,sans-serif;
+  --f-u:'Nunito',system-ui,sans-serif;
+  --top:calc(54px + env(safe-area-inset-top,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--ink)}
+body{font-family:var(--f-u);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+
+/* top bar */
+#top{position:fixed;left:0;right:0;top:0;height:var(--top);padding:calc(8px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:8px;z-index:20;background:linear-gradient(180deg,rgba(4,17,31,.96),rgba(4,17,31,.75));border-bottom:1px solid var(--line)}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font:700 13px var(--f-u);color:var(--ink-2);white-space:nowrap;text-decoration:none;cursor:pointer}
+.pill:hover{color:var(--ink)}
+#top h1{margin:0 0 0 2px;font:700 22px/1 var(--f-d);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+#top h1 span{font-size:15px;color:var(--ink-3);font-weight:600;margin-left:6px}
+#top .sp{flex:1}
+.ico{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ico svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+.mode{display:flex;gap:6px;align-items:center;flex:none}
+.seg{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:3px;flex:none}
+.seg button{border:0;background:none;border-radius:999px;padding:6px 12px;font:700 13px var(--f-u);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--aqua);color:var(--aqua-ink)}
+.mode .info{margin-left:auto;font:700 13px var(--f-u);color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.mode .info b{color:var(--ink)}
+
+.cta{background:linear-gradient(180deg,#7af0d6,#2fcfa6);color:var(--aqua-ink);border:0;border-radius:14px;padding:10px 18px;font:700 18px var(--f-d);cursor:pointer;box-shadow:0 4px 0 #148a6b;flex:none;white-space:nowrap}
+.cta:active{transform:translateY(2px);box-shadow:0 2px 0 #148a6b}
+.cta.coral{background:linear-gradient(180deg,#ffa07a,#ff7a59);color:#3a1208;box-shadow:0 4px 0 #a83c22}
+.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:9px 14px;font:700 15px var(--f-d);cursor:pointer;color:var(--ink);white-space:nowrap}
+.ghost:hover{background:rgba(255,255,255,.12)}
+
+/* end card */
+.end{flex:none;background:var(--panel-3);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.end h2{margin:0;font:700 22px/1.15 var(--f-d)}
+.end h2.win{color:var(--green)}
+.end h2.lose{color:var(--coral)}
+.end p{margin:0;font:600 14px/1.4 var(--f-u);color:var(--ink-2)}
+.end p b{color:var(--ink)}
+.end .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.end .next{font:700 13px var(--f-u);color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+/* modals */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(2,8,18,.66);display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.modal .box{position:relative;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.55);width:min(460px,100%);max-height:100%;overflow:auto;padding:20px 20px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.modal h2{margin:0 0 10px;font:700 26px/1.1 var(--f-d)}
+.modal h3{margin:14px 0 6px;font:800 12px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.modal p,.modal li{font:600 15px/1.45 var(--f-u);color:var(--ink-2)}
+.modal p{margin:0 0 8px}
+.modal ul{margin:0 0 8px;padding-left:18px}
+.modal li+li{margin-top:4px}
+.modal b{color:var(--ink)}
+.modal .x{position:absolute;right:10px;top:10px}
+.modal .ex{display:flex;flex-direction:column;gap:5px;margin:8px 0 10px}
+.st4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.st4 b{display:block;font:700 28px/1.1 var(--f-d);font-variant-numeric:tabular-nums}
+.st4 small{font:700 11px/1.2 var(--f-u);color:var(--ink-3);display:block}
+.dist{display:flex;flex-direction:column;gap:4px}
+.dist div{display:flex;align-items:center;gap:8px;font:700 13px var(--f-u)}
+.dist span{width:42px;text-align:right;color:var(--ink-2);flex:none}
+.dist i{display:block;height:20px;min-width:24px;border-radius:5px;background:rgba(255,255,255,.14);font-style:normal;text-align:right;padding:1px 7px;font:800 13px/18px var(--f-u)}
+.dist i.me{background:var(--aqua);color:var(--aqua-ink)}
+.cd{font:700 22px var(--f-d);font-variant-numeric:tabular-nums}
+.foot{margin:14px 0 0;font:600 12px/1.45 var(--f-u);color:var(--ink-3)}
+.foot a{color:var(--ink-3)}
+
+#toast{position:fixed;left:50%;top:calc(var(--top) + 10px);transform:translateX(-50%) translateY(-6px);background:var(--ink);color:var(--night);font:800 14px var(--f-u);padding:9px 16px;border-radius:999px;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
+#toast.on{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:380px){#top h1{font-size:19px}#top h1 span{display:none}.seg button{padding:6px 9px}}
+
+/* the game area under the top bar; each page lays out its own board inside */
+#game{position:fixed;left:0;right:0;bottom:0;top:var(--top);display:flex;flex-direction:column;padding:0 max(0px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px,env(safe-area-inset-left,0px))}
+
+/* on-screen keyboard (touch screens only) */
+.kb{flex:none;display:flex;flex-direction:column;gap:5px;user-select:none;-webkit-user-select:none;width:100%}
+.kb div{display:flex;gap:4px;justify-content:center}
+.kb button{flex:1 1 0;min-width:0;max-width:44px;height:clamp(36px,5.6vh,48px);border:0;border-radius:8px;background:rgba(255,255,255,.12);font:700 17px var(--f-u);color:var(--ink);cursor:pointer;padding:0;touch-action:manipulation;text-transform:uppercase}
+.kb button:active{background:rgba(79,227,193,.35)}
+.kb button.w{max-width:66px;flex-grow:1.5;font-size:13px;text-transform:none}
+.kb button.go{background:var(--aqua);color:var(--aqua-ink)}
+@media (min-aspect-ratio:6/5) and (max-height:520px){.kb button{height:30px;font-size:15px}.kb{gap:4px}.kb div{gap:3px}.seg button{padding:4px 11px}.end{padding:8px 12px;gap:5px}.end h2{font-size:19px}.end p{font-size:13px}}

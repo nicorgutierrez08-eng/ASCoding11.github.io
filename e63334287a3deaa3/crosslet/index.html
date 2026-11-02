@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Crosslet</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/wordplay/kit.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="crosslet" defer></script>
+<style>
+/* Crosslet: a mini crossword. Stacked on phones (tools, clue bar, grid, keyboard); grid beside the keyboard on a
+   sideways phone; grid beside the clue lists on wide screens. */
+:root{--cell:64px;--sel:#ffd166;--word:rgba(79,227,193,.28)}
+#game{background:radial-gradient(ellipse at 50% 40%,#0c2547 0%,#04111f 72%)}
+#wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 12px 10px;width:100%;max-width:640px;margin:0 auto}
+#main{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+#side{display:flex;flex-direction:column;gap:8px;min-height:0}
+#ctl{display:flex;flex-direction:column;gap:8px;flex:none}
+#tools{display:flex;align-items:center;gap:6px;flex:none}
+#timer{font:700 16px var(--f-d);font-variant-numeric:tabular-nums;color:var(--ink);min-width:44px;text-align:right;margin-left:auto}
+.tbtn{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font:700 13px var(--f-u);color:var(--ink-2);cursor:pointer;white-space:nowrap;position:relative}
+.tbtn:hover{color:var(--ink)}
+#pauseBtn{width:34px;padding:6px 0;text-align:center}
+.menu{position:absolute;z-index:30;top:calc(100% + 6px);right:0;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;padding:4px;min-width:120px}
+.menu button{background:none;border:0;text-align:left;padding:8px 12px;border-radius:8px;font:700 14px var(--f-u);color:var(--ink);cursor:pointer}
+.menu button:hover,.menu button:focus-visible{background:rgba(255,255,255,.08)}
+#clueBar{flex:none;display:flex;align-items:stretch;background:rgba(79,227,193,.14);border:1px solid rgba(79,227,193,.4);border-radius:14px;min-height:54px;overflow:hidden}
+#clueBar button.arr{flex:none;width:40px;border:0;background:none;color:var(--ink-2);font:700 22px var(--f-d);cursor:pointer}
+#clueBar button.arr:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+#clueTxt{flex:1;display:flex;align-items:center;gap:8px;padding:6px 4px;border:0;background:none;color:var(--ink);text-align:left;cursor:pointer;font:700 16px/1.25 var(--f-u);min-width:0}
+#clueTxt b{font:700 15px var(--f-d);color:var(--aqua);flex:none}
+#gridBox{flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+#grid{display:grid;gap:0;background:#0a1830;border:2px solid rgba(241,247,255,.55);border-radius:6px;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation;position:relative}
+.cell{width:var(--cell);height:var(--cell);position:relative;background:#f1f7ff;border-right:1px solid #7b8aa3;border-bottom:1px solid #7b8aa3;display:flex;align-items:center;justify-content:center;color:#081627;font:700 calc(var(--cell) * .56)/1 var(--f-d);text-transform:uppercase;cursor:pointer}
+.cell.r{border-right:0}.cell.b{border-bottom:0}
+.cell.blk{background:#0a1830;cursor:default}
+.cell .n{position:absolute;left:3px;top:2px;font:800 calc(var(--cell) * .2)/1 var(--f-u);color:#2a3a55}
+.cell.word{background:#bfeee2}
+.cell.sel{background:var(--sel)}
+.cell.bad .l{color:#d0213f}
+.cell.bad::after{content:'';position:absolute;left:8%;right:8%;top:50%;height:2px;background:#d0213f;transform:rotate(-38deg)}
+.cell.ok .l{color:#1757b8}
+.cell.rev::before{content:'';position:absolute;right:0;top:0;border-style:solid;border-width:0 calc(var(--cell) * .22) calc(var(--cell) * .22) 0;border-color:transparent #d0213f transparent transparent}
+.cell.rev .l{color:#1757b8}
+#grid.won .cell:not(.blk){animation:wave .6s ease-out both}
+@keyframes wave{40%{transform:scale(1.08);background:#5ef08f}100%{transform:none}}
+#paused{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(4,17,31,.92);border-radius:8px;z-index:5;font:700 20px var(--f-d)}
+#lists{display:none;min-height:0;overflow:auto;gap:14px}
+.list h3{margin:0 0 6px;font:800 12px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.list li{display:flex;gap:8px;padding:6px 8px;border-radius:8px;font:600 15px/1.3 var(--f-u);color:var(--ink-2);cursor:pointer;border-left:3px solid transparent}
+.list li b{font:700 14px var(--f-d);color:var(--ink);min-width:18px}
+.list li.cur{background:rgba(79,227,193,.16);color:var(--ink);border-left-color:var(--aqua)}
+.list li.other{border-left-color:rgba(79,227,193,.45)}
+.list li.full{color:var(--ink-3)}
+#endBox{flex:none}
+.kb button.dir{font-size:16px}
+/* wide screens: grid on the left, clue lists on the right */
+body.wide #wrap{max-width:1040px;flex-direction:row;gap:22px;padding:14px 18px}
+body.wide #main{flex:1 1 auto}
+body.wide #side{flex:0 0 min(360px,36vw)}
+body.wide #lists{display:flex;flex-direction:column;flex:1}
+/* sideways phones: grid on the left; tools, clue and keyboard on the right */
+body.sideways #wrap{max-width:none;flex-direction:row;gap:12px;padding:6px 12px 6px}
+body.sideways #main{flex:0 0 min(50vw,calc(100vh - var(--top) - 14px))}
+body.sideways #side{flex:1 1 auto;justify-content:center}
+body.sideways #clueBar{min-height:46px}
+body.sideways #clueTxt{font-size:14px}
+body.sideways .kb button{height:34px}
+</style>
+</head>
+<body>
+<main id="game">
+  <div id="wrap">
+    <div id="main">
+      <div id="ctl">
+      <div id="modeSlot"></div>
+      <div id="tools">
+        <button type="button" class="tbtn" id="pauseBtn" aria-label="Pause" title="Pause">❚❚</button>
+        <span id="timer" aria-label="Time">0:00</span>
+        <button type="button" class="tbtn" id="checkBtn" aria-haspopup="true">Check ▾</button>
+        <button type="button" class="tbtn" id="revealBtn" aria-haspopup="true">Reveal ▾</button>
+      </div>
+      <div id="clueBar">
+        <button type="button" class="arr" id="prevClue" aria-label="Previous clue">‹</button>
+        <button type="button" id="clueTxt" aria-live="polite" title="Tap to switch between across and down"></button>
+        <button type="button" class="arr" id="nextClue" aria-label="Next clue">›</button>
+      </div>
+      </div>
+      <div id="gridBox"><div id="grid" role="grid" aria-label="Crossword grid"></div></div>
+    </div>
+    <div id="side">
+      <div id="lists"><div class="list"><h3>Across</h3><ol id="listA"></ol></div><div class="list"><h3>Down</h3><ol id="listD"></ol></div></div>
+      <div id="endBox" hidden></div>
+    </div>
+  </div>
+</main>
+<script src="/e63334287a3deaa3/wordplay/kit.js"></script>
+<script src="/e63334287a3deaa3/crosslet/puzzles.js"></script>
+<script>
+'use strict';
+(function () {
+const K = Kit, h = K.h, $ = K.$, P = window.CROSSLET || [];
+const SLUG = 'crosslet', NAME = 'Crosslet';
+const HOW = '<p>Fill the little grid so every row and column spells the answer to its clue.</p>' +
+  '<ul><li>Tap a square to pick it; tap it again (or the clue bar) to switch between <b>across</b> and <b>down</b>.</li>' +
+  '<li>Letters move you along the word; <b>‹ ›</b> jump between clues.</li>' +
+  '<li><b>Check</b> marks wrong letters in a square, the word or the whole grid. <b>Reveal</b> fills them in, but then the puzzle no longer counts as a <b>clean solve</b> for your streak.</li>' +
+  '<li>The timer starts with your first letter and stops while the game is paused or hidden.</li></ul>' +
+  '<p>On a computer: type letters, <b>Backspace</b> clears, arrows move, <b>Space</b> switches direction, <b>Tab</b> or <b>Enter</b> goes to the next clue.</p>';
+const DIST = [['0', 'under 1 min'], ['1', '1–2 min'], ['2', '2–3 min'], ['3', '3–5 min'], ['5', '5 min +'], ['R', 'revealed']];
+function bucket(s) { return s < 60 ? '0' : s < 120 ? '1' : s < 180 ? '2' : s < 300 ? '3' : '5'; }
+let st = null, Z = null, paused = false, modalOpen = false, menu = null, lastTick = 0;
+const S = K.shell({
+  slug: SLUG, name: NAME, how: HOW, dist: DIST, distTitle: 'Solve times', winLabel: 'Clean %',
+  extra: () => { const b = K.store.get(SLUG + ':best', null); return h('p', { class: 'foot', style: 'margin:10px 0 0', html: b && b.t ? 'Best clean daily time: <b style="color:var(--ink)">' + K.fmtTime(b.t) + '</b>' : 'Solve a daily grid without revealing to set a best time.' }); },
+  shareText: () => st && st.done ? shareText() : null,
+  onModal: open => { modalOpen = open; }
+});
+const mb = K.modeBar($('modeSlot'), m => start(m));
+const grid = $('grid'), endBox = $('endBox');
+
+// ---------------------------------------------------------------- puzzle model
+function model(p) {
+  const n = p.g.length, cells = [], slots = [];
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) cells.push({ r, c, blk: p.g[r][c] === '#', ans: p.g[r][c], num: 0, a: -1, d: -1 });
+  const at = (r, c) => (r < 0 || c < 0 || r >= n || c >= n) ? null : cells[r * n + c];
+  let num = 0;
+  cells.forEach(x => {
+    if (x.blk) return;
+    const sa = (!at(x.r, x.c - 1) || at(x.r, x.c - 1).blk) && at(x.r, x.c + 1) && !at(x.r, x.c + 1).blk;
+    const sd = (!at(x.r - 1, x.c) || at(x.r - 1, x.c).blk) && at(x.r + 1, x.c) && !at(x.r + 1, x.c).blk;
+    if (sa || sd) x.num = ++num;
+    [[sa, 'a', 0, 1], [sd, 'd', 1, 0]].forEach(([s, dir, dr, dc]) => {
+      if (!s) return;
+      const list = []; let r = x.r, c = x.c;
+      while (at(r, c) && !at(r, c).blk) { list.push(r * n + c); r += dr; c += dc; }
+      slots.push({ dir, num: x.num, cells: list, clue: '' });
+    });
+  });
+  const A = slots.filter(s => s.dir === 'a').sort((a, b) => a.num - b.num), D = slots.filter(s => s.dir === 'd').sort((a, b) => a.num - b.num);
+  A.forEach((s, i) => { s.clue = p.a[i]; }); D.forEach((s, i) => { s.clue = p.d[i]; });
+  const order = A.concat(D);
+  order.forEach((s, i) => { s.i = i; s.cells.forEach(k => { cells[k][s.dir] = i; }); });
+  return { n, cells, slots: order, A, D };
+}
+function save() {
+  if (st.mode !== 'daily') return;
+  K.store.set(SLUG + ':day', { day: st.day, idx: st.idx, L: st.L, rev: st.rev, chk: st.chk, t: Math.round(st.t * 10) / 10, started: st.started, done: st.done, win: st.win, revealed: st.revealed, checks: st.checks });
+}
+function start(m) {
+  closeMenu(); paused = false;
+  let idx, saved = null;
+  if (m === 'daily') {
+    const day = K.today(); saved = K.store.get(SLUG + ':day', null);
+    idx = K.pick(SLUG, P.length, day, true);
+    if (saved && saved.day === day && P[saved.idx]) idx = saved.idx; else saved = null;
+    st = { mode: 'daily', day, idx };
+  } else st = { mode: 'free', day: '', idx: K.randomIndex(P.length, st && st.idx) };
+  Z = model(P[st.idx]);
+  const N = Z.cells.length;
+  Object.assign(st, { L: Array(N).fill(''), rev: Array(N).fill(0), chk: Array(N).fill(0), t: 0, started: false, done: false, win: false, revealed: false, checks: 0, cur: Z.slots[0].cells[0], dir: 'a' });
+  if (saved && Array.isArray(saved.L) && saved.L.length === N) {
+    st.L = saved.L.map(x => /^[A-Z]$/.test(x) ? x : ''); st.rev = (saved.rev || st.rev).slice(0, N); st.chk = (saved.chk || st.chk).slice(0, N);
+    st.t = +saved.t || 0; st.started = !!saved.started; st.done = !!saved.done; st.win = !!saved.win; st.revealed = !!saved.revealed; st.checks = +saved.checks || 0;
+  }
+  const first = Z.slots.find(s => s.cells.some(k => !st.L[k]));
+  if (first) { st.dir = first.dir; st.cur = first.cells.find(k => !st.L[k]); }
+  mb.set(m, true);
+  build(); render();
+}
+// ---------------------------------------------------------------- drawing
+function build() {
+  grid.innerHTML = ''; grid.className = '';
+  grid.style.gridTemplateColumns = 'repeat(' + Z.n + ', var(--cell))';
+  Z.cells.forEach((x, k) => {
+    const e = h('div', { class: 'cell' + (x.blk ? ' blk' : '') + (x.c === Z.n - 1 ? ' r' : '') + (x.r === Z.n - 1 ? ' b' : ''), role: 'gridcell', 'data-k': k });
+    if (!x.blk) { if (x.num) e.appendChild(h('span', { class: 'n', text: String(x.num) })); e.appendChild(h('span', { class: 'l' })); }
+    x.el = e; grid.appendChild(e);
+  });
+  grid.appendChild(h('div', { id: 'paused', hidden: '' }, [h('span', { text: 'Paused' }), h('button', { type: 'button', class: 'cta', text: 'Resume', onclick: () => setPause(false) })]));
+  ['A', 'D'].forEach(D => {
+    const ol = $('list' + D); ol.innerHTML = '';
+    Z[D].forEach(s => { const li = h('li', { 'data-i': s.i }, [h('b', { text: String(s.num) }), h('span', { text: s.clue })]); li.addEventListener('click', () => goSlot(s.i, true)); s.li = li; ol.appendChild(li); });
+  });
+  layout();
+}
+function slotOf(k, dir) { const c = Z.cells[k]; return c[dir] >= 0 ? Z.slots[c[dir]] : null; }
+function curSlot() { return slotOf(st.cur, st.dir) || slotOf(st.cur, st.dir === 'a' ? 'd' : 'a'); }
+function render() {
+  const s = curSlot(), other = slotOf(st.cur, st.dir === 'a' ? 'd' : 'a');
+  Z.cells.forEach((x, k) => {
+    if (x.blk) return;
+    x.el.querySelector('.l').textContent = st.L[k];
+    x.el.classList.toggle('sel', k === st.cur && !st.done);
+    x.el.classList.toggle('word', !st.done && s && s.cells.indexOf(k) >= 0 && k !== st.cur);
+    x.el.classList.toggle('bad', st.chk[k] === 2 && !!st.L[k]);
+    x.el.classList.toggle('ok', st.chk[k] === 1 && !st.rev[k]);
+    x.el.classList.toggle('rev', !!st.rev[k]);
+  });
+  if (s) {
+    $('clueTxt').innerHTML = ''; $('clueTxt').append(h('b', { text: s.num + (s.dir === 'a' ? 'A' : 'D') }), h('span', { text: s.clue }));
+    grid.setAttribute('aria-label', 'Crossword grid. ' + s.num + (s.dir === 'a' ? ' across: ' : ' down: ') + s.clue);
+  }
+  Z.slots.forEach(x => { if (!x.li) return; x.li.classList.toggle('cur', x === s && !st.done); x.li.classList.toggle('other', x === other && x !== s && !st.done); x.li.classList.toggle('full', x.cells.every(k => st.L[k])); });
+  $('timer').textContent = K.fmtTime(st.t);
+  ['checkBtn', 'revealBtn', 'pauseBtn'].forEach(id => { $(id).disabled = st.done; });
+  $('clueBar').hidden = st.done;
+  if (kb) kb.hidden = st.done;
+  grid.classList.toggle('done', st.done);
+  $('paused').hidden = !paused || st.done;
+  endBox.hidden = !st.done; endBox.innerHTML = '';
+  if (st.done) {
+    endBox.className = 'end';
+    endBox.append(
+      h('h2', { class: st.revealed ? 'lose' : 'win', text: st.revealed ? 'Grid complete' : 'Solved in ' + K.fmtTime(st.t) + '!' }),
+      h('p', { html: st.revealed ? 'You finished in <b>' + K.fmtTime(st.t) + '</b> with some help from Reveal, so it isn\'t a clean solve.' : (st.checks ? 'A clean solve, with ' + st.checks + ' check' + (st.checks === 1 ? '' : 's') + '.' : 'A clean solve: no checks, no reveals.') + (st.mode === 'daily' && bestNote ? ' ' + bestNote : '') }),
+      h('div', { class: 'row' }, [
+        h('button', { type: 'button', class: 'cta', text: 'Share', onclick: () => S.share() }),
+        h('button', { type: 'button', class: 'ghost', text: st.mode === 'daily' ? 'Play unlimited' : 'Next one', onclick: () => start('free') }),
+        st.mode === 'daily' ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + K.countdown() }) : null]));
+  }
+  if (S.isOpen && !S.isOpen() && s && s.li && document.body.classList.contains('wide')) { try { s.li.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
+  save();
+}
+let bestNote = '';
+// ---------------------------------------------------------------- layout: choose a mode, then size the cells to fit
+let kb = null;
+function layout() {
+  const W = innerWidth, H = innerHeight;
+  const mode = (W >= 860 && H >= 560) ? 'wide' : (W > H * 1.2 && H < 560) ? 'sideways' : 'stack';
+  document.body.classList.toggle('wide', mode === 'wide'); document.body.classList.toggle('sideways', mode === 'sideways');
+  // the keyboard sits under the grid when stacked, in the side column when sideways
+  const ctl = $('ctl');
+  if (mode === 'sideways') { if (ctl.parentNode !== $('side')) $('side').insertBefore(ctl, $('side').firstChild); }
+  else if (ctl.parentNode !== $('main')) $('main').insertBefore(ctl, $('main').firstChild);
+  if (kb) { const want = mode === 'sideways' ? $('side') : $('main'); if (kb.parentNode !== want) want.appendChild(kb); }
+  if (!Z) return;
+  const box = $('gridBox');
+  document.documentElement.style.setProperty('--cell', '10px');
+  const cs = Math.floor(Math.min(box.clientWidth - 4, box.clientHeight - 4) / Z.n);
+  document.documentElement.style.setProperty('--cell', Math.max(28, Math.min(mode === 'wide' ? 92 : 84, cs)) + 'px');
+}
+if (K.touch) {
+  kb = h('div', { class: 'kb', 'aria-hidden': 'true' });
+  ['qwertyuiop', 'asdfghjkl', 'zxcvbnm⌫'].forEach(row => {
+    const r = h('div');
+    Array.from(row).forEach(ch => {
+      const b = h('button', { type: 'button', tabindex: '-1', text: ch, class: ch === '⌫' ? 'w' : '' });
+      b.addEventListener('pointerdown', e => e.preventDefault());
+      b.addEventListener('click', () => { if (ch === '⌫') back(); else type(ch.toUpperCase()); });
+      r.appendChild(b);
+    });
+    kb.appendChild(r);
+  });
+  $('main').appendChild(kb);
+}
+// ---------------------------------------------------------------- moving and typing
+function locked(k) { return !!st.rev[k] || st.chk[k] === 1; }
+function select(k, dir) {
+  if (Z.cells[k].blk) return;
+  st.cur = k;
+  if (dir && Z.cells[k][dir] >= 0) st.dir = dir;
+  else if (Z.cells[k][st.dir] < 0) st.dir = st.dir === 'a' ? 'd' : 'a';
+  render();
+}
+function toggleDir() { const o = st.dir === 'a' ? 'd' : 'a'; if (Z.cells[st.cur][o] >= 0) { st.dir = o; render(); } }
+function goSlot(i, fromList) {
+  const s = Z.slots[(i + Z.slots.length) % Z.slots.length];
+  st.dir = s.dir; st.cur = s.cells.find(k => !st.L[k]) ?? s.cells[0];
+  if (fromList) begin();
+  render();
+}
+function nextSlot(step) {
+  // next clue that still has gaps (or simply the next one when the grid is full)
+  const s = curSlot(), L = Z.slots.length;
+  for (let j = 1; j <= L; j++) { const t = Z.slots[(s.i + step * j + L * 2) % L]; if (t.cells.some(k => !st.L[k])) return goSlot(t.i); }
+  goSlot(s.i + step);
+}
+function begin() { if (!st.started && !st.done) { st.started = true; lastTick = performance.now(); } }
+function type(ch) {
+  if (!st || st.done || paused || modalOpen) return;
+  begin();
+  const s = curSlot(), k = st.cur;
+  if (!locked(k)) { st.L[k] = ch; if (st.chk[k] === 2) st.chk[k] = 0; }
+  if (Z.cells.every(x => x.blk) || full()) { render(); return judge(); }
+  // auto-advance: the next empty square further along this word; if the rest of the word is full, the next square;
+  // at the end of the word, an earlier gap in it, else the next clue that still has gaps
+  const pos = s.cells.indexOf(k), after = s.cells.slice(pos + 1), gap = after.find(j => !st.L[j]);
+  if (gap != null) { st.cur = gap; render(); }
+  else if (after.length) { st.cur = after[0]; render(); }
+  else { const early = s.cells.find(j => !st.L[j]); if (early != null) { st.cur = early; render(); } else nextSlot(1); }
+}
+function back() {
+  if (!st || st.done || paused || modalOpen) return;
+  begin();
+  const s = curSlot(), k = st.cur;
+  if (st.L[k] && !locked(k)) { st.L[k] = ''; st.chk[k] = 0; render(); return; }
+  const pos = s.cells.indexOf(k);
+  let j = pos > 0 ? s.cells[pos - 1] : null;
+  if (j == null) { const p = Z.slots[(s.i - 1 + Z.slots.length) % Z.slots.length]; st.dir = p.dir; j = p.cells[p.cells.length - 1]; }
+  st.cur = j;
+  if (!locked(j)) { st.L[j] = ''; st.chk[j] = 0; }
+  render();
+}
+function arrow(dr, dc) {
+  const want = dr ? 'd' : 'a';
+  if (st.dir !== want && Z.cells[st.cur][want] >= 0) { st.dir = want; render(); return; }
+  let r = Z.cells[st.cur].r + dr, c = Z.cells[st.cur].c + dc;
+  while (r >= 0 && c >= 0 && r < Z.n && c < Z.n) { const k = r * Z.n + c; if (!Z.cells[k].blk) { select(k, want); return; } r += dr; c += dc; }
+}
+function full() { return Z.cells.every((x, k) => x.blk || st.L[k]); }
+function correct() { return Z.cells.every((x, k) => x.blk || st.L[k] === x.ans); }
+function judge() {
+  if (!full()) return;
+  if (correct()) win();
+  else S.toast('Not quite: something in the grid is wrong', 2200);
+}
+function win() {
+  st.done = true; st.win = !st.revealed; closeMenu();
+  st.t = Math.max(1, Math.floor(st.t)); // one rule for the clock, result card, share text, stats and saved time
+  render();
+  grid.classList.add('won');
+  Z.cells.forEach((x, k) => { if (!x.blk) x.el.style.animationDelay = ((x.r + x.c) * 60) + 'ms'; });
+  if (st.mode === 'daily') {
+    const secs = st.t;
+    K.Daily.finish(SLUG, st.day, { win: st.win, score: st.win ? secs : null, tries: st.checks, time: secs, dist: st.win ? bucket(secs) : 'R' });
+    bestNote = '';
+    if (st.win) {
+      const b = K.store.get(SLUG + ':best', null);
+      if (!b || !b.t || secs < b.t) { if (b && b.t) bestNote = 'A new best time!'; K.store.set(SLUG + ':best', { t: secs, day: st.day }); }
+      try { window.BackRoomStats && BackRoomStats.min('fastest', secs); } catch (e) {}
+    }
+    render();
+    setTimeout(() => { if (!S.isOpen()) S.openStats(st.win ? bucket(secs) : 'R'); }, 1600);
+  }
+}
+// ---------------------------------------------------------------- check and reveal
+function targets(what) { return what === 'square' ? [st.cur] : what === 'word' ? curSlot().cells.slice() : Z.cells.map((x, k) => x.blk ? -1 : k).filter(k => k >= 0); }
+function doCheck(what) {
+  begin(); st.checks++;
+  let wrong = 0, empty = 0;
+  targets(what).forEach(k => { if (!st.L[k]) { empty++; return; } if (st.L[k] === Z.cells[k].ans) st.chk[k] = st.rev[k] ? st.chk[k] : 1; else { st.chk[k] = 2; wrong++; } });
+  render();
+  S.toast(wrong ? wrong + ' wrong letter' + (wrong === 1 ? '' : 's') + ' marked' : empty ? 'No mistakes so far' : 'All correct!');
+}
+function doReveal(what) {
+  begin();
+  let n = 0;
+  targets(what).forEach(k => { if (st.L[k] !== Z.cells[k].ans) { st.L[k] = Z.cells[k].ans; st.rev[k] = 1; st.chk[k] = 0; n++; } });
+  if (n) st.revealed = true;
+  render();
+  if (!n) S.toast('Those letters were already right');
+  if (full()) judge();
+}
+function closeMenu() { if (menu) { menu.remove(); menu = null; } }
+function openMenu(btn, fn) {
+  const was = menu && menu.parentNode === btn; closeMenu(); if (was || st.done) return;
+  menu = h('div', { class: 'menu', role: 'menu' }, [['square', 'Square'], ['word', 'Word'], ['puzzle', 'Puzzle']].map(([v, t]) =>
+    h('button', { type: 'button', role: 'menuitem', text: t, onclick: e => { e.stopPropagation(); closeMenu(); fn(v); } })));
+  btn.appendChild(menu);
+}
+$('checkBtn').addEventListener('click', e => { if (e.target === $('checkBtn')) openMenu($('checkBtn'), doCheck); });
+$('revealBtn').addEventListener('click', e => {
+  if (e.target !== $('revealBtn')) return;
+  openMenu($('revealBtn'), what => { if (what === 'puzzle' && !st.done && !confirm('Reveal the whole grid? It won\'t count as a clean solve.')) return; doReveal(what); });
+});
+document.addEventListener('pointerdown', e => { if (menu && !menu.parentNode.contains(e.target)) closeMenu(); });
+// ---------------------------------------------------------------- pause and timer
+function setPause(on) { if (st.done) on = false; paused = on; closeMenu(); $('pauseBtn').textContent = on ? '▶' : '❚❚'; $('pauseBtn').setAttribute('aria-label', on ? 'Resume' : 'Pause'); lastTick = performance.now(); render(); }
+$('pauseBtn').addEventListener('click', () => setPause(!paused));
+setInterval(() => {
+  const now = performance.now();
+  if (st && st.started && !st.done && !paused && !modalOpen && !document.hidden) {
+    st.t += Math.min(2, (now - lastTick) / 1000);
+    $('timer').textContent = K.fmtTime(st.t);
+    if (Math.floor(st.t) % 5 === 0) save();
+  }
+  lastTick = now;
+  const e = $('nextIn'); if (e) e.textContent = 'Next in ' + K.countdown();
+  if (st && st.mode === 'daily' && st.day !== K.today() && (st.done || !st.started)) start('daily');
+}, 250);
+document.addEventListener('visibilitychange', () => { lastTick = performance.now(); if (st) save(); });
+// ---------------------------------------------------------------- input
+grid.addEventListener('click', e => {
+  const c = e.target.closest('.cell'); if (!c || st.done || paused) return;
+  const k = +c.dataset.k; if (Z.cells[k].blk) return;
+  closeMenu(); begin();
+  if (k === st.cur) toggleDir(); else select(k);
+});
+$('clueTxt').addEventListener('click', () => { if (!st.done) toggleDir(); });
+$('prevClue').addEventListener('click', () => { if (!st.done) goSlot(curSlot().i - 1); });
+$('nextClue').addEventListener('click', () => { if (!st.done) goSlot(curSlot().i + 1); });
+document.addEventListener('keydown', e => {
+  if (!st || S.isOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape' && menu) { closeMenu(); return; }
+  if (st.done || paused) return;
+  const t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+  if (/^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); type(e.key.toUpperCase()); }
+  else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); back(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); arrow(0, -1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); arrow(0, 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); arrow(-1, 0); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); arrow(1, 0); }
+  else if (e.key === ' ') { if (t && t.tagName === 'BUTTON') return; e.preventDefault(); toggleDir(); }
+  else if (e.key === 'Tab' || e.key === 'Enter') { if (e.key === 'Enter' && t && t.tagName === 'BUTTON') return; e.preventDefault(); nextSlot(e.shiftKey ? -1 : 1); }
+});
+['checkBtn', 'revealBtn', 'pauseBtn', 'prevClue', 'nextClue', 'clueTxt'].forEach(id => $(id).addEventListener('mousedown', e => e.preventDefault()));
+function shareText() {
+  const n = K.dayNum(st.day || K.today());
+  const line = st.revealed ? 'finished with help in ' + K.fmtTime(st.t) : 'solved in ' + K.fmtTime(st.t) + (st.checks ? '' : ' ✨');
+  // a picture of the grid's shape: blacks and whites, with revealed squares marked (no letters)
+  const rows = []; for (let r = 0; r < Z.n; r++) { let s = ''; for (let c = 0; c < Z.n; c++) { const k = r * Z.n + c; s += Z.cells[k].blk ? '⬛' : st.rev[k] ? '🟥' : '🟩'; } rows.push(s); }
+  return K.shareText(NAME, n, line, rows.join('\n'), st.mode);
+}
+window.addEventListener('resize', layout);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+start('daily');
+if (navigator.webdriver) window.__cl = {
+  get st() { return st; }, get Z() { return Z; }, start, type, back, select, goSlot, doCheck, doReveal, setPause, P, shareText,
+  typeWord: w => Array.from(w).forEach(ch => type(ch.toUpperCase())),
+  solve: () => { Z.slots.filter(s => s.dir === 'a').forEach(s => { goSlot(s.i); s.cells.forEach(k => type(Z.cells[k].ans)); }); }
+};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="crosslet" defer></script>
+</body>
+</html>
