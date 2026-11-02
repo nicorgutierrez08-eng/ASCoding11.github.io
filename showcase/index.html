@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arjun's Projects</title>
+<meta name="description" content="A web platform Arjun built by hand: original multiplayer browser games, study tools for high schoolers, and engineering projects, with traffic from the site's own analytics.">
+<link rel="canonical" href="https://ascoding11.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Arjun's Projects">
+<meta property="og:title" content="Arjun's Projects">
+<meta property="og:description" content="Original multiplayer browser games, study tools for high schoolers, and engineering projects, built and run by Arjun.">
+<meta property="og:url" content="https://ascoding11.com/">
+<meta property="og:image" content="https://ascoding11.com/hype-cycle-exchange/preview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<!-- The landing page for ascoding11.com: the home page sends visitors here when they arrive with no #, on that address only (see README.md). -->
+<style>
+/* Layout: the site's own ticker-tape identity; a single column with a tape strip of facts, a guided tour, then the live traffic board. */
+:root{
+  --ground:#EEF1EC; --panel:#FFFFFF; --panel-2:#F6F8F4; --ink:#16201B; --ink-2:#4A5751; --muted:#6B7A72; --line:#D3DAD2;
+  --accent:#1D6A4B; --accent-ink:#FFFFFF; --tape:#10261C; --tape-ink:#D8F2E3; --bar2:#7FA894;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ground:#0E1412; --panel:#161E1A; --panel-2:#1B2520; --ink:#E4ECE7; --ink-2:#9FB0A7; --muted:#7F9188; --line:#2A3631;
+  --accent:#4FB488; --accent-ink:#0A1510; --tape:#07100C; --tape-ink:#BFEBD2; --bar2:#3E6E58; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0E1412; --panel:#161E1A; --panel-2:#1B2520; --ink:#E4ECE7; --ink-2:#9FB0A7; --muted:#7F9188; --line:#2A3631;
+  --accent:#4FB488; --accent-ink:#0A1510; --tape:#07100C; --tape-ink:#BFEBD2; --bar2:#3E6E58; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.wrap{max-width:860px;margin:0 auto;padding-block:48px 72px;display:grid;gap:56px}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.kicker{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:0}
+h1,h2{font-family:var(--display);text-transform:uppercase;margin:0;text-wrap:balance}
+h1{font-weight:800;font-size:clamp(52px,11vw,104px);line-height:.9;letter-spacing:.01em}
+h2{font-weight:700;font-size:clamp(28px,5vw,36px);letter-spacing:.03em;line-height:1}
+p{margin:0;max-width:64ch;color:var(--ink-2)}
+.hero{display:grid;gap:18px}
+.lede{font-size:18px}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.url{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+/* ticker tape of facts */
+.tape{background:var(--tape);color:var(--tape-ink);border-radius:10px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px 28px;font-family:var(--mono);font-size:14px}
+.tape b{font-size:18px;color:#fff;font-variant-numeric:tabular-nums;margin-right:6px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tape b{color:var(--tape-ink)}}
+:root[data-theme="dark"] .tape b{color:var(--tape-ink)}
+
+section{display:grid;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+
+/* tour */
+.persona{display:flex;gap:16px;align-items:center;padding:18px 20px}
+.avatar{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:800;font-size:26px}
+.persona h3{margin:0;font-size:17px}
+.persona p{font-size:15px}
+.tour{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:t}
+.stop{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;padding:16px 18px}
+@media (max-width:560px){.stop{grid-template-columns:36px minmax(0,1fr)}.stop .go{grid-column:2}}
+.stop::before{counter-increment:t;content:counter(t);font-family:var(--display);font-weight:800;font-size:34px;line-height:1;color:var(--accent)}
+.stop h3{margin:0;font-size:16px}
+.stop h3 small{font-family:var(--mono);font-weight:500;font-size:12px;color:var(--muted);margin-left:6px}
+.stop p{font-size:15px}
+.go{font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap;border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--ink)}
+.go:hover{border-color:var(--accent);color:var(--accent)}
+
+/* builds */
+.builds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.builds{grid-template-columns:1fr}}
+.build{padding:18px;display:grid;gap:6px;align-content:start}
+.build h3{margin:0;font-size:16px}
+.build p{font-size:15px}
+.tag{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--ink)}
+
+/* dashboard */
+.dash{padding:22px;display:grid;gap:22px}
+.dhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.badge{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:3px 8px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line)}
+.badge.live{color:var(--accent);border-color:var(--accent)}
+.asof{font-size:13px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel-2);border-radius:10px;padding:12px 14px;display:grid;gap:2px}
+.tile b{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.tile span{font-size:13px;color:var(--muted)}
+.empty .tile b{color:var(--muted)}
+.chart h3{margin:0 0 10px;font-size:14px}
+.spark{width:100%;height:120px;display:block}
+.axis{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) 110px;gap:10px;align-items:center;font-size:13px;color:var(--ink-2)}
+@media (max-width:560px){.bar{grid-template-columns:minmax(0,110px) minmax(0,1fr) 84px}}
+.bar .l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{height:10px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+.fill{height:100%;background:var(--accent);border-radius:3px}
+.bar .v{text-align:right;font-family:var(--mono);font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
+.empty .track{background:repeating-linear-gradient(90deg,var(--panel-2) 0 8px,var(--line) 8px 10px)}
+.placeholder{font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:18px;text-align:center}
+.cap{font-size:13px;color:var(--muted)}
+footer{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}
+</style>
+<script src="/analytics/tracker.js" data-site="showcase" defer></script>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Built and run by Arjun · ascoding11.com</p>
+    <h1>Arjun’s Projects</h1>
+    <p class="lede">A web platform I built by hand: original multiplayer browser games, study tools for high schoolers, and engineering projects. It runs on GitHub Pages and Cloudflare with Firebase behind it. There’s no framework and no build step, just about 80,000 lines of HTML, CSS and JavaScript. Other students contribute through pull requests that I review and merge.</p>
+    <div class="ctas">
+      <a class="btn" href="/#new">View the site →</a>
+    </div>
+    <div class="tape" aria-label="At a glance">
+      <span><b>22</b>games</span>
+      <span><b>18</b>multiplayer</span>
+      <span><b>2</b>study tools</span>
+      <span><b>2</b>engineering projects</span>
+      <span><b>100%</b>playable on a phone</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="tourTitle" id="tour">
+    <h2 id="tourTitle">Use it as a student would</h2>
+    <p>You don’t need an account. Each link opens a real page on the live site. The Docket and Prompted links load a made-up student’s data in your own browser, so you see the tools as they look in use.</p>
+    <div class="panel persona">
+      <div class="avatar" aria-hidden="true">M</div>
+      <div><h3>Maya, a high school senior <span class="asof">(fictional)</span></h3>
+      <p>She has five classes, a college list due soon, and ten minutes to kill before math club.</p></div>
+    </div>
+    <ol class="tour">
+      <li class="panel stop"><div><h3>Plan her week <small>Docket</small></h3><p>A study planner for Canvas students. Maya’s sample week across AP Calc, AP Physics and three other classes, scheduled around her calendar.</p></div><a class="go" href="/docket/#sample" target="_blank" rel="noopener">Open as Maya ↗</a></li>
+      <li class="panel stop"><div><h3>Track her college essays <small>Prompted</small></h3><p>Two example schools with every supplement prompt, word limit, draft and status in one place.</p></div><a class="go" href="/prompted/#sample" target="_blank" rel="noopener">Open as Maya ↗</a></li>
+      <li class="panel stop"><div><h3>Warm up for math club <small>Boxed</small></h3><p>Today’s Daily five: real AMC 10 and AIME problems with the official answers, plus practice and live head-to-head games.</p></div><a class="go" href="/boxed/" target="_blank" rel="noopener">Play the Daily ↗</a></li>
+      <li class="panel stop"><div><h3>Trade in class <small>Hype Cycle Exchange</small></h3><p>A live classroom stock-market game. A teacher hosts and the whole class trades through timed rounds.</p></div><a class="go" href="/hype-cycle-exchange/" target="_blank" rel="noopener">See the game ↗</a></li>
+      <li class="panel stop"><div><h3>See the engineering side <small>Joukowsky Dynamics</small></h3><p>A design workbench for a wheel-to-rotor flying car, and Tideline, a radar satellite for watching ports and shipping lanes.</p></div><a class="go" href="https://ascoding11.github.io/Joukowsky-Dynamics/" target="_blank" rel="noopener">Open workbench ↗</a></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="trafficTitle">
+    <h2 id="trafficTitle">Traffic</h2>
+    <p>From the site’s own analytics, which I wrote instead of using Google Analytics. These are anonymous totals for every page, with no names or visitor IDs.</p>
+    <div class="panel dash" id="dash">
+      <div class="dhead"><span class="badge" id="dashBadge">Awaiting numbers</span><span class="asof" id="dashAsof">Updated from the analytics dashboard</span></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="chart"><h3 id="dailyTitle">Visitors per day</h3><div id="daily"></div></div>
+      <div class="chart"><h3>Top pages by visitors</h3><div class="bars" id="sites"></div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="buildTitle">
+    <h2 id="buildTitle">Hard problems I solved</h2>
+    <div class="builds">
+      <div class="panel build"><span class="tag">Networking</span><h3>Smooth multiplayer on school Wi-Fi</h3><p>Position updates arrive late and in bursts. <code>netsmooth.js</code> measures each player’s lag and plays them back from a short history, so other players move smoothly instead of jumping.</p></div>
+      <div class="panel build"><span class="tag">Performance</span><h3>3D on cheap school laptops</h3><p><code>autores.js</code> watches the frame rate in every three.js game and lowers the resolution a tenth at a time when frames drop below 45 a second, then raises it again once the game is smooth.</p></div>
+      <div class="panel build"><span class="tag">Security</span><h3>Sealed safety log and feedback</h3><p>Chat reports and feedback are encrypted in the browser to an admin public key (ECDH P-256 and AES-GCM). Only the admin’s two codes can open them, even though they’re stored in a shared database.</p></div>
+      <div class="panel build"><span class="tag">Product</span><h3>Parties, leaderboards, and a shop</h3><p>Friends form a party and jump into any multiplayer game together. Leaderboards track play time and personal bests. Skins are sold through Stripe and stay with your Google account on every device.</p></div>
+      <div class="panel build"><span class="tag">Data</span><h3>My own analytics</h3><p>A 114-line tracker writes anonymous page views, sessions and engaged time (paused after two idle minutes) to Firestore. A private dashboard shows retention, sources and search clicks.</p></div>
+      <div class="panel build"><span class="tag">Reach</span><h3>Every game works on a phone</h3><p>Each game draws its own touch controls and shows them only on touch screens, so the keyboard-and-mouse version stays unchanged. A separate phone page lists every game as a tile.</p></div>
+    </div>
+  </section>
+
+  <footer>Arjun’s Projects · <a href="/#new">ascoding11.com</a> · also at ascoding11.github.io</footer>
+</div>
+
+<!-- Traffic numbers (anonymous totals, no names or visitor IDs) in the dashboard's "Copy showcase numbers" format, last 30 days to 2026-11-01 (UTC days). Excludes a bot burst on 2026-10-28 02:00-06:00 UTC: 3,158 single 0-second homepage hits with no referrer. -->
+<script type="application/json" id="trafficData">{"updated":"2026-11-01","days":30,"visitors":1076,"pageviews":8313,"sessions":2014,"avgEngagedSec":966,"engagedHours":540,"returning":165,"d1":[70,1058],"w1":[99,615],"mobile":226,"daily":[7,18,43,45,38,45,11,4,8,12,27,40,36,34,124,36,42,79,120,57,85,20,48,162,141,180,137,156,20,13],"sites":[{"name":"Homepage","visitors":744},{"name":"Shell Crackers","visitors":145,"hours":60.5},{"name":"Slipstream","visitors":115,"hours":67.2},{"name":"Rumble Karts","visitors":112,"hours":35.6},{"name":"Web Development Projects page","visitors":112,"hours":1.0},{"name":"Backrooms 1v1","visitors":111,"hours":21.6},{"name":"Boostball","visitors":102,"hours":36.3},{"name":"Hype Cycle Exchange","visitors":87,"hours":12.1}]}</script>
+<script>
+(function(){
+  let d=null;try{d=JSON.parse(document.getElementById('trafficData').textContent)}catch(e){}
+  const dash=document.getElementById('dash');
+  const n=v=>Number(v).toLocaleString('en-US');
+  const dur=s=>s<60?s+'s':Math.floor(s/60)+'m '+(s%60)+'s';
+  const pct=(a,b)=>b?Math.round(100*a/b)+'%':'—';
+  const mk=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e};
+  const tiles=[
+    ['Unique visitors',d&&n(d.visitors)],
+    ['Pageviews',d&&n(d.pageviews)],
+    ['Avg engaged time',d&&dur(d.avgEngagedSec)],
+    ['Hours of engaged use',d&&n(d.engagedHours)],
+    ['Returning visitors',d&&pct(d.returning,d.visitors)],
+    ['On a phone',d&&pct(d.mobile,d.visitors)]
+  ];
+  const t=document.getElementById('tiles');
+  tiles.forEach(([lab,v])=>{const el=mk('div','tile');el.append(mk('b',null,d?v:'—'),mk('span',null,lab));t.append(el)});
+
+  const daily=document.getElementById('daily');
+  if(d&&d.daily&&d.daily.length>1){
+    document.getElementById('dailyTitle').textContent='Visitors per day, last '+d.days+' days';
+    const W=600,H=120,max=Math.max(1,...d.daily),step=W/(d.daily.length-1);
+    const pts=d.daily.map((v,i)=>[i*step,H-6-(H-12)*v/max]);
+    const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    daily.innerHTML=`<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Visitors per day, peak ${max}">
+      <line x1="0" y1="${H-6}" x2="${W}" y2="${H-6}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+      <path d="${line} L${W} ${H-6} L0 ${H-6} Z" fill="var(--accent)" fill-opacity=".14"/>
+      <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+    const ax=mk('div','axis');ax.append(mk('span',null,d.days+' days ago'),mk('span',null,'Peak '+n(max)+' a day'),mk('span',null,'Today: '+n(d.daily[d.daily.length-1])));daily.append(ax);
+  } else daily.append(mk('div','placeholder','The daily chart appears once numbers are added.'));
+
+  const sites=document.getElementById('sites');
+  const rows=d&&d.sites?d.sites:['Homepage','Boxed','Docket','Prompted','Hype Cycle Exchange'].map(name=>({name,visitors:0,hours:0}));
+  const max=Math.max(1,...rows.map(r=>r.visitors));
+  rows.forEach(r=>{const b=mk('div','bar'),tr=mk('div','track'),f=mk('div','fill');f.style.width=d?(100*r.visitors/max)+'%':'0';tr.append(f);
+    b.append(mk('span','l',r.name),tr,mk('span','v',d?n(r.visitors)+(r.name!=='Homepage'&&r.hours!=null?' · '+r.hours+'h':''):'—'));sites.append(b)});
+
+  if(d){dash.classList.remove('empty');const b=document.getElementById('dashBadge');b.textContent='Last '+d.days+' days';b.classList.add('live');
+    document.getElementById('dashAsof').textContent='Updated '+new Date(d.updated+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});}
+  else dash.classList.add('empty');
+})();
+</script>
+</body>
+</html>
