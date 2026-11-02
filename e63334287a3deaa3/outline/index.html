@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Outline</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/geo-data/geo.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="outline" defer></script>
+<style>
+/* Outline: the mystery country's shape, white on the night sky, fills the stage. */
+#stage{background:radial-gradient(ellipse at 50% 45%,#0f2a50 0%,#04111f 70%)}
+#shape{position:absolute;inset:10px 10px 26px;width:calc(100% - 20px);height:calc(100% - 36px);display:block}
+</style>
+</head>
+<body>
+<main id="game">
+  <section id="stage" aria-label="The mystery country's outline">
+    <canvas id="shape" role="img" aria-label="Outline of the mystery country"></canvas>
+    <div class="prompt" id="prompt">Which country has this shape?</div>
+  </section>
+  <section id="panel">
+    <div class="guesses" id="list" aria-live="polite"></div>
+    <div id="endBox" hidden></div>
+  </section>
+</main>
+<script src="/e63334287a3deaa3/geo-data/countries.js"></script>
+<script src="/e63334287a3deaa3/geo-data/shapes.js"></script>
+<script src="/e63334287a3deaa3/geo-data/geo.js"></script>
+<script src="/e63334287a3deaa3/geo-data/six.js"></script>
+<script>
+'use strict';
+(function () {
+const G = Geo;
+const HOW = '<p>Name the country from its <b>outline</b> in six guesses. Its size isn\'t to scale, and islands that belong to it are drawn too.</p>' +
+  '<p>After each wrong guess you see how far your guess is from the answer, which way to go, and how close you are:</p>' +
+  '<div class="ex"><div class="g"><span class="nm">Kenya</span><span class="km">2,992 km</span><span class="ar">⬆️</span><span class="pc">85%</span></div>' +
+  '<div class="g win"><span class="nm">Egypt</span><span class="km"></span><span class="ar">🎉</span><span class="pc">100%</span></div></div>' +
+  '<ul><li>Distances are between the middles of the two countries.</li><li>The arrow points from your guess towards the answer.</li>' +
+  '<li>Type a name and pick it from the suggestions. Common names work too: UK, USA, Holland, Ivory Coast.</li></ul>';
+const game = G.six({
+  slug: 'outline', name: 'Outline', how: HOW, pool: G.pool(2), noun: 'outline', picLabel: 'Shape',
+  picEl: () => G.$('shape'),
+  draw(st, info) {
+    const c = G.$('shape');
+    G.$('prompt').textContent = info.done ? G.byId[st.answer].name : 'Which country has this shape?';
+    G.drawShape(c, st.answer, { fill: info.done ? (st.win ? '#5ef08f' : '#4fe3c1') : '#f1f7ff', glow: 'rgba(120,200,255,.35)', pad: 14, near: true, max: 640 });
+  }
+});
+if (navigator.webdriver) window.__ol = game;
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="outline" defer></script>
+</body>
+</html>

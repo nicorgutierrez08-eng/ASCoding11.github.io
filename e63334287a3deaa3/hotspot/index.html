@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Hotspot</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/geo-data/geo.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="hotspot" defer></script>
+<style>
+/* Hotspot: the globe fills the stage; the panel lists guesses from nearest to farthest. */
+.legend{position:absolute;left:10px;bottom:12px;z-index:3;display:flex;align-items:center;gap:6px;font:800 11px var(--f-u);color:var(--ink-3);pointer-events:none}
+.legend i{display:block;width:96px;height:8px;border-radius:99px;background:linear-gradient(90deg,#fff2d8,#fbd88c,#f9b04a,#f47b20,#e8401c,#c0172b)}
+.g .rank{width:20px;color:var(--ink-3);font-size:12px;text-align:right;flex:none}
+.reveal{align-self:center}
+</style>
+</head>
+<body>
+<main id="game">
+  <section id="stage" aria-label="Globe">
+    <canvas id="globe" class="stage-canvas" aria-label="Globe: drag to turn, pinch or scroll to zoom"></canvas>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
+    <div class="legend" aria-hidden="true">far <i></i> near</div>
+    <div class="tip" id="tip" hidden></div>
+  </section>
+  <section id="panel">
+    <div class="guesses" id="list" aria-live="polite"></div>
+    <div id="endBox" hidden></div>
+  </section>
+</main>
+<script src="/e63334287a3deaa3/geo-data/countries.js"></script>
+<script src="/e63334287a3deaa3/geo-data/shapes.js"></script>
+<script src="/e63334287a3deaa3/geo-data/geo.js"></script>
+<script>
+'use strict';
+(function () {
+const G = Geo, $ = G.$, h = G.h, SLUG = 'hotspot', NAME = 'Hotspot';
+const POOL = G.pool(2);
+const DIST = [['1-3', '1–3'], ['4-6', '4–6'], ['7-10', '7–10'], ['11-15', '11–15'], ['16-25', '16–25'], ['26+', '26+'], ['X', '✗']];
+function bucket(n) { return n <= 3 ? '1-3' : n <= 6 ? '4-6' : n <= 10 ? '7-10' : n <= 15 ? '11-15' : n <= 25 ? '16-25' : '26+'; }
+// cold to hot: cream far away, deep red next door
+const STOPS = [[0, [192, 23, 43]], [400, [232, 64, 28]], [1200, [244, 123, 32]], [2500, [249, 176, 74]], [4500, [251, 216, 140]], [8000, [255, 242, 216]]];
+function heat(d) {
+  for (let i = 1; i < STOPS.length; i++) if (d <= STOPS[i][0]) {
+    const a = STOPS[i - 1], b = STOPS[i], t = (d - a[0]) / (b[0] - a[0]);
+    return 'rgb(' + a[1].map((v, k) => Math.round(v + (b[1][k] - v) * t)).join(',') + ')';
+  }
+  return 'rgb(255,242,216)';
+}
+function sq(d, win) { return win ? '🟩' : d < 1 ? '🟥' : d < 750 ? '🟧' : d < 2500 ? '🟨' : '⬜'; }
+
+const HOW = '<p>Find the <b>mystery country</b>. Every guess is coloured on the globe by how close it is: the nearer its border is to the mystery country\'s border, the hotter the colour.</p>' +
+  '<div class="ex">' +
+  '<div class="g"><span class="sw" style="background:' + heat(6500) + '"></span><span class="nm">Far away</span><span class="km">6,500 km</span></div>' +
+  '<div class="g"><span class="sw" style="background:' + heat(1500) + '"></span><span class="nm">Getting warm</span><span class="km">1,500 km</span></div>' +
+  '<div class="g"><span class="sw" style="background:' + heat(0) + '"></span><span class="nm">It shares a border</span><span class="km">0 km</span></div></div>' +
+  '<ul><li>Guesses are as many as you like. The list keeps the nearest at the top.</li>' +
+  '<li>Distances are between the <b>closest points of the two borders</b>, so a neighbour is 0 km.</li>' +
+  '<li><b>Drag</b> to turn the globe, <b>pinch</b> or scroll to zoom, tap a guessed country to see its name. Small countries get a ring so you can spot them.</li>' +
+  '<li>Type a name and pick it from the suggestions. Common names work too: UK, USA, Ivory Coast, Czech Republic.</li></ul>';
+
+let st = null;       // {mode, day, answer, guesses: [id], done, win, gaveUp, t0, t1}
+let mode = 'daily';
+const S = G.shell({ slug: SLUG, name: NAME, how: HOW, dist: DIST, shareText: () => st && st.done ? shareText() : null });
+const mb = G.modeBar($('panel'), m => start(m));
+$('panel').insertBefore(mb.el, $('list'));
+const box = G.entry({ parent: $('panel'), onGuess: guess, used: id => st && st.guesses.indexOf(id) >= 0, toast: S.toast, placeholder: 'Guess a country…' });
+
+const globe = new G.Globe($('globe'), { lon: 15, lat: 25, maxZoom: 60, style: styleOf, labels: labelsOf });
+$('zin').onclick = () => globe.zoomBy(1.6);
+$('zout').onclick = () => globe.zoomBy(1 / 1.6);
+let tipId = null;
+globe.onTap = id => { tipId = st && id && (st.guesses.indexOf(id) >= 0 || (st.done && id === st.answer)) ? id : null; placeTip(); globe.draw(); };
+globe.onMove = placeTip;
+function placeTip() {
+  const t = $('tip');
+  if (!tipId) { t.hidden = true; return; }
+  const c = G.byId[tipId], p = globe.project(c.lon, c.lat);
+  if (!p[2]) { t.hidden = true; return; }
+  t.hidden = false; t.style.left = p[0] + 'px'; t.style.top = p[1] + 'px';
+  t.textContent = c.name + (tipId === st.answer && st.done ? '' : ' · ' + G.fmtKm(dist(tipId)));
+}
+function dist(id) { return G.borderKm(id, st.answer); }
+function styleOf(id) {
+  if (!st) return null;
+  if (st.done && id === st.answer) return { fill: st.win ? '#5ef08f' : '#4fe3c1', stroke: '#eafff4', lw: 1.6 };
+  if (st.guesses.indexOf(id) >= 0) return { fill: heat(dist(id)), stroke: 'rgba(4,17,31,.9)' };
+  return null;
+}
+function labelsOf() {
+  if (!st) return [];
+  const out = [];
+  st.guesses.forEach(id => { const c = G.byId[id]; if (c.area < 30000 && id !== st.answer) out.push({ id, ring: 9, ringColor: heat(dist(id)) }); });
+  if (st.done) { const c = G.byId[st.answer]; out.push({ id: st.answer, ring: c.area < 30000 ? 11 : 0, ringColor: '#5ef08f', text: c.name, size: 14, color: '#eafff4' }); }
+  if (tipId) { const c = G.byId[tipId]; if (c.area >= 30000 && tipId !== st.answer) out.push({ id: tipId, ring: 0 }); }
+  return out;
+}
+
+function saveDaily() { if (st.mode === 'daily') G.store.set(SLUG + ':day', { day: st.day, guesses: st.guesses, done: st.done, win: st.win, gaveUp: st.gaveUp, t0: st.t0, t1: st.t1 }); }
+function start(m) {
+  mode = m; tipId = null;
+  if (m === 'daily') {
+    const day = G.today(), saved = G.store.get(SLUG + ':day', null);
+    st = { mode: 'daily', day, answer: G.answerFor(SLUG, day), guesses: [], done: false, win: false, gaveUp: false, t0: 0, t1: 0 };
+    if (saved && saved.day === day && Array.isArray(saved.guesses)) {
+      st.guesses = saved.guesses.filter(id => G.byId[id]); st.done = !!saved.done; st.win = !!saved.win; st.gaveUp = !!saved.gaveUp; st.t0 = saved.t0 || 0; st.t1 = saved.t1 || 0;
+    }
+  } else {
+    st = { mode: 'free', day: '', answer: POOL[Math.floor(Math.random() * POOL.length)], guesses: [], done: false, win: false, gaveUp: false, t0: 0, t1: 0 };
+  }
+  mb.set(m, true);
+  render(true);
+  if (st.guesses.length) { const last = G.byId[st.done ? st.answer : st.guesses[st.guesses.length - 1]]; globe.flyTo(last.lon, last.lat, globe.zoom, 500); }
+}
+function guess(c) {
+  if (!st || st.done) return false;
+  if (!st.t0) st.t0 = Date.now();
+  st.guesses.push(c.id);
+  tipId = c.id;
+  if (c.id === st.answer) finish(true);
+  saveDaily();
+  render(false, c.id);
+  const z = c.area < 30000 ? Math.max(globe.zoom, 4) : c.area > 4e6 ? Math.min(globe.zoom, 1.6) : globe.zoom;
+  globe.flyTo(c.lon, c.lat, z, 650);
+  return true;
+}
+function finish(win, gaveUp) {
+  st.done = true; st.win = win; st.gaveUp = !!gaveUp; st.t1 = Date.now(); tipId = null;
+  if (st.mode === 'daily') {
+    const n = st.guesses.length;
+    G.Daily.finish(SLUG, st.day, { win, score: win ? n : null, tries: n, time: st.t0 ? (st.t1 - st.t0) / 1000 : null, dist: win ? bucket(n) : 'X' });
+    if (win) try { window.BackRoomStats && BackRoomStats.min('guesses', n); } catch (e) {}
+    setTimeout(() => { if (!S.isOpen()) S.openStats(win ? bucket(n) : 'X'); }, 1400);
+  }
+}
+let confirmGive = 0;
+function render(full, newId) {
+  const L = $('list'); L.innerHTML = '';
+  const order = st.guesses.slice().sort((a, b) => dist(a) - dist(b) || (a === st.answer ? -1 : 0));
+  if (!order.length) L.appendChild(h('div', { class: 'hint', text: st.mode === 'daily' ? 'Today\'s mystery country is hidden somewhere on the globe. Make a first guess anywhere.' : 'A random mystery country. Make a first guess anywhere.' }));
+  order.forEach((id, i) => {
+    const c = G.byId[id], d = dist(id), win = id === st.answer;
+    const row = h('button', { type: 'button', class: 'g' + (win ? ' win' : '') + (id === newId ? ' new' : ''), title: 'Show ' + c.name + ' on the globe' }, [
+      h('span', { class: 'rank', text: String(st.guesses.indexOf(id) + 1) }),
+      h('span', { class: 'sw', style: 'background:' + (win ? '#5ef08f' : heat(d)) }),
+      h('span', { class: 'nm', text: c.name }),
+      h('span', { class: 'km', text: win ? 'Found it!' : G.fmtKm(d) })]);
+    row.onclick = () => { tipId = id; const z = c.area < 30000 ? Math.max(globe.zoom, 5) : globe.zoom; globe.flyTo(c.lon, c.lat, z, 600); };
+    L.appendChild(row);
+  });
+  if (!st.done && st.guesses.length >= 10) {
+    const b = h('button', { type: 'button', class: 'ghost reveal', text: confirmGive ? 'Tap again to give up' : 'Give up and show it' });
+    b.onclick = () => { if (!confirmGive) { confirmGive = 1; render(); setTimeout(() => { confirmGive = 0; if (!st.done) render(); }, 3000); return; } confirmGive = 0; finish(false, true); saveDaily(); render(); const a = G.byId[st.answer]; globe.flyTo(a.lon, a.lat, a.area < 30000 ? 5 : 2, 800); };
+    L.appendChild(b);
+  }
+  const n = st.guesses.length, best = order.length ? dist(order[0]) : null;
+  mb.info.innerHTML = n ? '<b>' + n + '</b> guess' + (n === 1 ? '' : 'es') + (st.done ? '' : ' · nearest <b>' + G.fmtKm(best) + '</b>') : '';
+  box.enable(!st.done);
+  const E = $('endBox'); E.hidden = !st.done; E.innerHTML = '';
+  if (st.done) {
+    const a = G.byId[st.answer];
+    E.className = 'end';
+    E.append(
+      h('h2', { class: st.win ? 'win' : 'lose', text: st.win ? 'Found it in ' + n + (n === 1 ? ' guess!' : ' guesses!') : 'It was ' + a.name }),
+      h('p', { html: st.win ? 'The mystery country was <b>' + a.name + '</b> (' + G.CONT_NAME[a.cont] + ').' : 'You made ' + n + ' guesses. The nearest was ' + G.fmtKm(best) + ' away.' }),
+      h('div', { class: 'row' }, [
+        h('button', { type: 'button', class: 'cta', text: 'Share', onclick: () => S.share() }),
+        st.mode === 'daily' ? h('button', { type: 'button', class: 'ghost', text: 'Play unlimited', onclick: () => start('free') }) : h('button', { type: 'button', class: 'ghost', text: 'Next country', onclick: () => start('free') }),
+        st.mode === 'daily' ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + G.countdown() }) : null]));
+    if (newId) L.scrollTop = 0;
+  }
+  if (full) box.clear();
+  globe.draw();
+  placeTip();
+}
+setInterval(() => { const e = $('nextIn'); if (e) e.textContent = 'Next in ' + G.countdown(); if (st && st.mode === 'daily' && st.day !== G.today() && !box.input.value) start('daily'); }, 1000);
+function shareText() {
+  const n = st.guesses.length, sq2 = st.guesses.map(id => sq(dist(id), id === st.answer));
+  const rows = []; for (let i = 0; i < Math.min(sq2.length, 30); i += 10) rows.push(sq2.slice(i, i + 10).join(''));
+  if (sq2.length > 30) rows[rows.length - 1] += '…';
+  const best = st.guesses.filter(id => id !== st.answer).reduce((m, id) => Math.min(m, dist(id)), Infinity);
+  const line = st.win ? '🌍 found in ' + n + (n === 1 ? ' guess' : ' guesses') : '🌍 gave up after ' + n + ' (nearest ' + G.fmtKm(best) + ')';
+  return G.shareText(NAME, G.dayNum(st.day || G.today()), line, rows.join('\n'), st.mode);
+}
+start('daily');
+box.focus();
+if (navigator.webdriver) window.__hs = { get st() { return st; }, start, guess: t => box.submitText(t), shareText, globe, heat, dist };
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="hotspot" defer></script>
+</body>
+</html>

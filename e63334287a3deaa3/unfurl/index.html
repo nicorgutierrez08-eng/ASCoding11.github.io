@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Unfurl</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/geo-data/geo.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="unfurl" defer></script>
+<style>
+/* Unfurl: the flag sits in the middle of the stage under six tiles; each wrong guess lifts one. */
+#stage{display:flex;align-items:center;justify-content:center;padding:14px 14px 28px;background:radial-gradient(ellipse at 50% 45%,#0f2a50 0%,#04111f 70%)}
+#flag{position:relative;aspect-ratio:4/3;width:min(100%,calc((100% - 0px) * 1));max-width:min(560px,100%);max-height:100%;border-radius:10px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.5);background:#0b1f3c}
+#flag img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+#tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:0}
+#tiles i{margin:-1px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1b3a68,#122b52);box-shadow:inset 0 0 0 1.5px rgba(4,17,31,.9),inset 0 0 0 3px rgba(255,255,255,.06);font:700 24px var(--f-d);color:rgba(241,247,255,.25);font-style:normal;transition:opacity .45s,transform .45s}
+#tiles i.off{opacity:0;transform:scale(.9) rotate(-2deg);pointer-events:none}
+</style>
+</head>
+<body>
+<main id="game">
+  <section id="stage" aria-label="The mystery flag">
+    <div id="flag"><img id="img" alt="The mystery flag, partly covered" draggable="false"><div id="tiles"></div></div>
+    <div class="prompt" id="prompt">Whose flag is this?</div>
+  </section>
+  <section id="panel">
+    <div class="guesses" id="list" aria-live="polite"></div>
+    <div id="endBox" hidden></div>
+  </section>
+</main>
+<script src="/e63334287a3deaa3/geo-data/countries.js"></script>
+<script src="/e63334287a3deaa3/geo-data/geo.js"></script>
+<script src="/e63334287a3deaa3/geo-data/six.js"></script>
+<script>
+'use strict';
+(function () {
+const G = Geo, $ = G.$;
+for (let i = 0; i < 6; i++) $('tiles').appendChild(G.h('i', { text: String(i + 1) }));
+// The flag box keeps 4:3 and fits the stage both ways.
+function fit() {
+  const s = $('stage').getBoundingClientRect(), w = Math.max(60, Math.min(560, s.width - 28, (s.height - 42) * 4 / 3));
+  $('flag').style.width = w + 'px'; $('flag').style.height = (w * 3 / 4) + 'px';
+}
+new ResizeObserver(fit).observe($('stage'));
+const HOW = '<p>Name the country from its <b>flag</b> in six guesses. The flag starts under six tiles with one lifted, and every wrong guess lifts another.</p>' +
+  '<p>Each wrong guess also shows how far it is from the answer, which way to go, and how close you are:</p>' +
+  '<div class="ex"><div class="g"><span class="nm">Peru</span><span class="km">2,447 km</span><span class="ar">⬇️</span><span class="pc">88%</span></div>' +
+  '<div class="g win"><span class="nm">Argentina</span><span class="km"></span><span class="ar">🎉</span><span class="pc">100%</span></div></div>' +
+  '<ul><li>Distances are between the middles of the two countries.</li><li>Type a name and pick it from the suggestions. Common names work too: UK, USA, Ivory Coast, Czech Republic.</li></ul>';
+let shownFor = '';
+const game = G.six({
+  slug: 'unfurl', name: 'Unfurl', how: HOW, pool: G.pool(1), noun: 'flag', picLabel: 'Flag',
+  foot: ' Flags from the flag-icons collection (MIT licence).',
+  picEl: () => $('flag'),
+  draw(st, info) {
+    const key = st.answer + '|' + st.day + '|' + st.mode;
+    if (shownFor !== key) { shownFor = key; $('img').src = '/e63334287a3deaa3/geo-data/flags/' + st.answer + '.svg'; }
+    const order = G.shuffle([0, 1, 2, 3, 4, 5], G.rng('unfurl-tiles-' + st.answer + st.day));
+    const open = info.done ? 6 : Math.min(6, 1 + info.wrong);
+    [...$('tiles').children].forEach((t, i) => t.classList.toggle('off', order.indexOf(i) < open));
+    $('tiles').classList.toggle('done', info.done);
+    $('img').alt = info.done ? 'Flag of ' + G.byId[st.answer].name : 'The mystery flag, ' + open + ' of 6 tiles showing';
+    $('prompt').textContent = info.done ? G.byId[st.answer].name : open + ' of 6 tiles showing';
+    fit();
+  }
+});
+if (navigator.webdriver) window.__uf = game;
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="unfurl" defer></script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Overland</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/geo-data/geo.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="overland" defer></script>
+<style>
+/* Overland: a zoomed-in globe shows the start, the end and every country you name; the panel holds the trip. */
+.route{flex:none;display:flex;align-items:center;gap:8px;font:700 16px var(--f-d);flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 12px;font:700 16px var(--f-d);color:#04111f;white-space:nowrap}
+.chip.a{background:#4fe3c1}
+.chip.b{background:#b48bff}
+.route .to{color:var(--ink-3);font-size:18px}
+.need{flex:none;font:700 13px/1.35 var(--f-u);color:var(--ink-2)}
+.need b{color:var(--ink)}
+.g .tag2{font:800 11px var(--f-u);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.key{position:absolute;left:10px;bottom:10px;z-index:3;display:flex;gap:10px;flex-wrap:wrap;font:800 11px var(--f-u);color:var(--ink-2);pointer-events:none;background:rgba(4,17,31,.6);padding:5px 9px;border-radius:10px}
+.key span{display:inline-flex;align-items:center;gap:4px}
+.key i{width:10px;height:10px;border-radius:3px;display:inline-block}
+@media (min-aspect-ratio:6/5) and (max-height:520px){.chip{padding:3px 10px;font-size:14px}.route .to{font-size:15px}.need{font-size:12px}}
+@media (max-width:520px){.key{display:none}}
+</style>
+</head>
+<body>
+<main id="game">
+  <section id="stage" aria-label="Map">
+    <canvas id="map" class="stage-canvas" aria-label="Map: drag to move, pinch or scroll to zoom"></canvas>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
+    <div class="key" aria-hidden="true"><span><i style="background:#5ef08f"></i>on a shortest route</span><span><i style="background:#ffd166"></i>close</span><span><i style="background:#ff5c7a"></i>off track</span></div>
+    <div class="tip" id="tip" hidden></div>
+  </section>
+  <section id="panel">
+    <div class="route" id="route"></div>
+    <div class="need" id="need"></div>
+    <div class="guesses" id="list" aria-live="polite"></div>
+    <div id="endBox" hidden></div>
+  </section>
+</main>
+<script src="/e63334287a3deaa3/geo-data/countries.js"></script>
+<script src="/e63334287a3deaa3/geo-data/shapes.js"></script>
+<script src="/e63334287a3deaa3/geo-data/geo.js"></script>
+<script>
+'use strict';
+(function () {
+const G = Geo, $ = G.$, h = G.h, SLUG = 'overland', NAME = 'Overland', EXTRA = 4;
+const COL = { a: '#4fe3c1', b: '#b48bff', green: '#5ef08f', yellow: '#ffd166', red: '#ff5c7a', path: 'rgba(94,240,143,.28)' };
+const DIST = [['0', 'Perfect'], ['1', '+1'], ['2', '+2'], ['3', '+3'], ['4', '+4'], ['X', '✗']];
+const HOW = '<p>Travel <b>overland</b> from one country to another by naming the countries in between. Each country you name has to share a <b>land border</b> with the next one on your route.</p>' +
+  '<div class="ex"><div class="route"><span class="chip a">France</span><span class="to">→</span><span class="chip b">Poland</span></div>' +
+  '<div class="g"><span class="sw" style="background:' + COL.green + '"></span><span class="nm">Germany</span><span class="tag2">on a shortest route</span></div></div>' +
+  '<p>Every guess is coloured:</p><ul>' +
+  '<li><b style="color:' + COL.green + '">Green</b>: it\'s on one of the shortest routes.</li>' +
+  '<li><b style="color:' + COL.yellow + '">Yellow</b>: close, a detour of one or two countries.</li>' +
+  '<li><b style="color:' + COL.red + '">Red</b>: off track (or not joined to the route by land).</li></ul>' +
+  '<p>You win as soon as the countries you\'ve named join up into a route. You get the length of the shortest route plus ' + EXTRA + ' guesses. Only land borders count: no bridges, tunnels or ferries.</p>' +
+  '<ul><li><b>Drag</b> the map, <b>pinch</b> or scroll to zoom. Tap a country you\'ve named to see its name.</li><li>Type a name and pick it from the suggestions. Common names work too: UK, USA, DRC, Ivory Coast.</li></ul>';
+
+let st = null; // {mode, day, a, b, short, guesses:[id], done, win, t0, t1}
+let dA = {}, dB = {}, D = 0;
+const S = G.shell({ slug: SLUG, name: NAME, how: HOW, dist: DIST, distTitle: 'Guesses over the shortest', shareText: () => st && st.done ? shareText() : null });
+const mb = G.modeBar($('panel'), m => start(m));
+$('panel').insertBefore(mb.el, $('route'));
+const box = G.entry({ parent: $('panel'), onGuess: guess, used: id => st && (st.guesses.indexOf(id) >= 0), toast: S.toast, placeholder: 'Name a country on the way…' });
+
+const map = new G.Globe($('map'), { lon: 10, lat: 45, zoom: 3, maxZoom: 60, fitMax: 12, style: styleOf, labels: labelsOf });
+$('zin').onclick = () => map.zoomBy(1.6);
+$('zout').onclick = () => map.zoomBy(1 / 1.6);
+let tipId = null;
+map.onTap = id => { tipId = st && id && (st.guesses.indexOf(id) >= 0 || id === st.a || id === st.b || (st.done && pathSet[id])) ? id : null; placeTip(); };
+map.onMove = placeTip;
+function placeTip() {
+  const t = $('tip'); if (!tipId) { t.hidden = true; return; }
+  const c = G.byId[tipId], p = map.project(c.lon, c.lat); if (!p[2]) { t.hidden = true; return; }
+  t.hidden = false; t.style.left = p[0] + 'px'; t.style.top = p[1] + 'px'; t.textContent = c.name;
+}
+function colourOf(id) {
+  if (!(id in dA) || !(id in dB)) return 'red';
+  const s = dA[id] + dB[id];
+  return s === D ? 'green' : s <= D + 2 ? 'yellow' : 'red';
+}
+let pathSet = {};
+function styleOf(id) {
+  if (!st) return null;
+  if (id === st.a) return { fill: COL.a, stroke: '#eafff9', lw: 1.4 };
+  if (id === st.b) return { fill: COL.b, stroke: '#f3ebff', lw: 1.4 };
+  if (st.guesses.indexOf(id) >= 0) return { fill: COL[colourOf(id)] };
+  if (st.done && pathSet[id]) return { fill: COL.path, stroke: COL.green, lw: 1.2 };
+  return null;
+}
+function labelsOf() {
+  if (!st) return [];
+  const A = G.byId[st.a], B = G.byId[st.b];
+  const out = [{ id: st.a, text: A.name, size: 13, ring: A.area < 30000 ? 9 : 0, ringColor: COL.a }, { id: st.b, text: B.name, size: 13, ring: B.area < 30000 ? 9 : 0, ringColor: COL.b }];
+  st.guesses.forEach(id => { const c = G.byId[id]; out.push({ id, text: c.name, size: 11, ring: c.area < 20000 ? 8 : 0, ringColor: COL[colourOf(id)] }); });
+  if (st.done) Object.keys(pathSet).forEach(id => { if (st.guesses.indexOf(id) < 0) out.push({ id, text: G.byId[id].name, size: 11, color: '#c9ffd9' }); });
+  return out;
+}
+// Is there a route from a to b through the named countries? Returns it (a … b) or null.
+function routeThrough(set) {
+  const prev = {}; prev[st.a] = null; const q = [st.a];
+  for (let i = 0; i < q.length; i++) {
+    const c = G.byId[q[i]];
+    for (const x of c.nb) {
+      if (x in prev || !(x === st.b || set[x])) continue;
+      prev[x] = c.id; if (x === st.b) { const r = [x]; let p = c.id; while (p) { r.unshift(p); p = prev[p]; } return r; }
+      q.push(x);
+    }
+  }
+  return null;
+}
+function shortestRoute() { // one shortest route, choosing alphabetically at ties so it's the same every time
+  const r = [st.a]; let cur = st.a;
+  while (cur !== st.b) { cur = G.byId[cur].nb.filter(x => dB[x] === dB[cur] - 1).sort()[0]; if (!cur) break; r.push(cur); }
+  return r;
+}
+function setup(a, b) {
+  dA = G.hops(a); dB = G.hops(b); D = dA[b];
+  st.a = a; st.b = b; st.short = D - 1; st.max = st.short + EXTRA;
+}
+function save() { if (st.mode === 'daily') G.store.set(SLUG + ':day', { day: st.day, guesses: st.guesses, done: st.done, win: st.win, t0: st.t0, t1: st.t1 }); }
+function start(m) {
+  tipId = null; pathSet = {};
+  if (m === 'daily') {
+    const day = G.today(), pr = G.pairFor(day), saved = G.store.get(SLUG + ':day', null);
+    st = { mode: 'daily', day, guesses: [], done: false, win: false, t0: 0, t1: 0 };
+    setup(pr[0], pr[1]);
+    if (saved && saved.day === day && Array.isArray(saved.guesses)) {
+      st.guesses = saved.guesses.filter(id => G.byId[id] && id !== st.a && id !== st.b).slice(0, st.max);
+      st.done = !!saved.done; st.win = !!saved.win; st.t0 = saved.t0 || 0; st.t1 = saved.t1 || 0;
+    }
+  } else {
+    const pr = G.randomPair(Math.random);
+    st = { mode: 'free', day: '', guesses: [], done: false, win: false, t0: 0, t1: 0 };
+    setup(pr[0], pr[1]);
+  }
+  if (st.done) markPath();
+  mb.set(m, true); box.clear();
+  render();
+  map.resize();
+  map.fit([st.a, st.b].concat(st.done ? Object.keys(pathSet) : st.guesses.filter(id => colourOf(id) !== 'red')), 0, 0.4);
+}
+function markPath() {
+  pathSet = {};
+  const set = {}; st.guesses.forEach(id => set[id] = 1);
+  const r = (st.win && routeThrough(set)) || shortestRoute();
+  r.slice(1, -1).forEach(id => pathSet[id] = 1);
+}
+function guess(c) {
+  if (!st || st.done) return false;
+  if (c.id === st.a || c.id === st.b) { S.toast(c.name + ' is where you ' + (c.id === st.a ? 'start' : 'finish')); return false; }
+  if (!st.t0) st.t0 = Date.now();
+  st.guesses.push(c.id);
+  const set = {}; st.guesses.forEach(id => set[id] = 1);
+  const col = colourOf(c.id);
+  if (routeThrough(set)) finish(true);
+  else if (st.guesses.length >= st.max) finish(false);
+  else S.toast(col === 'green' ? c.name + ' is on a shortest route' : col === 'yellow' ? c.name + ' is close' : c.name + (c.id in dA ? ' is off track' : ' isn\'t joined by land'), 1400);
+  save(); render(c.id);
+  if (col !== 'red' || st.done) map.fit([st.a, st.b].concat(st.done ? Object.keys(pathSet).concat(st.guesses.filter(id => colourOf(id) !== 'red')) : st.guesses.filter(id => colourOf(id) !== 'red')), 600, 0.4);
+  else if (c.id in dA) map.fit([st.a, st.b, c.id], 600, 0.4);
+  return true;
+}
+function finish(win) {
+  st.done = true; st.win = win; st.t1 = Date.now();
+  markPath();
+  const n = st.guesses.length, over = n - st.short;
+  if (st.mode === 'daily') {
+    G.Daily.finish(SLUG, st.day, { win, score: win ? over : null, tries: n, time: st.t0 ? (st.t1 - st.t0) / 1000 : null, dist: win ? String(Math.min(4, over)) : 'X' });
+    if (win && over === 0) try { window.BackRoomStats && BackRoomStats.add('perfect', 1); } catch (e) {}
+    setTimeout(() => { if (!S.isOpen()) S.openStats(win ? String(Math.min(4, over)) : 'X'); }, 1500);
+  }
+}
+function render(newId) {
+  const A = G.byId[st.a], B = G.byId[st.b];
+  $('route').innerHTML = '';
+  $('route').append(h('span', { class: 'chip a', text: A.name }), h('span', { class: 'to', text: '→' }), h('span', { class: 'chip b', text: B.name }));
+  const left = st.max - st.guesses.length;
+  $('need').innerHTML = 'The shortest route goes through <b>' + st.short + '</b> countr' + (st.short === 1 ? 'y' : 'ies') + '.' + (st.done ? '' : ' <b>' + left + '</b> guess' + (left === 1 ? '' : 'es') + ' left.');
+  mb.info.textContent = '';
+  const L = $('list'); L.innerHTML = '';
+  if (!st.guesses.length) L.appendChild(h('div', { class: 'hint', text: 'Name a country that borders ' + A.name + ' or ' + B.name + ', or any country you think is on the way.' }));
+  st.guesses.forEach(id => {
+    const c = G.byId[id], col = colourOf(id);
+    const row = h('button', { type: 'button', class: 'g' + (id === newId ? ' new' : '') }, [
+      h('span', { class: 'sw', style: 'background:' + COL[col] }), h('span', { class: 'nm', text: c.name }),
+      h('span', { class: 'tag2', text: col === 'green' ? 'on route' : col === 'yellow' ? 'close' : (id in dA ? 'off track' : 'no land link') })]);
+    row.onclick = () => { tipId = id; map.flyTo(c.lon, c.lat, map.zoom, 500); };
+    L.appendChild(row);
+  });
+  if (newId) L.scrollTop = L.scrollHeight;
+  box.enable(!st.done);
+  const E = $('endBox'); E.hidden = !st.done; E.innerHTML = '';
+  if (st.done) {
+    const n = st.guesses.length, over = n - st.short;
+    const sr = shortestRoute().map(id => G.byId[id].name).join(' → ');
+    E.className = 'end';
+    E.append(
+      h('h2', { class: st.win ? 'win' : 'lose', text: st.win ? (over === 0 ? 'Perfect route!' : 'You made it!') : 'Out of guesses' }),
+      h('p', { html: st.win ? 'You got there in <b>' + n + '</b> guess' + (n === 1 ? '' : 'es') + (over ? ', ' + over + ' more than the shortest.' : ', the shortest possible.') : 'One shortest route: <b>' + sr + '</b>' }),
+      h('p', { html: 'One shortest route: <b>' + sr + '</b>', hidden: !(st.win && over) }),
+      h('div', { class: 'row' }, [
+        h('button', { type: 'button', class: 'cta', text: 'Share', onclick: () => S.share() }),
+        h('button', { type: 'button', class: 'ghost', text: st.mode === 'daily' ? 'Play unlimited' : 'Next trip', onclick: () => start('free') }),
+        st.mode === 'daily' ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + G.countdown() }) : null]));
+  }
+  map.draw(); placeTip();
+}
+setInterval(() => { const e = $('nextIn'); if (e) e.textContent = 'Next in ' + G.countdown(); if (st && st.mode === 'daily' && st.day !== G.today() && !box.input.value) start('daily'); }, 1000);
+function shareText() {
+  const n = st.guesses.length, sq = { green: '🟩', yellow: '🟨', red: '🟥' };
+  const line = st.win ? '✅ ' + n + ' guess' + (n === 1 ? '' : 'es') + (n === st.short ? ' (perfect)' : ' (shortest ' + st.short + ')') : '❌ (shortest ' + st.short + ')';
+  return G.shareText(NAME, G.dayNum(st.day || G.today()), line, st.guesses.map(id => sq[colourOf(id)]).join(''), st.mode);
+}
+start('daily');
+box.focus();
+if (navigator.webdriver) window.__ov = { get st() { return st; }, start, guess: t => box.submitText(t), shareText, map, colourOf, shortestRoute, routeThrough };
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="overland" defer></script>
+</body>
+</html>
