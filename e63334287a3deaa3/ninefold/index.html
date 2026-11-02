@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Ninefold</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="ninefold" defer></script>
+<style>
+/* Ninefold: the daily sudoku. Same dark navy look, fonts, top bar, pills and modals as Deepword and the daily geography games. */
+:root{
+  --ink:#f1f7ff;--ink-2:rgba(241,247,255,.68);--ink-3:rgba(241,247,255,.42);
+  --aqua:#4fe3c1;--aqua-ink:#042a22;--sun:#ffd166;--coral:#ff7a59;--red:#ff5c7a;--green:#5ef08f;--violet:#b48bff;
+  --night:#04111f;--panel:rgba(5,16,34,.78);--panel-2:rgb(8,22,46);--panel-3:rgb(13,31,62);--line:rgba(241,247,255,.14);
+  --f-d:'Fredoka',ui-rounded,system-ui,sans-serif;--f-u:'Nunito',system-ui,sans-serif;
+  --top:calc(54px + env(safe-area-inset-top,0px));
+  --bs:320px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--ink)}
+body{font-family:var(--f-u);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+#top{position:fixed;left:0;right:0;top:0;height:var(--top);padding:calc(8px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:8px;z-index:20;background:linear-gradient(180deg,rgba(4,17,31,.96),rgba(4,17,31,.75));border-bottom:1px solid var(--line)}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font:700 13px var(--f-u);color:var(--ink-2);white-space:nowrap;text-decoration:none;cursor:pointer}
+.pill:hover{color:var(--ink)}
+#top h1{margin:0 0 0 2px;font:700 22px/1 var(--f-d);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+#top h1 span{font-size:15px;color:var(--ink-3);font-weight:600;margin-left:6px}
+#top .sp{flex:1}
+.ico{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ico svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:440px){#top h1 span{display:none}}
+@media (max-width:380px){#top h1{font-size:19px}#top{gap:6px}.ico{width:34px;height:34px}}
+
+#game{position:fixed;left:0;right:0;bottom:0;top:var(--top);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+#stage{position:relative;flex:none;width:var(--bs);height:var(--bs)}
+#panel{position:relative;flex:none;width:min(100%,560px);display:flex;flex-direction:column;gap:8px}
+@media (min-aspect-ratio:6/5){
+  #game{flex-direction:row;gap:18px}
+  #panel{width:min(400px,44vw);max-height:100%}
+}
+.mode{display:flex;gap:6px;align-items:center;flex:none;min-width:0}
+.seg{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:3px;flex:none}
+.seg button{border:0;background:none;border-radius:999px;padding:6px 12px;font:700 13px var(--f-u);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--aqua);color:var(--aqua-ink)}
+.seg button .ok{color:var(--green);margin-left:3px}
+.seg button.on .ok{color:var(--aqua-ink)}
+.mode .info{margin-left:auto;font:700 13px var(--f-u);color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+.mode .info b{color:var(--ink)}
+.mode .newb{margin-left:auto;padding:6px 12px;font-size:13px;border-radius:999px}
+
+/* the board */
+#board{position:absolute;inset:0;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);background:var(--panel-2);border:2px solid rgba(241,247,255,.55);border-radius:10px;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.c{position:relative;border-right:1px solid rgba(241,247,255,.12);border-bottom:1px solid rgba(241,247,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;font:600 calc(var(--bs)*.068)/1 var(--f-d);color:var(--aqua);font-variant-numeric:tabular-nums}
+.c:nth-child(9n){border-right:0}
+.c.r8{border-bottom:0}
+.c.bx{border-right:2px solid rgba(241,247,255,.5)}
+.c.by{border-bottom:2px solid rgba(241,247,255,.5)}
+.c.g{color:var(--ink);font-weight:700}
+.c.peer{background:rgba(255,255,255,.055)}
+.c.same{background:rgba(79,227,193,.2)}
+.c.sel{background:rgba(79,227,193,.42)}
+.c.sel.g,.c.same.g{color:#fff}
+.c.bad{color:var(--red)}
+.c.bad.sel{color:#ffd3dc}
+.c.hinted{color:var(--sun)}
+.c.flash{animation:flash 1.2s ease-out}
+.c.pat{box-shadow:inset 0 0 0 2px rgba(255,209,102,.75)}
+.c.unit{background:rgba(255,209,102,.12)}
+.c.unit.sel{background:rgba(79,227,193,.42)}
+@keyframes flash{0%{background:rgba(255,209,102,.7)}100%{background:transparent}}
+.c .n{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font:700 calc(var(--bs)*.026)/1 var(--f-u);color:var(--ink-2)}
+.c .n span{display:flex;align-items:center;justify-content:center}
+.c .n span.hl{color:var(--aqua-ink);background:var(--aqua);border-radius:3px}
+#board.won .c{animation:won .9s ease-out both}
+@keyframes won{0%{background:rgba(94,240,143,.0)}40%{background:rgba(94,240,143,.32)}100%{background:transparent}}
+#busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,17,31,.72);border-radius:10px;font:700 16px var(--f-u);color:var(--ink-2);z-index:3;text-align:center;padding:20px}
+
+/* controls */
+#controls{display:flex;flex-direction:column;gap:8px;flex:none}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tool{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:6px 4px;font:700 12px var(--f-u);color:var(--ink-2);cursor:pointer;position:relative}
+.tool svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tool:hover{color:var(--ink);background:rgba(255,255,255,.1)}
+.tool.on{background:rgba(79,227,193,.18);border-color:rgba(79,227,193,.6);color:var(--ink)}
+.tool .badge{position:absolute;top:3px;right:6px;font:800 10px var(--f-u);color:var(--aqua-ink);background:var(--aqua);border-radius:999px;padding:1px 5px}
+.tool.on .badge{background:var(--sun);color:#2c1d00}
+.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+.pad button{position:relative;border:0;border-radius:10px;background:rgba(255,255,255,.12);font:600 24px/1 var(--f-d);color:var(--ink);cursor:pointer;height:clamp(44px,7vh,58px);padding:0;touch-action:manipulation}
+.pad button:hover{background:rgba(255,255,255,.18)}
+.pad button:active{background:rgba(79,227,193,.35)}
+.pad button small{position:absolute;top:4px;right:6px;font:700 10px/1 var(--f-u);color:var(--ink-3)}
+.pad button.full{opacity:.32}
+.pad.notes button{color:var(--sun)}
+@media (min-aspect-ratio:6/5){
+  .pad{grid-template-columns:repeat(3,1fr);gap:6px}
+  .pad button{height:clamp(40px,11vh,64px);font-size:26px}
+}
+@media (min-aspect-ratio:6/5) and (max-height:520px){
+  #game{padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  #panel,#controls{gap:5px}
+  .pad{gap:4px}.pad button{height:calc((100vh - var(--top) - 190px) / 3);min-height:30px;font-size:20px}.pad button small{top:3px;right:4px;font-size:9px}
+  .tool{padding:3px 4px;font-size:11px;flex-direction:row;justify-content:center;gap:5px}.tool svg{width:17px;height:17px}.tool .badge{position:static;padding:1px 4px}
+  .seg button{padding:4px 10px}
+  .end{padding:8px 12px;gap:5px}.end h2{font-size:19px}.end p{font-size:13px}
+}
+@media (max-aspect-ratio:6/5) and (max-height:700px){
+  #game{gap:6px;padding-top:6px}#panel,#controls{gap:6px}
+  .pad button{height:44px;font-size:22px}
+  .tool{padding:4px;flex-direction:row;justify-content:center;gap:5px}
+  .tool .badge{position:static;padding:1px 4px}
+  .seg button{padding:5px 10px}
+}
+@media (max-width:370px){.seg button{padding:5px 8px}.mode .info{font-size:12px}}
+
+/* hint and end cards */
+#hintBox{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--panel-3);border:1px solid rgba(255,209,102,.55);border-radius:16px;padding:12px 14px;box-shadow:0 -10px 30px rgba(0,0,0,.45);max-height:calc(100vh - var(--top) - 24px);overflow:auto}
+#hintBox h3{margin:0 0 6px;font:700 18px var(--f-d);color:var(--sun)}
+#hintBox ol{margin:0 0 8px;padding-left:20px}
+#hintBox li,#hintBox p{font:600 14px/1.4 var(--f-u);color:var(--ink-2);margin:0 0 6px}
+#hintBox li b,#hintBox p b{color:var(--ink)}
+#hintBox .row{display:flex;justify-content:flex-end}
+.end{flex:none;background:var(--panel-3);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.end h2{margin:0;font:700 22px/1.15 var(--f-d)}
+.end h2.win{color:var(--green)}
+.end p{margin:0;font:600 14px/1.4 var(--f-u);color:var(--ink-2)}
+.end p b{color:var(--ink)}
+.end .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.end .next{font:700 13px var(--f-u);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.cta{background:linear-gradient(180deg,#7af0d6,#2fcfa6);color:var(--aqua-ink);border:0;border-radius:14px;padding:10px 18px;font:700 18px var(--f-d);cursor:pointer;box-shadow:0 4px 0 #148a6b;flex:none;white-space:nowrap}
+.cta:active{transform:translateY(2px);box-shadow:0 2px 0 #148a6b}
+.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:9px 14px;font:700 15px var(--f-d);cursor:pointer;color:var(--ink);white-space:nowrap}
+.ghost:hover{background:rgba(255,255,255,.12)}
+
+/* modals */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(2,8,18,.66);display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.modal .box{position:relative;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.55);width:min(460px,100%);max-height:100%;overflow:auto;padding:20px 20px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.modal h2{margin:0 0 10px;font:700 26px/1.1 var(--f-d)}
+.modal h3{margin:14px 0 6px;font:800 12px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.modal p,.modal li{font:600 15px/1.45 var(--f-u);color:var(--ink-2)}
+.modal p{margin:0 0 8px}
+.modal ul{margin:0 0 8px;padding-left:18px}
+.modal li+li{margin-top:4px}
+.modal b{color:var(--ink)}
+.modal .x{position:absolute;right:10px;top:10px}
+.st4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.st4 b{display:block;font:700 28px/1.1 var(--f-d);font-variant-numeric:tabular-nums}
+.st4 small{font:700 11px/1.2 var(--f-u);color:var(--ink-3);display:block}
+.dist{display:flex;flex-direction:column;gap:4px}
+.dist div{display:flex;align-items:center;gap:8px;font:700 13px var(--f-u)}
+.dist span{width:52px;text-align:right;color:var(--ink-2);flex:none}
+.dist i{display:block;height:20px;min-width:24px;border-radius:5px;background:rgba(255,255,255,.14);font-style:normal;text-align:right;padding:1px 7px;font:800 13px/18px var(--f-u)}
+.dist i.me{background:var(--aqua);color:var(--aqua-ink)}
+.lvt{width:100%;border-collapse:collapse;font:700 14px var(--f-u);font-variant-numeric:tabular-nums}
+.lvt th{font:800 11px var(--f-u);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:right;padding:4px 6px}
+.lvt th:first-child,.lvt td:first-child{text-align:left}
+.lvt td{padding:6px;text-align:right;border-top:1px solid var(--line);color:var(--ink-2)}
+.lvt td b{color:var(--ink)}
+.cd{font:700 22px var(--f-d);font-variant-numeric:tabular-nums}
+.foot{margin:14px 0 0;font:600 12px/1.45 var(--f-u);color:var(--ink-3)}
+.foot a{color:var(--ink-3)}
+.ex{display:inline-grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);border:2px solid rgba(241,247,255,.5);border-radius:6px;margin:4px 0 8px;font:600 18px/30px var(--f-d);text-align:center}
+.ex span{border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ex .g{color:var(--ink)}.ex .p{color:var(--aqua)}.ex .q{font:700 9px/1 var(--f-u);color:var(--ink-2);display:grid;grid-template-columns:repeat(3,1fr);align-items:center}
+.set{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.set:first-of-type{border-top:0}
+.set label{font:700 15px var(--f-u);color:var(--ink)}
+.set small{display:block;font:600 12px/1.35 var(--f-u);color:var(--ink-3);margin-top:2px}
+.sw{position:relative;width:46px;height:26px;flex:none;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.1);cursor:pointer;padding:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--ink-2);transition:left .15s}
+.sw[aria-checked="true"]{background:var(--aqua)}
+.sw[aria-checked="true"]::after{left:22px;background:var(--aqua-ink)}
+#toast{position:fixed;left:50%;top:calc(var(--top) + 10px);transform:translateX(-50%) translateY(-6px);background:var(--ink);color:var(--night);font:800 14px var(--f-u);padding:9px 16px;border-radius:999px;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<main id="game">
+  <section id="stage" aria-label="Sudoku board">
+    <div id="board" role="grid" aria-label="Sudoku board, 9 by 9"></div>
+    <div id="busy" hidden>Making the puzzle…</div>
+  </section>
+  <section id="panel">
+    <div class="mode" id="modeRow"></div>
+    <div class="mode" id="lvRow"></div>
+    <div id="controls">
+      <div class="tools" id="tools"></div>
+      <div class="pad" id="pad"></div>
+    </div>
+    <div id="endBox" hidden></div>
+    <div id="hintBox" hidden role="status" aria-live="polite"></div>
+  </section>
+</main>
+<script src="/e63334287a3deaa3/ninefold/sudoku.js"></script>
+<script>
+'use strict';
+(function () {
+const SLUG = 'ninefold', NAME = 'Ninefold', LAUNCH = '20261101', SU = window.Sudoku;
+const LEVELS = SU.LEVELS, LVNAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+const $ = (id) => document.getElementById(id);
+function h(tag, attrs, kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'text') e.textContent = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] != null && attrs[k] !== false) e.setAttribute(k, attrs[k]);
+  }
+  if (kids) for (const c of kids) if (c != null) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  return e;
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+// ------------------------------------------------------------------ days (the player's local date; 2026-11-01 is #1)
+let DAY_TEST = (navigator.webdriver && /^\d{8}$/.test(window.__NF_TODAY || '')) ? window.__NF_TODAY : ''; // tests only
+const keyOf = (d) => String(d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
+const today = () => DAY_TEST || keyOf(new Date());
+const dateOf = (k) => new Date(+k.slice(0, 4), +k.slice(4, 6) - 1, +k.slice(6, 8), 12);
+function addDays(k, n) { const d = dateOf(k); d.setDate(d.getDate() + n); return keyOf(d); }
+const dayNum = (k) => Math.round((dateOf(k) - dateOf(LAUNCH)) / 864e5) + 1;
+const dailySeed = (k) => 'ninefold-' + k;
+function fmtTime(s) { s = Math.max(0, Math.floor(s)); const m = Math.floor(s / 60), x = s % 60; return m >= 60 ? Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0') + ':' + String(x).padStart(2, '0') : m + ':' + String(x).padStart(2, '0'); }
+function countdown() {
+  const n = new Date(), m = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1), s = Math.max(0, Math.floor((m - n) / 1000));
+  const p = (x) => (x < 10 ? '0' : '') + x;
+  return p(Math.floor(s / 3600)) + ':' + p(Math.floor(s / 60) % 60) + ':' + p(s % 60);
+}
+
+// ------------------------------------------------------------------ the daily:ninefold record (read by the Daily hub)
+// A day counts as played once you put a number in any of that day's three puzzles, and as won once you finish one.
+// days[k].lv holds the seconds for each level finished that day; score = how many of the three you finished.
+const Daily = {
+  blank: () => ({ v: 1, days: {}, played: 0, wins: 0, streak: 0, maxStreak: 0, last: '', dist: {} }),
+  load() {
+    let o = store.get('daily:' + SLUG, null);
+    if (!o || typeof o !== 'object' || o.v !== 1) o = Daily.blank();
+    ['played', 'wins', 'streak', 'maxStreak'].forEach((f) => { o[f] = Math.max(0, +o[f] || 0); });
+    if (!o.days || typeof o.days !== 'object') o.days = {};
+    if (!o.dist || typeof o.dist !== 'object') o.dist = {};
+    const t = today(), y = addDays(t, -1);
+    if (o.streak && o.last !== t && o.last !== y) { o.streak = 0; store.set('daily:' + SLUG, o); }
+    return o;
+  },
+  trim(o) { const cut = addDays(today(), -59); Object.keys(o.days).forEach((d) => { if (d < cut) delete o.days[d]; }); },
+  begin(k) {
+    const o = Daily.load();
+    if (o.days[k]) return o;
+    o.days[k] = { done: false, win: false, score: null, tries: null, time: null };
+    o.played++; Daily.trim(o); store.set('daily:' + SLUG, o);
+    return o;
+  },
+  solved(k, lv, secs, hints) {
+    let o = Daily.begin(k);
+    const d = o.days[k];
+    d.lv = d.lv && typeof d.lv === 'object' ? d.lv : {};
+    if (lv in d.lv) return o;
+    const before = Object.keys(d.lv).length;
+    d.lv[lv] = Math.round(secs);
+    d.hints = (d.hints || 0) + hints;
+    const n = before + 1;
+    if (!d.done) {
+      d.done = true; d.win = true; o.wins++;
+      const prev = o.days[addDays(k, -1)];
+      o.streak = (prev && prev.win && o.streak > 0 && (o.last === addDays(k, -1) || o.last === k)) ? o.streak + 1 : 1;
+      o.maxStreak = Math.max(o.maxStreak, o.streak);
+      if (!o.last || k > o.last) o.last = k;
+    }
+    if (before) o.dist[before] = Math.max(0, (o.dist[before] || 0) - 1);
+    o.dist[n] = (o.dist[n] || 0) + 1;
+    d.score = n; d.tries = d.hints; d.time = Object.keys(d.lv).reduce((a, x) => a + d.lv[x], 0);
+    Daily.trim(o); store.set('daily:' + SLUG, o);
+    try { if (window.BackRoomStats) { BackRoomStats.add('wins', 1); if (o.streak > 0) BackRoomStats.max('streak', o.streak); } } catch (e) {}
+    return o;
+  }
+};
+// Per-level records for daily and unlimited puzzles together: solved, total seconds, best time without hints.
+function lvStats() {
+  const o = store.get(SLUG + ':levels', null) || {};
+  LEVELS.forEach((l) => { const x = o[l] = o[l] && typeof o[l] === 'object' ? o[l] : {}; x.n = +x.n || 0; x.sum = +x.sum || 0; x.best = +x.best || 0; x.clean = +x.clean || 0; });
+  return o;
+}
+function recordLevel(lv, secs, hints) {
+  const o = lvStats(), x = o[lv];
+  x.n++; x.sum += Math.round(secs);
+  let best = false;
+  if (!hints) { x.clean++; if (!x.best || secs < x.best) { x.best = Math.round(secs); best = true; } }
+  store.set(SLUG + ':levels', o);
+  try { if (!hints && window.BackRoomStats) BackRoomStats.min('fast-' + lv, Math.max(1, Math.round(secs))); } catch (e) {}
+  return best;
+}
+
+// ------------------------------------------------------------------ settings
+const SET_DEF = { check: true, autoNotes: true, same: true, peers: true, timer: true };
+const settings = Object.assign({}, SET_DEF, store.get(SLUG + ':set', {}) || {});
+const saveSettings = () => store.set(SLUG + ':set', settings);
+
+// ------------------------------------------------------------------ page shell: top bar, toast, modals
+const ICONS = {
+  help: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.4-2.7 4"/><path d="M12 17.6h.01"/></svg>',
+  stats: '<svg viewBox="0 0 24 24"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>',
+  gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  undo: '<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+  erase: '<svg viewBox="0 0 24 24"><path d="M20 20H8.5L3.6 15.1a2 2 0 0 1 0-2.8l8.5-8.5a2 2 0 0 1 2.8 0l5 5a2 2 0 0 1 0 2.8L13 18.5"/><path d="M7.5 10.5l6 6"/></svg>',
+  pencil: '<svg viewBox="0 0 24 24"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  bulb: '<svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/></svg>'
+};
+const top = h('header', { id: 'top' }, [
+  h('a', { class: 'pill', href: '/e63334287a3deaa3/daily/', id: 'back', text: '‹ Back' }),
+  h('h1', { html: NAME + '<span>daily sudoku</span>' }),
+  h('span', { class: 'sp' }),
+  h('button', { class: 'pill ico', id: 'helpBtn', 'aria-label': 'How to play', title: 'How to play', html: ICONS.help }),
+  h('button', { class: 'pill ico', id: 'statsBtn', 'aria-label': 'Statistics', title: 'Statistics', html: ICONS.stats }),
+  h('button', { class: 'pill ico', id: 'setBtn', 'aria-label': 'Settings', title: 'Settings', html: ICONS.gear })
+]);
+document.body.insertBefore(top, document.body.firstChild);
+const toastEl = h('div', { id: 'toast', role: 'status', 'aria-live': 'polite' }); document.body.appendChild(toastEl);
+let tT = 0;
+function toast(msg, ms) { toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => toastEl.classList.remove('on'), ms || 1800); }
+let openModal = null, lastFocus = null;
+function modal(title, body) {
+  closeModal();
+  const box = h('div', { class: 'box', role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, [
+    h('button', { class: 'pill ico x', 'aria-label': 'Close', html: ICONS.x, onclick: closeModal }), h('h2', { text: title }), body]);
+  const m = h('div', { class: 'modal', onclick: (e) => { if (e.target === m) closeModal(); } }, [box]);
+  lastFocus = document.activeElement; document.body.appendChild(m); openModal = m; box.querySelector('.x').focus();
+  tick();
+  return m;
+}
+function closeModal() { if (openModal) { openModal.remove(); openModal = null; if (lastFocus && lastFocus.focus) try { lastFocus.focus({ preventScroll: true }); } catch (e) {} tick(); } }
+function copyText(t) {
+  function fallback() {
+    const a = h('textarea', { readonly: '', style: 'position:fixed;left:-9999px;top:0' }); a.value = t; document.body.appendChild(a); a.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} a.remove(); return ok;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(() => true, () => fallback());
+  return Promise.resolve(fallback());
+}
+const HOW = '<p>Fill the grid so every <b>row</b>, every <b>column</b> and every <b>3×3 box</b> has each number from 1 to 9 exactly once. Every puzzle has exactly one answer, and you never need to guess.</p>' +
+  '<div class="ex"><span class="g">5</span><span class="p">3</span><span class="q"><i>1</i><i></i><i>2</i><i></i><i></i><i></i><i>7</i><i></i><i></i></span><span class="g">6</span><span class="g">9</span><span class="p">8</span><span class="g">4</span><span class="q"><i>1</i><i>2</i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="g">7</span></div>' +
+  '<ul><li>White numbers come with the puzzle; yours are <b style="color:var(--aqua)">aqua</b>.</li>' +
+  '<li>Pick a cell, then a number. Turn on <b>Notes</b> to pencil in small numbers you\'re not sure about.</li>' +
+  '<li><b>Hint</b> fills in one cell and explains the trick that finds it. <b>Undo</b> takes back your last move.</li>' +
+  '<li>Three new puzzles every day: <b>Easy</b> needs only the basics, <b>Medium</b> needs pairs and pointing, <b>Hard</b> needs trickier patterns like X-Wings. Finish any one to keep your streak. Unlimited gives you as many more as you like.</li>' +
+  '<li>On a keyboard: arrows move, 1–9 fill in, Shift + number or N for notes, Backspace erases, Z undoes, H gives a hint.</li></ul>';
+function openHelp() {
+  store.set(SLUG + ':seen', 1);
+  modal('How to play', h('div', { html: HOW + '<p class="foot">The daily puzzles change at midnight, your time, and are the same for everyone. Unlimited puzzles don\'t count towards your daily stats. Best times only count puzzles finished without hints. · <a href="/privacy.html">Privacy</a></p>' }));
+}
+let cdTimer = 0;
+function openStats() {
+  const s = Daily.load(), L = lvStats(), pct = s.played ? Math.round(100 * s.wins / s.played) : 0;
+  let max = 1; ['1', '2', '3'].forEach((k) => { max = Math.max(max, s.dist[k] || 0); });
+  const dt = s.days[today()], me = dt && dt.score ? String(dt.score) : '';
+  const shareOk = !!shareText();
+  const body = h('div', null, [
+    h('div', { class: 'st4' }, [
+      h('div', { html: '<b>' + s.played + '</b><small>Played</small>' }),
+      h('div', { html: '<b>' + pct + '</b><small>Solved %</small>' }),
+      h('div', { html: '<b>' + s.streak + '</b><small>Current streak</small>' }),
+      h('div', { html: '<b>' + s.maxStreak + '</b><small>Max streak</small>' })]),
+    h('h3', { text: 'Daily puzzles finished per day' }),
+    h('div', { class: 'dist' }, ['1', '2', '3'].map((k) => {
+      const n = s.dist[k] || 0;
+      return h('div', null, [h('span', { text: k + ' of 3' }), h('i', { class: k === me ? 'me' : '', style: 'width:' + Math.max(8, Math.round(100 * n / max)) + '%', text: String(n) })]);
+    })),
+    h('h3', { text: 'Every puzzle you\'ve finished' }),
+    h('table', { class: 'lvt' }, [
+      h('tr', null, [h('th', { text: 'Level' }), h('th', { text: 'Solved' }), h('th', { text: 'Best' }), h('th', { text: 'Average' })]),
+      ...LEVELS.map((l) => { const x = L[l]; return h('tr', null, [h('td', { html: '<b>' + LVNAME[l] + '</b>' }), h('td', { text: String(x.n) }), h('td', { html: x.best ? '<b>' + fmtTime(x.best) + '</b>' : '–' }), h('td', { text: x.n ? fmtTime(x.sum / x.n) : '–' })]); })]),
+    h('p', { class: 'foot', style: 'margin-top:6px', text: 'Best times are for puzzles finished without hints, daily or unlimited.' }),
+    h('h3', { text: 'Next puzzles in' }),
+    h('div', { style: 'display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap' }, [
+      h('span', { class: 'cd', id: 'cd', text: countdown() }),
+      shareOk ? h('button', { class: 'cta', text: 'Share', onclick: share }) : null])
+  ]);
+  modal('Statistics', body);
+  clearInterval(cdTimer); cdTimer = setInterval(() => { const c = $('cd'); if (!c) { clearInterval(cdTimer); return; } c.textContent = countdown(); }, 1000);
+}
+function setRow(key, label, sub) {
+  const b = h('button', { class: 'sw', role: 'switch', 'aria-checked': String(!!settings[key]), 'aria-label': label, id: 'set-' + key });
+  b.addEventListener('click', () => { settings[key] = !settings[key]; b.setAttribute('aria-checked', String(settings[key])); saveSettings(); render(); });
+  return h('div', { class: 'set' }, [h('div', null, [h('label', { for: 'set-' + key, text: label }), h('small', { text: sub })]), b]);
+}
+function openSettings() {
+  modal('Settings', h('div', null, [
+    setRow('check', 'Show mistakes', 'Numbers that don\'t match the answer turn red.'),
+    setRow('autoNotes', 'Tidy notes', 'Placing a number removes it from the notes in its row, column and box.'),
+    setRow('same', 'Highlight matching numbers', 'Light up every copy of the number you picked, in cells and notes.'),
+    setRow('peers', 'Highlight row, column and box', 'Shade the lines and box of the cell you picked.'),
+    setRow('timer', 'Show timer', 'The clock still runs when hidden, for your best times.')]));
+}
+$('helpBtn').addEventListener('click', openHelp);
+$('statsBtn').addEventListener('click', openStats);
+$('setBtn').addEventListener('click', openSettings);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openModal) { e.preventDefault(); closeModal(); } }, true);
+
+// ------------------------------------------------------------------ mode and level switches
+let mode = 'daily', level = store.get(SLUG + ':lv', 'easy');
+if (LEVELS.indexOf(level) < 0) level = 'easy';
+const n0 = dayNum(today());
+const bD = h('button', { type: 'button', text: n0 >= 1 ? 'Daily #' + n0 : 'Daily' }), bU = h('button', { type: 'button', text: 'Unlimited' });
+const timerEl = h('span', { class: 'info', id: 'timer' });
+$('modeRow').append(h('div', { class: 'seg', role: 'group', 'aria-label': 'Mode' }, [bD, bU]), timerEl);
+bD.onclick = () => setMode('daily'); bU.onclick = () => setMode('free');
+const lvBtns = {};
+const lvSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Level' }, LEVELS.map((l) => (lvBtns[l] = h('button', { type: 'button', onclick: () => setLevel(l) }))));
+const metaEl = h('span', { class: 'info', id: 'meta' });
+const newBtn = h('button', { type: 'button', class: 'ghost newb', text: 'New puzzle', onclick: () => newFree(), hidden: '' });
+$('lvRow').append(lvSeg, metaEl, newBtn);
+
+// ------------------------------------------------------------------ board, tools and number pad
+const board = $('board'), cells = [];
+for (let i = 0; i < 81; i++) {
+  const r = Math.floor(i / 9), c = i % 9;
+  const el = h('div', { class: 'c' + (c === 2 || c === 5 ? ' bx' : '') + (r === 2 || r === 5 ? ' by' : '') + (r === 8 ? ' r8' : ''), role: 'gridcell', 'data-i': i });
+  el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') e.preventDefault(); select(i); });
+  board.appendChild(el); cells.push(el);
+}
+function tool(id, label, icon) { return h('button', { type: 'button', class: 'tool', id: id, html: icon + '<span>' + label + '</span>' }); }
+const tUndo = tool('undoBtn', 'Undo', ICONS.undo), tErase = tool('eraseBtn', 'Erase', ICONS.erase), tNotes = tool('notesBtn', 'Notes', ICONS.pencil), tHint = tool('hintBtn', 'Hint', ICONS.bulb);
+tNotes.appendChild(h('span', { class: 'badge', text: 'OFF' }));
+$('tools').append(tUndo, tErase, tNotes, tHint);
+tUndo.onclick = () => undo(); tErase.onclick = () => erase(); tNotes.onclick = () => { notesMode = !notesMode; render(); }; tHint.onclick = () => giveHint();
+const padBtns = [];
+for (let d = 1; d <= 9; d++) {
+  const b = h('button', { type: 'button', 'aria-label': 'Number ' + d, html: d + '<small></small>' });
+  b.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') e.preventDefault(); });
+  b.addEventListener('click', () => input(d));
+  $('pad').appendChild(b); padBtns.push(b);
+}
+
+// ------------------------------------------------------------------ game state
+// st: {mode, day, lv, seed, p (puzzle string), sol[], given[], v[], n[] (note masks), hi[] (hinted cells), t (seconds),
+//      hints, miss, done, u (undo stack of [[cell, value, notes, hinted], ...])}
+let st = null, sel = -1, focusDigit = 0, notesMode = false, hintView = null, gen = 0;
+const progKey = (m, lv) => SLUG + ':' + (m === 'daily' ? 'day' : 'free') + ':' + lv;
+function save() {
+  if (!st) return;
+  store.set(progKey(st.mode, st.lv), { day: st.day, seed: st.seed, p: st.p, v: st.v.join(''), n: st.n, hi: st.hi.map(Number).join(''), t: Math.round(st.t), hints: st.hints, miss: st.miss, done: st.done, began: st.began, u: st.u.slice(-300) });
+}
+function fresh(m, lv, day, seed, p) {
+  const g = SU.fromStr(p), sol = SU.solve(g);
+  return { mode: m, lv: lv, day: day, seed: seed, p: p, sol: sol, given: g.map((x) => x > 0), v: g.slice(), n: new Array(81).fill(0), hi: new Array(81).fill(false), t: 0, hints: 0, miss: 0, done: false, began: false, u: [] };
+}
+function restore(s, saved) {
+  if (!saved || saved.p !== s.p || typeof saved.v !== 'string' || saved.v.length !== 81) return s;
+  for (let i = 0; i < 81; i++) { const d = +saved.v[i] || 0; if (!s.given[i]) s.v[i] = d >= 1 && d <= 9 ? d : 0; }
+  if (Array.isArray(saved.n) && saved.n.length === 81) s.n = saved.n.map((x) => (+x || 0) & 511);
+  if (typeof saved.hi === 'string') for (let i = 0; i < 81; i++) s.hi[i] = saved.hi[i] === '1';
+  s.t = +saved.t || 0; s.hints = +saved.hints || 0; s.miss = +saved.miss || 0; s.done = !!saved.done; s.began = !!saved.began;
+  if (Array.isArray(saved.u)) s.u = saved.u;
+  return s;
+}
+// Daily puzzles are made from the date (the same everywhere); keep today's in a small cache so reloads are instant.
+function dailyPuzzle(day, lv) {
+  const cache = store.get(SLUG + ':cache', null);
+  if (cache && cache.day === day && typeof cache[lv] === 'string' && cache[lv].length === 81) return cache[lv];
+  const p = SU.toStr(SU.make(dailySeed(day), lv).puzzle);
+  const c2 = cache && cache.day === day ? cache : { day: day };
+  c2[lv] = p; store.set(SLUG + ':cache', c2);
+  return p;
+}
+function load(m, lv, newOne) {
+  const my = ++gen;
+  closeHint();
+  const busy = $('busy');
+  busy.textContent = m === 'daily' ? 'Making today\'s ' + LVNAME[lv] + ' puzzle…' : 'Making a new ' + LVNAME[lv] + ' puzzle…';
+  const saved = store.get(progKey(m, lv), null), day = today();
+  let quick = null;
+  if (m === 'daily') {
+    const c = store.get(SLUG + ':cache', null);
+    if (saved && saved.day === day && typeof saved.p === 'string') quick = saved.p;
+    else if (c && c.day === day && typeof c[lv] === 'string') quick = c[lv];
+  } else if (!newOne && saved && typeof saved.p === 'string' && saved.p.length === 81 && !saved.done) quick = saved.p;
+  const finish = (p, seed) => {
+    if (my !== gen) return;
+    let s = fresh(m, lv, m === 'daily' ? day : '', seed, p);
+    if (!s.sol) { toast('That puzzle didn\'t load, making another'); store.del(progKey(m, lv)); return load(m, lv, true); }
+    if (saved && (m === 'free' || saved.day === day)) s = restore(s, saved);
+    st = s; sel = -1; focusDigit = 0; busy.hidden = true;
+    lastTick = performance.now();
+    save(); render();
+    if (m === 'daily' && dayRec(day) && dayRec(day)[lv] != null && !st.done) { st.done = true; save(); render(); }
+  };
+  if (quick) { finish(quick, m === 'daily' ? dailySeed(day) : (saved && saved.seed) || ''); return; }
+  busy.hidden = false;
+  setTimeout(() => {
+    if (my !== gen) return;
+    if (m === 'daily') finish(dailyPuzzle(day, lv), dailySeed(day));
+    else { const seed = 'free-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e9).toString(36); finish(SU.toStr(SU.make(seed, lv).puzzle), seed); }
+  }, 40);
+}
+const dayRec = (k) => { const d = Daily.load().days[k]; return d && d.lv ? d.lv : null; };
+function setMode(m) { if (m === mode && st) return; save(); mode = m; load(mode, level); }
+function setLevel(l) { if (l === level && st) return; save(); level = l; store.set(SLUG + ':lv', l); load(mode, level); }
+function newFree() { save(); load('free', level, true); }
+
+// ------------------------------------------------------------------ the clock (runs only while you can see the puzzle)
+let lastTick = performance.now();
+function running() { return st && !st.done && !openModal && document.visibilityState === 'visible' && $('busy').hidden; }
+function tick() {
+  const now = performance.now();
+  if (running()) st.t += Math.min(5, (now - lastTick) / 1000);
+  lastTick = now;
+  if (st) timerEl.innerHTML = settings.timer ? '⏱ <b>' + fmtTime(st.t) + '</b>' : '';
+}
+setInterval(() => {
+  tick();
+  if (st && running() && Math.floor(st.t) % 5 === 0) save();
+  const e = $('nextIn'); if (e) e.textContent = 'Next in ' + countdown();
+  if (mode === 'daily' && st && st.day && st.day !== today()) { save(); load('daily', level); }
+}, 1000);
+document.addEventListener('visibilitychange', () => { tick(); if (document.visibilityState !== 'visible') save(); });
+window.addEventListener('pagehide', save);
+
+// ------------------------------------------------------------------ moves
+function select(i) { sel = i; if (st && st.v[i]) focusDigit = st.v[i]; else focusDigit = 0; render(); }
+// The clock runs from when the puzzle appears; the day counts as played from your first move.
+function begin() {
+  if (st.began) return;
+  st.began = true;
+  if (st.mode === 'daily') Daily.begin(st.day);
+}
+// change cells, remembering the old contents for undo: list of [cell, value, notes, hinted]
+function change(list) {
+  const rec = list.map(([i]) => [i, st.v[i], st.n[i], st.hi[i] ? 1 : 0]);
+  list.forEach(([i, v, n, hi]) => { st.v[i] = v; st.n[i] = n; st.hi[i] = !!hi; });
+  st.u.push(rec); if (st.u.length > 300) st.u.shift();
+}
+function place(i, d, hinted) {
+  const list = [[i, d, 0, hinted ? 1 : 0]];
+  if (d && settings.autoNotes) {
+    const bit = 1 << (d - 1);
+    SU.PEERS[i].forEach((p) => { if (!st.v[p] && (st.n[p] & bit)) list.push([p, 0, st.n[p] & ~bit, 0]); });
+  }
+  change(list);
+}
+function input(d) {
+  if (!st || st.done) return;
+  closeHint();
+  if (sel < 0 || st.given[sel]) { focusDigit = focusDigit === d ? 0 : d; render(); if (sel < 0) toast('Pick a cell first'); return; }
+  begin();
+  if (notesMode) {
+    if (st.v[sel]) { toast('Erase the number first to add notes'); return; }
+    change([[sel, 0, st.n[sel] ^ (1 << (d - 1)), 0]]);
+  } else if (st.v[sel] === d) change([[sel, 0, 0, 0]]);
+  else {
+    place(sel, d, false);
+    if (settings.check && st.sol[sel] !== d) st.miss++;
+  }
+  focusDigit = st.v[sel] || d;
+  save(); render(); checkDone();
+}
+function erase() {
+  if (!st || st.done || sel < 0 || st.given[sel]) return;
+  closeHint();
+  if (!st.v[sel] && !st.n[sel]) return;
+  change([[sel, 0, 0, 0]]); save(); render();
+}
+function undo() {
+  if (!st || st.done) return;
+  closeHint();
+  const rec = st.u.pop();
+  if (!rec) { toast('Nothing to undo'); return; }
+  rec.forEach(([i, v, n, hi]) => { st.v[i] = v; st.n[i] = n; st.hi[i] = !!hi; });
+  sel = rec[0][0]; focusDigit = st.v[sel] || 0;
+  save(); render();
+}
+function move(dr, dc) { if (sel < 0) { select(40); return; } const r = (Math.floor(sel / 9) + dr + 9) % 9, c = (sel % 9 + dc + 9) % 9; select(r * 9 + c); }
+
+// ------------------------------------------------------------------ hints: fix a wrong number, or fill one cell and say why
+const UNIT_TEXT = (u) => SU.unitName(SU.UNITS[u]);
+function giveHint() {
+  if (!st || st.done) return;
+  begin();
+  const wrong = [];
+  for (let i = 0; i < 81; i++) if (!st.given[i] && st.v[i] && st.v[i] !== st.sol[i]) wrong.push(i);
+  if (wrong.length) {
+    const i = wrong.indexOf(sel) >= 0 ? sel : wrong[0];
+    st.hints++;
+    const d = st.v[i];
+    change([[i, 0, 0, 0]]);
+    sel = i; focusDigit = 0;
+    showHint('Something\'s not right', [{ html: 'The <b>' + d + '</b> in <b>' + SU.cellName(i) + '</b> (row ' + (Math.floor(i / 9) + 1) + ', column ' + (i % 9 + 1) + ') isn\'t part of the answer, so I took it out.' + (wrong.length > 1 ? ' There ' + (wrong.length === 2 ? 'is 1 more wrong number' : 'are ' + (wrong.length - 1) + ' more wrong numbers') + ' on the board.' : '') }], { cells: [i], units: [] });
+    save(); render(); return;
+  }
+  const g = st.v.slice(), hn = SU.hint(g);
+  let i, d, steps;
+  if (hn) { [i, d] = hn.place; steps = hn.steps; }
+  else { // the solver is stuck (shouldn't happen): just reveal the selected or first empty cell
+    i = sel >= 0 && !st.v[sel] ? sel : st.v.indexOf(0); d = st.sol[i]; steps = [];
+  }
+  st.hints++;
+  place(i, d, true);
+  sel = i; focusDigit = d;
+  const last = steps[steps.length - 1], before = steps.slice(0, -1);
+  const items = [];
+  if (before.length) {
+    const names = []; before.forEach((s) => { if (names.indexOf(s.t) < 0) names.push(s.t); });
+    items.push({ html: 'First, rule some numbers out with <b>' + names.join('</b>, <b>') + '</b>:' });
+    before.slice(0, 4).forEach((s) => items.push({ html: '<b>' + s.t + ':</b> ' + esc(s.why), sub: true }));
+    if (before.length > 4) items.push({ html: '…and ' + (before.length - 4) + ' more step' + (before.length === 5 ? '' : 's') + ' like those.', sub: true });
+  }
+  if (last) items.push({ html: before.length ? 'Then, <b>' + last.t + ':</b> ' + esc(last.why) : esc(last.why) });
+  else items.push({ html: SU.cellName(i) + ' is <b>' + d + '</b>.' });
+  const pat = [], units = [];
+  steps.forEach((s) => { (s.cells || []).forEach((c) => { if (pat.indexOf(c) < 0) pat.push(c); }); });
+  if (last && last.units) last.units.forEach((u) => units.push(u));
+  showHint(last ? last.t + (before.length ? ' (with ' + before.length + ' step' + (before.length > 1 ? 's' : '') + ' first)' : '') : 'Revealed', items, { cells: pat, units: last && last.t === 'Hidden single' ? units : [], flash: i });
+  save(); render(); checkDone();
+}
+function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]); }
+function showHint(title, items, view) {
+  hintView = view;
+  const box = $('hintBox');
+  box.innerHTML = '';
+  const ol = h('div');
+  items.forEach((it) => ol.appendChild(h('p', { html: it.html, style: it.sub ? 'padding-left:14px;font-size:13px' : null })));
+  box.append(h('h3', { text: '💡 ' + title }), ol, h('div', { class: 'row' }, [h('button', { type: 'button', class: 'ghost', text: 'Got it', onclick: closeHint })]));
+  box.hidden = false;
+  box.querySelector('button').focus({ preventScroll: true });
+  if (view.flash != null) { const c = cells[view.flash]; c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); }
+}
+function closeHint() { const box = $('hintBox'); if (!box.hidden) { box.hidden = true; hintView = null; if (st) render(); } }
+
+// ------------------------------------------------------------------ the end of a puzzle
+function checkDone() {
+  if (st.done) return;
+  for (let i = 0; i < 81; i++) if (!st.v[i]) return;
+  for (let i = 0; i < 81; i++) if (st.v[i] !== st.sol[i]) { toast(settings.check ? 'Nearly! Fix the red numbers' : 'The grid is full, but something isn\'t right', 2400); return; }
+  tick();
+  st.t = Math.max(1, Math.round(st.t));
+  st.done = true;
+  const best = recordLevel(st.lv, st.t, st.hints);
+  if (st.mode === 'daily') Daily.solved(st.day, st.lv, st.t, st.hints);
+  save();
+  sel = -1; focusDigit = 0;
+  render();
+  board.classList.remove('won'); void board.offsetWidth; board.classList.add('won');
+  cells.forEach((c, i) => { c.style.animationDelay = ((Math.floor(i / 9) + i % 9) * 0.035) + 's'; });
+  toast(best ? 'Solved! A new best time 🎉' : 'Solved! 🎉', 2200);
+  if (st.mode === 'daily') setTimeout(() => { if (!openModal && st && st.done) openStats(); }, 1700);
+}
+function shareText() {
+  const day = today(), rec = dayRec(day), n = dayNum(day);
+  if (mode === 'free') {
+    if (!st || !st.done) return null;
+    return NAME + ' (unlimited) ' + LVNAME[st.lv] + ' ✅ ' + fmtTime(st.t) + (st.hints ? ' 💡' + st.hints : '') + '\nascoding11.github.io';
+  }
+  if (!rec || !Object.keys(rec).length) return null;
+  const prog = {}; LEVELS.forEach((l) => { prog[l] = store.get(progKey('daily', l), null); });
+  const lines = LEVELS.map((l) => {
+    if (rec[l] == null) return '⬛ ' + LVNAME[l];
+    const hints = prog[l] && prog[l].day === day ? prog[l].hints : 0;
+    return (hints ? '🟨 ' : '🟩 ') + LVNAME[l] + ' ' + fmtTime(rec[l]) + (hints ? ' 💡' + hints : '');
+  });
+  return NAME + (n >= 1 ? ' #' + n : ' (preview)') + ' ' + Object.keys(rec).length + '/3\n' + lines.join('\n') + '\nascoding11.github.io';
+}
+function share() { const t = shareText(); if (!t) return; copyText(t).then((ok) => toast(ok ? 'Copied! Paste it anywhere.' : 'Couldn\'t copy, sorry')); }
+function endCard() {
+  const box = $('endBox'); box.innerHTML = ''; box.className = 'end';
+  const L = lvStats()[st.lv], rec = st.mode === 'daily' ? dayRec(st.day) || {} : {};
+  const left = st.mode === 'daily' ? LEVELS.filter((l) => rec[l] == null) : [];
+  box.append(
+    h('h2', { class: 'win', text: 'Solved in ' + fmtTime(st.t) + '!' }),
+    h('p', { html: '<b>' + LVNAME[st.lv] + '</b>' + (st.mode === 'daily' ? ' daily' : '') + ' · ' + (st.hints ? st.hints + ' hint' + (st.hints > 1 ? 's' : '') : 'no hints') + (settings.check ? ' · ' + st.miss + ' mistake' + (st.miss === 1 ? '' : 's') : '') + (L.best ? ' · best ' + fmtTime(L.best) : '') }),
+    h('div', { class: 'row' }, [
+      h('button', { type: 'button', class: 'cta', text: 'Share', onclick: share }),
+      left.length ? h('button', { type: 'button', class: 'ghost', text: 'Play ' + LVNAME[left[0]], onclick: () => setLevel(left[0]) }) : null,
+      h('button', { type: 'button', class: 'ghost', text: st.mode === 'daily' ? 'Unlimited' : 'New puzzle', onclick: () => { if (st.mode === 'daily') setMode('free'); else newFree(); } }),
+      st.mode === 'daily' && !left.length ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + countdown() }) : null]));
+}
+
+// ------------------------------------------------------------------ drawing
+function render() {
+  if (!st) return;
+  bD.classList.toggle('on', mode === 'daily'); bU.classList.toggle('on', mode === 'free');
+  bD.setAttribute('aria-pressed', mode === 'daily'); bU.setAttribute('aria-pressed', mode === 'free');
+  const rec = mode === 'daily' ? dayRec(today()) || {} : {};
+  LEVELS.forEach((l) => {
+    const b = lvBtns[l]; b.classList.toggle('on', l === level); b.setAttribute('aria-pressed', l === level);
+    b.innerHTML = LVNAME[l] + (rec[l] != null ? '<span class="ok" aria-label="finished">✓</span>' : '');
+  });
+  newBtn.hidden = mode !== 'free' || st.done;
+  metaEl.hidden = mode === 'free' && !st.done;
+  metaEl.innerHTML = st.done ? '' : (st.hints ? '💡 <b>' + st.hints + '</b>' : '') + (settings.check && st.miss ? (st.hints ? ' · ' : '') + '❌ <b>' + st.miss + '</b>' : '');
+  tick();
+  const sv = sel >= 0 ? st.v[sel] : 0, fd = focusDigit || sv;
+  const sr = sel >= 0 ? Math.floor(sel / 9) : -1, sc = sel >= 0 ? sel % 9 : -1, sb = sel >= 0 ? SU.boxOf(sel) : -1;
+  const pat = hintView ? hintView.cells : [], unitCells = {};
+  if (hintView) hintView.units.forEach((u) => SU.UNITS[u].cells.forEach((c) => { unitCells[c] = 1; }));
+  const counts = new Array(10).fill(0);
+  for (let i = 0; i < 81; i++) {
+    const el = cells[i], v = st.v[i], given = st.given[i];
+    if (v) counts[v]++;
+    const peer = settings.peers && sel >= 0 && i !== sel && (Math.floor(i / 9) === sr || i % 9 === sc || SU.boxOf(i) === sb);
+    const bad = v && !given && settings.check && v !== st.sol[i];
+    el.classList.toggle('g', given);
+    el.classList.toggle('sel', i === sel);
+    el.classList.toggle('peer', !!peer && !st.done);
+    el.classList.toggle('same', settings.same && !!fd && v === fd && i !== sel && !st.done);
+    el.classList.toggle('bad', !!bad);
+    el.classList.toggle('hinted', !!st.hi[i] && !bad);
+    el.classList.toggle('pat', pat.indexOf(i) >= 0);
+    el.classList.toggle('unit', !!unitCells[i]);
+    const r = Math.floor(i / 9) + 1, c = i % 9 + 1;
+    if (v) {
+      if (el.textContent !== String(v) || el.firstChild && el.firstChild.nodeType !== 3) el.textContent = String(v);
+      el.setAttribute('aria-label', 'Row ' + r + ', column ' + c + ': ' + v + (given ? ', given' : '') + (bad ? ', wrong' : ''));
+    } else if (st.n[i]) {
+      let html = '<div class="n">';
+      for (let d = 1; d <= 9; d++) html += '<span' + (settings.same && fd === d && (st.n[i] & (1 << (d - 1))) ? ' class="hl"' : '') + '>' + (st.n[i] & (1 << (d - 1)) ? d : '') + '</span>';
+      el.innerHTML = html + '</div>';
+      el.setAttribute('aria-label', 'Row ' + r + ', column ' + c + ': empty, notes ' + SU.digits(st.n[i]).join(' '));
+    } else { el.textContent = ''; el.setAttribute('aria-label', 'Row ' + r + ', column ' + c + ': empty'); }
+  }
+  padBtns.forEach((b, k) => { const d = k + 1; b.classList.toggle('full', counts[d] >= 9); b.querySelector('small').textContent = counts[d] >= 9 ? '' : String(9 - counts[d]); });
+  $('pad').classList.toggle('notes', notesMode);
+  tNotes.classList.toggle('on', notesMode); tNotes.setAttribute('aria-pressed', notesMode); tNotes.querySelector('.badge').textContent = notesMode ? 'ON' : 'OFF';
+  tUndo.disabled = !st.u.length || st.done;
+  $('controls').hidden = st.done;
+  $('endBox').hidden = !st.done;
+  if (st.done) endCard();
+  if (!st.done) board.classList.remove('won');
+  layout();
+}
+function layout() {
+  const g = $('game'), W = g.clientWidth - 16, H = g.clientHeight - 16, wide = innerWidth / innerHeight >= 1.2;
+  const panel = $('panel');
+  let bs;
+  if (wide) bs = Math.min(H, W - panel.offsetWidth - 18);
+  else bs = Math.min(W, H - panel.offsetHeight - 8);
+  bs = Math.max(200, Math.floor(Math.min(bs, 680) / 9) * 9);
+  document.documentElement.style.setProperty('--bs', bs + 'px');
+}
+window.addEventListener('resize', () => { layout(); });
+
+// ------------------------------------------------------------------ keyboard
+document.addEventListener('keydown', (e) => {
+  if (openModal || e.altKey || e.metaKey) return;
+  if ((e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); undo(); return; }
+  if (e.ctrlKey) return;
+  const m = /^(Digit|Numpad)([1-9])$/.exec(e.code || ''), d = m ? +m[2] : (/^[1-9]$/.test(e.key) ? +e.key : 0);
+  if (d) {
+    e.preventDefault();
+    if (e.shiftKey && !notesMode) { notesMode = true; input(d); notesMode = false; render(); } else input(d);
+    return;
+  }
+  switch (e.key) {
+    case 'ArrowUp': case 'w': case 'W': e.preventDefault(); move(-1, 0); break;
+    case 'ArrowDown': case 's': case 'S': e.preventDefault(); move(1, 0); break;
+    case 'ArrowLeft': case 'a': case 'A': e.preventDefault(); move(0, -1); break;
+    case 'ArrowRight': case 'd': case 'D': e.preventDefault(); move(0, 1); break;
+    case 'Backspace': case 'Delete': case '0': case '.': e.preventDefault(); erase(); break;
+    case 'n': case 'N': notesMode = !notesMode; render(); break;
+    case 'z': case 'Z': case 'u': case 'U': undo(); break;
+    case 'h': case 'H': giveHint(); break;
+    case 'Escape': if (!$('hintBox').hidden) closeHint(); else { sel = -1; focusDigit = 0; render(); } break;
+  }
+});
+// tap outside the board and controls to clear the selection
+document.addEventListener('pointerdown', (e) => {
+  if (!st || openModal) return;
+  if (e.target.closest('#board,#panel,#top,.modal,#toast')) return;
+  if (sel >= 0) { sel = -1; focusDigit = 0; render(); }
+});
+
+// ------------------------------------------------------------------ start
+Daily.load(); // clears a streak that ended before yesterday
+setMode('daily');
+if (!store.get(SLUG + ':seen', 0)) setTimeout(openHelp, 250);
+if (navigator.webdriver) window.__nf = {
+  get st() { return st; }, get sel() { return sel; }, get settings() { return settings; }, SU: SU,
+  setToday(k) { DAY_TEST = /^\d{8}$/.test(k) ? k : ''; }, load: load, setMode: setMode, setLevel: setLevel, select: select, input: input,
+  hint: giveHint, undo: undo, erase: erase, shareText: shareText, Daily: Daily, dailyPuzzle: dailyPuzzle, render: render,
+  setNotes(v) { notesMode = !!v; render(); },
+  fillAll(skip) { // test helper: fill in the answer, leaving `skip` cells empty
+    let left = skip || 0;
+    for (let i = 80; i >= 0; i--) if (!st.v[i]) { if (left > 0) { left--; continue; } st.v[i] = st.sol[i]; }
+    begin(); save(); render();
+  }
+};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="ninefold" defer></script>
+</body>
+</html>

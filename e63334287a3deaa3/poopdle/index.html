@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Poopdle</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<script src="/e63334287a3deaa3/stats.js" data-game="poopdle" defer></script>
+<style>
+/* Poopdle: the daily word ladder to POOP. Same dark navy look, fonts, top bar, pills and modals as Deepword and the daily geography games. */
+:root{
+  --ink:#f1f7ff;--ink-2:rgba(241,247,255,.68);--ink-3:rgba(241,247,255,.42);
+  --aqua:#4fe3c1;--aqua-ink:#042a22;--sun:#ffd166;--coral:#ff7a59;--red:#ff5c7a;--green:#5ef08f;--violet:#b48bff;
+  --poo:#8a5a3b;--poo-2:#6b4129;
+  --night:#04111f;--panel:rgba(5,16,34,.78);--panel-2:rgb(8,22,46);--panel-3:rgb(13,31,62);--line:rgba(241,247,255,.14);
+  --f-d:'Fredoka',ui-rounded,system-ui,sans-serif;--f-u:'Nunito',system-ui,sans-serif;
+  --top:calc(54px + env(safe-area-inset-top,0px));
+  --tile:52px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--ink)}
+body{font-family:var(--f-u);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+#top{position:fixed;left:0;right:0;top:0;height:var(--top);padding:calc(8px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:8px;z-index:20;background:linear-gradient(180deg,rgba(4,17,31,.96),rgba(4,17,31,.75));border-bottom:1px solid var(--line)}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font:700 13px var(--f-u);color:var(--ink-2);white-space:nowrap;text-decoration:none;cursor:pointer}
+.pill:hover{color:var(--ink)}
+#top h1{margin:0 0 0 2px;font:700 22px/1 var(--f-d);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+#top h1 span{font-size:15px;color:var(--ink-3);font-weight:600;margin-left:6px}
+#top .sp{flex:1}
+.ico{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ico svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:420px){#top h1 span{display:none}}
+@media (max-width:380px){#top h1{font-size:19px}}
+
+#game{position:fixed;left:0;right:0;bottom:0;top:var(--top);display:flex;flex-direction:column;padding:0 max(0px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(0px,env(safe-area-inset-left,0px))}
+#stage{position:relative;flex:1 1 auto;min-height:120px;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 10px 6px}
+#panel{position:relative;flex:none;display:flex;flex-direction:column;gap:8px;padding:8px 12px 10px;width:100%;max-width:560px;margin:0 auto}
+#stage{display:flex;flex-direction:column}
+/* sideways phones and tablets: the ladder on the left, the keyboard on the right (computers keep one column) */
+@media (min-aspect-ratio:6/5){
+  .touch #game{flex-direction:row}
+  .touch #stage{height:100%}
+  .touch #panel{flex:0 0 min(440px,50vw);height:100%;max-width:none;margin:0;border-left:1px solid var(--line);background:rgba(5,16,34,.55);justify-content:flex-end;overflow:auto}
+  .touch #panel .mode{margin-bottom:auto}
+}
+@media (hover:hover) and (pointer:fine){#panel{padding-bottom:18px}}
+.mode{display:flex;gap:6px;align-items:center;flex:none}
+.seg{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:3px;flex:none}
+.seg button{border:0;background:none;border-radius:999px;padding:6px 12px;font:700 13px var(--f-u);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--aqua);color:var(--aqua-ink)}
+.mode .info{margin-left:auto;font:700 13px var(--f-u);color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.mode .info b{color:var(--ink)}
+
+/* the ladder */
+#ladder{display:flex;flex-direction:column;align-items:center;gap:6px;margin:auto 0;padding:4px 0}
+.rw{display:flex;align-items:center;gap:8px}
+.rw .lab{width:44px;text-align:right;font:800 10px var(--f-u);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);flex:none}
+.rw .side{width:44px;flex:none;font:700 13px var(--f-u);color:var(--ink-3);text-align:left}
+.tiles{display:flex;gap:6px}
+.t{width:var(--tile);height:var(--tile);border-radius:10px;display:flex;align-items:center;justify-content:center;font:700 calc(var(--tile)*.56)/1 var(--f-d);text-transform:uppercase;background:rgba(255,255,255,.07);border:2px solid var(--line);color:var(--ink)}
+.t.start{background:rgba(180,139,255,.18);border-color:rgba(180,139,255,.55)}
+.t.ch{border-color:var(--aqua);background:rgba(79,227,193,.16)}
+.t.hit{background:rgba(94,240,143,.22);border-color:rgba(94,240,143,.6)}
+.t.goal{background:linear-gradient(180deg,var(--poo),var(--poo-2));border-color:#b07a52;color:#fff3e6}
+.t.ghost{color:var(--ink-3);border-style:dashed;background:transparent}
+.t.typed{border-color:rgba(241,247,255,.55);background:rgba(255,255,255,.1)}
+.t.diff{border-color:var(--aqua);background:rgba(79,227,193,.2)}
+.t.cue{box-shadow:0 0 0 3px var(--sun)}
+.rw.cur .t{animation:none}
+.rw.bad .tiles{animation:shake .35s}
+.rw.new .t{animation:pop .3s ease-out}
+.rw.gap{height:16px;font:700 18px/16px var(--f-d);color:var(--ink-3)}
+.rw.path .t{width:calc(var(--tile)*.62);height:calc(var(--tile)*.62);font-size:calc(var(--tile)*.36);border-radius:7px}
+@keyframes shake{20%{transform:translateX(-6px)}45%{transform:translateX(6px)}70%{transform:translateX(-3px)}}
+@keyframes pop{0%{transform:scale(.9);opacity:.4}100%{transform:none;opacity:1}}
+.tip{font:700 12px var(--f-u);color:var(--ink-3);text-align:center;margin-top:2px}
+.win .t{animation:bounce .6s ease-out both}
+@keyframes bounce{0%{transform:translateY(0)}40%{transform:translateY(-10px)}100%{transform:none}}
+
+/* actions, end card, keyboard */
+.acts{display:flex;gap:6px;flex:none}
+.acts button{flex:1}
+.cta{background:linear-gradient(180deg,#7af0d6,#2fcfa6);color:var(--aqua-ink);border:0;border-radius:14px;padding:10px 18px;font:700 18px var(--f-d);cursor:pointer;box-shadow:0 4px 0 #148a6b;flex:none;white-space:nowrap}
+.cta:active{transform:translateY(2px);box-shadow:0 2px 0 #148a6b}
+.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:9px 14px;font:700 15px var(--f-d);cursor:pointer;color:var(--ink);white-space:nowrap}
+.ghost:hover{background:rgba(255,255,255,.12)}
+.ghost.warn{border-color:rgba(255,122,89,.7);color:#ffc3b2}
+.hintline{flex:none;font:700 14px/1.35 var(--f-u);color:var(--sun);text-align:center;min-height:19px}
+.end{flex:none;background:var(--panel-3);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.end h2{margin:0;font:700 22px/1.15 var(--f-d)}
+.end h2.win{color:var(--green)}
+.end h2.lose{color:var(--coral)}
+.end p{margin:0;font:600 14px/1.4 var(--f-u);color:var(--ink-2)}
+.end p b{color:var(--ink)}
+.end .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.end .next{font:700 13px var(--f-u);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.kb{flex:none;display:flex;flex-direction:column;gap:5px;user-select:none;-webkit-user-select:none}
+.kb div{display:flex;gap:4px;justify-content:center}
+.kb button{flex:1 1 0;min-width:0;max-width:44px;height:clamp(38px,6vh,50px);border:0;border-radius:8px;background:rgba(255,255,255,.12);font:700 17px var(--f-u);color:var(--ink);cursor:pointer;padding:0;touch-action:manipulation;text-transform:uppercase}
+.kb button:active{background:rgba(79,227,193,.35)}
+.kb button.w{max-width:66px;flex-grow:1.5;font-size:13px;text-transform:none}
+.kb button.go{background:var(--aqua);color:var(--aqua-ink)}
+@media (max-aspect-ratio:6/5) and (max-height:700px){:root{--tile:44px}#panel{gap:6px;padding-top:6px}.kb button{height:40px}.ghost{padding:7px 12px}}
+@media (min-aspect-ratio:6/5) and (max-height:520px){
+  :root{--tile:40px}
+  #stage{padding:6px 8px}
+  #ladder{gap:4px}
+  #panel{gap:5px;padding:6px 10px}
+  .kb{gap:4px}.kb div{gap:3px}.kb button{height:32px;font-size:15px}
+  .ghost{padding:5px 12px;font-size:14px}.seg button{padding:4px 11px}
+  .end{padding:8px 12px;gap:5px}.end h2{font-size:19px}.end p{font-size:13px}
+  .hintline{font-size:13px;min-height:17px}
+}
+@media (min-height:760px) and (min-width:900px){:root{--tile:64px}.rw .lab{font-size:11px}}
+@media (max-width:360px){:root{--tile:46px}.rw .lab,.rw .side{width:34px}}
+
+/* modals */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(2,8,18,.66);display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.modal .box{position:relative;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.55);width:min(460px,100%);max-height:100%;overflow:auto;padding:20px 20px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.modal h2{margin:0 0 10px;font:700 26px/1.1 var(--f-d)}
+.modal h3{margin:14px 0 6px;font:800 12px var(--f-u);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.modal p,.modal li{font:600 15px/1.45 var(--f-u);color:var(--ink-2)}
+.modal p{margin:0 0 8px}
+.modal ul{margin:0 0 8px;padding-left:18px}
+.modal li+li{margin-top:4px}
+.modal b{color:var(--ink)}
+.modal .x{position:absolute;right:10px;top:10px}
+.modal .ex{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:6px 0 10px;--tile:30px}
+.modal .ex .t{border-radius:6px;border-width:1px}
+.st4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.st4 b{display:block;font:700 28px/1.1 var(--f-d);font-variant-numeric:tabular-nums}
+.st4 small{font:700 11px/1.2 var(--f-u);color:var(--ink-3);display:block}
+.dist{display:flex;flex-direction:column;gap:4px}
+.dist div{display:flex;align-items:center;gap:8px;font:700 13px var(--f-u)}
+.dist span{width:42px;text-align:right;color:var(--ink-2);flex:none}
+.dist i{display:block;height:20px;min-width:24px;border-radius:5px;background:rgba(255,255,255,.14);font-style:normal;text-align:right;padding:1px 7px;font:800 13px/18px var(--f-u)}
+.dist i.me{background:var(--aqua);color:var(--aqua-ink)}
+.cd{font:700 22px var(--f-d);font-variant-numeric:tabular-nums}
+.foot{margin:14px 0 0;font:600 12px/1.45 var(--f-u);color:var(--ink-3)}
+.foot a{color:var(--ink-3)}
+#toast{position:fixed;left:50%;top:calc(var(--top) + 10px);transform:translateX(-50%) translateY(-6px);background:var(--ink);color:var(--night);font:800 14px var(--f-u);padding:9px 16px;border-radius:999px;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<main id="game">
+  <section id="stage" aria-label="Your word ladder">
+    <div id="ladder" aria-live="polite"></div>
+  </section>
+  <section id="panel">
+    <div class="mode" id="modeRow"></div>
+    <div class="hintline" id="hintLine" role="status" aria-live="polite"></div>
+    <div class="acts" id="acts"></div>
+    <div id="endBox" hidden></div>
+    <div class="kb" id="kb" hidden aria-hidden="true"></div>
+  </section>
+</main>
+<script src="/e63334287a3deaa3/poopdle/words.js"></script>
+<script src="/e63334287a3deaa3/poopdle/ladder.js"></script>
+<script>
+'use strict';
+(function () {
+const SLUG = 'poopdle', NAME = 'Poopdle', LAUNCH = '20261101', L = window.Ladder;
+const $ = (id) => document.getElementById(id);
+function h(tag, attrs, kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'text') e.textContent = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] != null && attrs[k] !== false) e.setAttribute(k, attrs[k]);
+  }
+  if (kids) for (const c of kids) if (c != null) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  return e;
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const UP = (w) => String(w || '').toUpperCase();
+
+// ------------------------------------------------------------------ days (the player's local date; 2026-11-01 is #1)
+let DAY_TEST = (navigator.webdriver && /^\d{8}$/.test(window.__PD_TODAY || '')) ? window.__PD_TODAY : ''; // tests only
+const keyOf = (d) => String(d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
+const today = () => DAY_TEST || keyOf(new Date());
+const dateOf = (k) => new Date(+k.slice(0, 4), +k.slice(4, 6) - 1, +k.slice(6, 8), 12);
+function addDays(k, n) { const d = dateOf(k); d.setDate(d.getDate() + n); return keyOf(d); }
+const dayNum = (k) => Math.round((dateOf(k) - dateOf(LAUNCH)) / 864e5) + 1;
+function countdown() {
+  const n = new Date(), m = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1), s = Math.max(0, Math.floor((m - n) / 1000));
+  const p = (x) => (x < 10 ? '0' : '') + x;
+  return p(Math.floor(s / 3600)) + ':' + p(Math.floor(s / 60) % 60) + ':' + p(s % 60);
+}
+
+// ------------------------------------------------------------------ the daily:poopdle record (read by the Daily hub)
+const Daily = {
+  blank: () => ({ v: 1, days: {}, played: 0, wins: 0, streak: 0, maxStreak: 0, last: '', dist: {} }),
+  load() {
+    let o = store.get('daily:' + SLUG, null);
+    if (!o || typeof o !== 'object' || o.v !== 1) o = Daily.blank();
+    ['played', 'wins', 'streak', 'maxStreak'].forEach((f) => { o[f] = Math.max(0, +o[f] || 0); });
+    if (!o.days || typeof o.days !== 'object') o.days = {};
+    if (!o.dist || typeof o.dist !== 'object') o.dist = {};
+    const t = today(), y = addDays(t, -1);
+    if (o.streak && o.last !== t && o.last !== y) { o.streak = 0; store.set('daily:' + SLUG, o); }
+    return o;
+  },
+  // res: {win, score (moves over par), tries (moves), time, dist}; called once when a daily game ends
+  finish(k, res) {
+    const o = Daily.load();
+    if (o.days[k] && o.days[k].done) return o;
+    const prev = addDays(k, -1);
+    o.days[k] = { done: true, win: !!res.win, score: res.score == null ? null : res.score, tries: res.tries == null ? null : res.tries, time: res.time == null ? null : Math.round(res.time) };
+    o.played++;
+    if (res.win) { o.wins++; o.streak = (o.days[prev] && o.days[prev].win && o.streak > 0) ? o.streak + 1 : 1; } else o.streak = 0;
+    o.maxStreak = Math.max(o.maxStreak, o.streak);
+    if (!o.last || k > o.last) o.last = k;
+    if (res.dist != null) o.dist[res.dist] = (o.dist[res.dist] || 0) + 1;
+    const cut = addDays(today(), -59);
+    Object.keys(o.days).forEach((d) => { if (d < cut) delete o.days[d]; });
+    store.set('daily:' + SLUG, o);
+    try {
+      if (window.BackRoomStats) {
+        if (res.win) BackRoomStats.add('wins', 1);
+        if (o.streak > 0) BackRoomStats.max('streak', o.streak);
+        if (res.perfect) BackRoomStats.add('perfect', 1);
+      }
+    } catch (e) {}
+    return o;
+  }
+};
+const DIST = [['0', 'Par'], ['1', '+1'], ['2', '+2'], ['3', '+3'], ['4', '+4'], ['5', '+5…'], ['X', '✗']];
+const distKey = (over) => (over >= 5 ? '5' : String(over));
+
+// ------------------------------------------------------------------ page shell: top bar, toast, modals
+const ICONS = {
+  help: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.4-2.7 4"/><path d="M12 17.6h.01"/></svg>',
+  stats: '<svg viewBox="0 0 24 24"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+document.body.insertBefore(h('header', { id: 'top' }, [
+  h('a', { class: 'pill', href: '/e63334287a3deaa3/daily/', id: 'back', text: '‹ Back' }),
+  h('h1', { html: NAME + ' 💩<span>word ladder</span>' }),
+  h('span', { class: 'sp' }),
+  h('button', { class: 'pill ico', id: 'helpBtn', 'aria-label': 'How to play', title: 'How to play', html: ICONS.help }),
+  h('button', { class: 'pill ico', id: 'statsBtn', 'aria-label': 'Statistics', title: 'Statistics', html: ICONS.stats })
+]), document.body.firstChild);
+const toastEl = h('div', { id: 'toast', role: 'status', 'aria-live': 'polite' }); document.body.appendChild(toastEl);
+let tT = 0;
+function toast(msg, ms) { toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => toastEl.classList.remove('on'), ms || 1800); }
+let openModal = null, lastFocus = null;
+function modal(title, body) {
+  closeModal();
+  const box = h('div', { class: 'box', role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, [
+    h('button', { class: 'pill ico x', 'aria-label': 'Close', html: ICONS.x, onclick: closeModal }), h('h2', { text: title }), body]);
+  const m = h('div', { class: 'modal', onclick: (e) => { if (e.target === m) closeModal(); } }, [box]);
+  lastFocus = document.activeElement; document.body.appendChild(m); openModal = m; box.querySelector('.x').focus();
+}
+function closeModal() { if (openModal) { openModal.remove(); openModal = null; if (lastFocus && lastFocus.focus) try { lastFocus.focus({ preventScroll: true }); } catch (e) {} } }
+function copyText(t) {
+  function fallback() {
+    const a = h('textarea', { readonly: '', style: 'position:fixed;left:-9999px;top:0' }); a.value = t; document.body.appendChild(a); a.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} a.remove(); return ok;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(() => true, () => fallback());
+  return Promise.resolve(fallback());
+}
+const tilesHtml = (w, cls) => '<div class="tiles">' + Array.from(w).map((c, i) => '<span class="t ' + (typeof cls === 'function' ? cls(i) : cls || '') + '">' + c + '</span>').join('') + '</div>';
+const HOW = '<p>Turn today\'s start word into <b>POOP</b>, one letter at a time. Every step has to be a real four-letter word.</p>' +
+  '<div class="ex">' + tilesHtml('COIN', 'start') + tilesHtml('COIL', (i) => i === 3 ? 'ch' : '') + tilesHtml('COOL', (i) => i === 2 ? 'ch hit' : i === 1 ? 'hit' : '') + tilesHtml('COOP', (i) => i === 3 ? 'ch hit' : i === 1 || i === 2 ? 'hit' : '') + tilesHtml('POOP', 'goal') + '</div>' +
+  '<ul><li><b>Par</b> is the fewest steps it can be done in. Match it for a perfect score.</li>' +
+  '<li>Letters already in the right place for POOP turn <b style="color:var(--green)">green</b>.</li>' +
+  '<li><b>Undo</b> takes you back a word, but the move still counts.</li>' +
+  '<li><b>Hint</b> first tells you which letter to change, then a word that keeps you on a shortest path. <b>Give up</b> shows you a way there.</li>' +
+  '<li>Type on your keyboard and press Enter, or use the keys on screen.</li>' +
+  '<li>Unlimited mode has random start words, and can pick a random goal word too.</li></ul>';
+function openHelp() {
+  store.set(SLUG + ':seen', 1);
+  modal('How to play', h('div', { html: HOW + '<p class="foot">A new start word every day at midnight, your time, the same for everyone. Unlimited games don\'t count towards your stats. · <a href="/privacy.html">Privacy</a></p>' }));
+}
+let cdTimer = 0;
+function openStats(meKey) {
+  const s = Daily.load(); let max = 1;
+  DIST.forEach((d) => { max = Math.max(max, s.dist[d[0]] || 0); });
+  const pct = s.played ? Math.round(100 * s.wins / s.played) : 0;
+  const t = shareText();
+  modal('Statistics', h('div', null, [
+    h('div', { class: 'st4' }, [
+      h('div', { html: '<b>' + s.played + '</b><small>Played</small>' }),
+      h('div', { html: '<b>' + pct + '</b><small>Win %</small>' }),
+      h('div', { html: '<b>' + s.streak + '</b><small>Current streak</small>' }),
+      h('div', { html: '<b>' + s.maxStreak + '</b><small>Max streak</small>' })]),
+    h('h3', { text: 'Moves compared to par' }),
+    h('div', { class: 'dist' }, DIST.map((d) => {
+      const n = s.dist[d[0]] || 0;
+      return h('div', null, [h('span', { text: d[1] }), h('i', { class: d[0] === meKey ? 'me' : '', style: 'width:' + Math.max(8, Math.round(100 * n / max)) + '%', text: String(n) })]);
+    })),
+    h('h3', { text: 'Next puzzle in' }),
+    h('div', { style: 'display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap' }, [
+      h('span', { class: 'cd', id: 'cd', text: countdown() }),
+      t ? h('button', { class: 'cta', text: 'Share', onclick: share }) : null])
+  ]));
+  clearInterval(cdTimer); cdTimer = setInterval(() => { const c = $('cd'); if (!c) { clearInterval(cdTimer); return; } c.textContent = countdown(); }, 1000);
+}
+$('helpBtn').addEventListener('click', openHelp);
+$('statsBtn').addEventListener('click', () => openStats(st && st.mode === 'daily' && st.done ? (st.win ? distKey(st.moves - st.par) : 'X') : ''));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && openModal) { e.preventDefault(); closeModal(); } }, true);
+
+// ------------------------------------------------------------------ mode switch, actions, keyboard
+const n0 = dayNum(today());
+const bD = h('button', { type: 'button', text: n0 >= 1 ? 'Daily #' + n0 : 'Daily' }), bU = h('button', { type: 'button', text: 'Unlimited' });
+const info = h('span', { class: 'info', id: 'info' });
+$('modeRow').append(h('div', { class: 'seg', role: 'group', 'aria-label': 'Mode' }, [bD, bU]), info);
+bD.onclick = () => start('daily'); bU.onclick = () => start('free');
+const aUndo = h('button', { type: 'button', class: 'ghost', id: 'undoBtn', text: '↩ Undo', onclick: () => undo() });
+const aHint = h('button', { type: 'button', class: 'ghost', id: 'hintBtn', text: '💡 Hint', onclick: () => hint() });
+const aGive = h('button', { type: 'button', class: 'ghost', id: 'giveBtn', text: '🏳 Give up', onclick: () => giveUp() });
+$('acts').append(aUndo, aHint, aGive);
+const touch = (() => { try { return matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window && navigator.maxTouchPoints > 0); } catch (e) { return false; } })();
+const kb = $('kb');
+if (touch) {
+  document.documentElement.classList.add('touch');
+  kb.hidden = false;
+  ['qwertyuiop', 'asdfghjkl', '↵zxcvbnm⌫'].forEach((row) => {
+    const r = h('div');
+    Array.from(row).forEach((ch) => {
+      const b = h('button', { type: 'button', tabindex: '-1', text: ch === '↵' ? 'Enter' : ch, 'data-k': ch });
+      if (ch === '↵' || ch === '⌫') b.className = 'w' + (ch === '↵' ? ' go' : '');
+      b.addEventListener('pointerdown', (e) => e.preventDefault());
+      b.addEventListener('click', () => key(ch === '↵' ? 'Enter' : ch === '⌫' ? 'Backspace' : ch));
+      r.appendChild(b);
+    });
+    kb.appendChild(r);
+  });
+}
+
+// ------------------------------------------------------------------ game state
+// st: {mode, day, target, start, par, words (the ladder so far, start first), moves, log ('g' closer, 'y' no closer,
+//      'r' further or a dead end, 'u' undo), hints, cue ({pos, word} for the current word), done, win, t0, t1, any}
+let st = null, typed = '', giveArmed = 0, freeAny = !!store.get(SLUG + ':any', false);
+const D = () => L.from(st.target).all;
+function save() {
+  if (!st) return;
+  const o = { day: st.day, target: st.target, start: st.start, words: st.words, moves: st.moves, log: st.log, hints: st.hints, done: st.done, win: st.win, t0: st.t0, t1: st.t1, cue: st.cue };
+  store.set(SLUG + ':' + (st.mode === 'daily' ? 'day' : 'free'), o);
+}
+function fresh(mode, start, target, day) {
+  return { mode: mode, day: day || '', target: target, start: start, par: L.from(target).all[start], words: [start], moves: 0, log: [], hints: 0, cue: null, done: false, win: false, t0: 0, t1: 0 };
+}
+function restore(s, o) {
+  if (!o || !Array.isArray(o.words) || o.words[0] !== s.start || o.target !== s.target) return s;
+  const ok = o.words.every((w, i) => typeof w === 'string' && L.isWord(w) && (i === 0 || diffs(o.words[i - 1], w) === 1));
+  if (!ok) return s;
+  s.words = o.words.slice(); s.moves = Math.max(+o.moves || 0, s.words.length - 1); s.log = Array.isArray(o.log) ? o.log.filter((x) => /^[gyru]$/.test(x)) : [];
+  s.hints = +o.hints || 0; s.done = !!o.done; s.win = !!o.win; s.t0 = +o.t0 || 0; s.t1 = +o.t1 || 0;
+  s.cue = o.cue && typeof o.cue === 'object' && o.cue.at === s.words.length ? o.cue : null;
+  return s;
+}
+function start(mode, newOne) {
+  typed = ''; giveArmed = 0;
+  if (mode === 'daily') {
+    const day = today(), n = Math.max(1, dayNum(day));
+    st = restore(fresh('daily', L.daily(n), L.TARGET, day), (() => { const o = store.get(SLUG + ':day', null); return o && o.day === day ? o : null; })());
+  } else {
+    const o = store.get(SLUG + ':free', null);
+    if (!newOne && o && !o.done && typeof o.start === 'string' && typeof o.target === 'string' && L.isWord(o.start) && L.isWord(o.target) && L.from(o.target).all[o.start] != null) {
+      st = restore(fresh('free', o.start, o.target), o);
+    } else {
+      const r = L.rng(Date.now() + ':' + Math.random()), last = st && st.mode === 'free' ? st.start : '';
+      let p;
+      if (freeAny) p = L.randomPair(r);
+      else { const pool = L.dailyPool(); do { p = { target: L.TARGET, start: pool[Math.floor(r() * pool.length)] }; } while (p.start === last && pool.length > 1); }
+      st = fresh('free', p.start, p.target);
+    }
+  }
+  bD.classList.toggle('on', mode === 'daily'); bU.classList.toggle('on', mode === 'free');
+  bD.setAttribute('aria-pressed', mode === 'daily'); bU.setAttribute('aria-pressed', mode === 'free');
+  save(); render();
+}
+const cur = () => st.words[st.words.length - 1];
+function diffs(a, b) { let n = 0; for (let i = 0; i < 4; i++) if (a[i] !== b[i]) n++; return n; }
+
+// ------------------------------------------------------------------ moves
+function key(k) {
+  if (!st || st.done || openModal) return;
+  if (k === 'Enter') { submit(); return; }
+  if (k === 'Backspace') { typed = typed.slice(0, -1); renderLadder(); return; }
+  if (/^[a-z]$/i.test(k) && typed.length < 4) { typed += k.toLowerCase(); renderLadder(); }
+}
+function bad(msg) {
+  toast(msg);
+  const r = document.querySelector('.rw.cur'); if (r) { r.classList.remove('bad'); void r.offsetWidth; r.classList.add('bad'); }
+}
+function submit() {
+  const w = typed, c = cur();
+  if (w.length < 4) { bad('Type a four-letter word'); return; }
+  if (w === c) { bad('That\'s the word you\'re on: change one letter'); return; }
+  if (!L.isWord(w)) { bad(UP(w) + ' isn\'t in the word list'); return; }
+  const d = diffs(c, w);
+  if (d !== 1) { bad('Change exactly one letter (that\'s ' + d + ')'); return; }
+  if (st.words.indexOf(w) >= 0) { bad('You\'ve already used ' + UP(w)); return; }
+  if (!st.t0) st.t0 = Date.now();
+  const dist = D(), dc = dist[c], dw = dist[w];
+  st.log.push(dw == null ? 'r' : dc == null || dw < dc ? 'g' : dw === dc ? 'y' : 'r');
+  st.words.push(w); st.moves++; st.cue = null; typed = ''; giveArmed = 0;
+  if (w === st.target) finish(true);
+  else if (dw == null) toast('Careful: there\'s no way to ' + UP(st.target) + ' from ' + UP(w), 2400);
+  save(); render(true);
+}
+function undo() {
+  if (!st || st.done) return;
+  if (st.words.length < 2) { toast('You\'re back at the start word'); return; }
+  st.words.pop(); st.log.push('u'); st.cue = null; typed = ''; giveArmed = 0;
+  save(); render();
+}
+function hint() {
+  if (!st || st.done) return;
+  const c = cur(), nx = L.next(c, st.target);
+  if (!nx.length) { setHintLine('There\'s no way to ' + UP(st.target) + ' from ' + UP(c) + '. Undo to go back a step.'); return; }
+  const best = nx[0];
+  let pos = 0; for (let i = 0; i < 4; i++) if (c[i] !== best[i]) pos = i;
+  if (!st.cue || st.cue.at !== st.words.length) {
+    st.cue = { at: st.words.length, pos: pos, word: '' }; st.hints++;
+  } else if (!st.cue.word) {
+    st.cue.word = best; st.hints++; typed = best;
+  } else { typed = st.cue.word; }
+  if (!st.t0) st.t0 = Date.now();
+  save(); render();
+}
+function giveUp() {
+  if (!st || st.done) return;
+  if (Date.now() - giveArmed > 3000) { giveArmed = Date.now(); aGive.textContent = 'Sure? Tap again'; aGive.classList.add('warn'); setTimeout(() => { if (giveArmed && Date.now() - giveArmed >= 2900) { giveArmed = 0; renderActs(); } }, 3000); return; }
+  giveArmed = 0; finish(false); save(); render();
+}
+function finish(win) {
+  st.done = true; st.win = win; st.t1 = Date.now(); st.cue = null; typed = '';
+  if (st.mode === 'daily') {
+    const over = st.moves - st.par;
+    Daily.finish(st.day, { win: win, score: win ? over : null, tries: st.moves, time: st.t0 ? (st.t1 - st.t0) / 1000 : null, dist: win ? distKey(over) : 'X', perfect: win && over === 0 && !st.hints });
+    setTimeout(() => { if (!openModal && st && st.done && st.mode === 'daily') openStats(win ? distKey(over) : 'X'); }, 1800);
+  }
+}
+function shareText() {
+  if (!st || !st.done) return null;
+  const E = { g: '🟩', y: '🟨', r: '🟥', u: '↩️' };
+  let grid = st.log.map((x) => E[x]).join('');
+  if (st.win) grid = grid.replace(/🟩$/, '💩');
+  else grid += '🏳️';
+  const head = NAME + (st.mode === 'free' ? ' (unlimited)' : dayNum(st.day) >= 1 ? ' #' + dayNum(st.day) : ' (preview)');
+  const line = st.win ? '💩 in ' + st.moves + ' · par ' + st.par : 'gave up · par ' + st.par;
+  return head + ' ' + line + (st.hints ? ' 💡' + st.hints : '') + '\n' + grid + '\nascoding11.github.io';
+}
+function share() { const t = shareText(); if (!t) return; copyText(t).then((ok) => toast(ok ? 'Copied! Paste it anywhere.' : 'Couldn\'t copy, sorry')); }
+
+// ------------------------------------------------------------------ drawing
+function setHintLine(t) { $('hintLine').textContent = t || ''; }
+function row(word, opt) {
+  opt = opt || {};
+  const r = h('div', { class: 'rw' + (opt.cls ? ' ' + opt.cls : '') });
+  r.appendChild(h('span', { class: 'lab', text: opt.lab || '' }));
+  const tl = h('div', { class: 'tiles' });
+  for (let i = 0; i < 4; i++) {
+    const ch = word[i] || '';
+    tl.appendChild(h('span', { class: 't ' + (opt.tile ? opt.tile(i, ch) : ''), text: UP(ch) }));
+  }
+  r.appendChild(tl);
+  r.appendChild(h('span', { class: 'side', text: opt.side || '' }));
+  r.setAttribute('aria-label', (opt.lab ? opt.lab + ': ' : '') + (word ? UP(word).split('').join(' ') : 'empty'));
+  return r;
+}
+function renderLadder(animate) {
+  const lad = $('ladder'); lad.innerHTML = '';
+  const T = st.target, ws = st.words;
+  ws.forEach((w, i) => {
+    const prev = ws[i - 1];
+    lad.appendChild(row(w, {
+      lab: i === 0 ? 'Start' : String(i), cls: animate && i === ws.length - 1 && i > 0 ? 'new' : '',
+      tile: (k, ch) => (i === 0 ? 'start' : (w === T ? 'goal' : (prev && prev[k] !== ch ? 'ch' : '') + (ch === T[k] ? ' hit' : '')))
+    }));
+  });
+  if (!st.done) {
+    const c = cur();
+    const r = row(typed.padEnd(4, ' ').slice(0, 4).replace(/ /g, ''), {
+      cls: 'cur', lab: String(ws.length),
+      tile: (k, ch) => (ch ? 'typed' + (ch !== c[k] ? ' diff' : '') : 'ghost') + (st.cue && st.cue.pos === k ? ' cue' : '')
+    });
+    // empty slots show the current word's letter faintly, so you can see what you're changing
+    r.querySelectorAll('.t').forEach((t, k) => { if (!typed[k]) t.textContent = UP(c[k]); });
+    lad.appendChild(r);
+    if (!touch) lad.appendChild(h('div', { class: 'tip', text: 'Type a word and press Enter' }));
+    lad.appendChild(h('div', { class: 'rw gap', 'aria-hidden': 'true' }, [h('span', { class: 'lab' }), h('span', { text: '⋮' })]));
+    lad.appendChild(row(T, { lab: 'Goal', tile: () => 'goal', side: T === 'poop' ? '💩' : '' }));
+  } else if (!st.win) {
+    lad.appendChild(h('div', { class: 'rw gap', 'aria-hidden': 'true' }, [h('span', { class: 'lab' }), h('span', { text: '⋮' })]));
+    lad.appendChild(row(T, { lab: 'Goal', tile: () => 'goal', side: T === 'poop' ? '💩' : '' }));
+  } else lad.lastChild.classList.add('win');
+  const stage = $('stage');
+  requestAnimationFrame(() => { const c = lad.querySelector('.rw.cur') || lad.lastChild; if (c && c.scrollIntoView) try { c.scrollIntoView({ block: 'nearest' }); } catch (e) {} if (st.done && !st.win) stage.scrollTop = stage.scrollHeight; });
+}
+function renderActs() {
+  aUndo.disabled = st.done || st.words.length < 2;
+  aHint.disabled = st.done;
+  aGive.textContent = giveArmed ? 'Sure? Tap again' : '🏳 Give up'; aGive.classList.toggle('warn', !!giveArmed);
+  $('acts').hidden = st.done;
+}
+function render(animate) {
+  if (!st) return;
+  info.innerHTML = 'Moves <b>' + st.moves + '</b> · Par <b>' + st.par + '</b>';
+  renderLadder(animate);
+  renderActs();
+  if (st.done) setHintLine('');
+  else if (st.cue && st.cue.at === st.words.length) setHintLine(st.cue.word ? 'Try ' + UP(st.cue.word) + ', then press Enter.' : 'Change letter ' + (st.cue.pos + 1) + ' (the ' + UP(cur()[st.cue.pos]) + ').');
+  else setHintLine('');
+  kb.hidden = !touch || st.done;
+  const end = $('endBox'); end.hidden = !st.done; end.innerHTML = '';
+  if (st.done) {
+    end.className = 'end';
+    const over = st.moves - st.par;
+    const p = L.path(st.start, st.target) || [];
+    const title = st.win ? (over === 0 ? (st.target === 'poop' ? 'Par! Perfectly pooped 💩' : 'Par! Perfect ladder') : over === 1 ? 'Made it, one over par' : 'Made it, ' + over + ' over par') : 'Better luck tomorrow';
+    end.append(
+      h('h2', { class: st.win ? 'win' : 'lose', text: st.mode === 'free' && !st.win ? 'Here\'s a way' : title }),
+      h('p', { html: st.win ? 'You reached <b>' + UP(st.target) + '</b> in <b>' + st.moves + '</b> move' + (st.moves === 1 ? '' : 's') + ' (par ' + st.par + ')' + (st.hints ? ' with ' + st.hints + ' hint' + (st.hints > 1 ? 's' : '') : '') + '.' : 'A shortest ladder from ' + UP(st.start) + ' has ' + st.par + ' steps:' }),
+      h('p', { html: (st.win ? 'A shortest ladder: ' : '') + '<b>' + p.map(UP).join(' → ') + '</b>' }),
+      h('div', { class: 'row' }, [
+        h('button', { type: 'button', class: 'cta', text: 'Share', onclick: share }),
+        h('button', { type: 'button', class: 'ghost', text: st.mode === 'daily' ? 'Play unlimited' : 'Next word', onclick: () => start('free', true) }),
+        st.mode === 'daily' ? h('span', { class: 'next', id: 'nextIn', text: 'Next in ' + countdown() }) : null]));
+  }
+  if (st.mode === 'free' && !st.done) {
+    // Unlimited: choose the goal (POOP or any word), and skip to a new start word
+    const anyBtn = h('button', { type: 'button', class: 'ghost', text: freeAny ? 'Goal: any word' : 'Goal: POOP', title: 'Switch between POOP and a random goal word', onclick: () => { freeAny = !freeAny; store.set(SLUG + ':any', freeAny); start('free', true); } });
+    const skip = h('button', { type: 'button', class: 'ghost', text: 'New word', onclick: () => start('free', true) });
+    end.className = ''; end.hidden = false; end.append(h('div', { class: 'acts' }, [anyBtn, skip]));
+  }
+}
+
+// ------------------------------------------------------------------ keyboard
+document.addEventListener('keydown', (e) => {
+  if (openModal || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter') {
+    // Enter submits whatever is typed; with nothing typed it presses a focused button, but never Give up (that needs a second click or tap)
+    const btn = e.target && e.target.closest && e.target.closest('button');
+    if (btn && !typed && btn !== aGive) return;
+    e.preventDefault(); key('Enter'); return;
+  }
+  if (e.key === 'Enter' || e.key === 'Backspace' || /^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); key(e.key); }
+  else if (e.key === 'Escape' && typed) { typed = ''; renderLadder(); }
+});
+// a button clicked with the mouse doesn't keep the focus, so typing and Enter go back to the ladder
+document.addEventListener('click', (e) => { const b = e.detail && e.target && e.target.closest && e.target.closest('button'); if (b) b.blur(); });
+setInterval(() => {
+  const e = $('nextIn'); if (e) e.textContent = 'Next in ' + countdown();
+  if (st && st.mode === 'daily' && st.day !== today() && !typed) start('daily');
+}, 1000);
+
+Daily.load(); // clears a streak that ended before yesterday
+start('daily');
+if (!store.get(SLUG + ':seen', 0)) setTimeout(openHelp, 250);
+if (navigator.webdriver) window.__pd = {
+  get st() { return st; }, L: L, key: key, type(w) { typed = ''; Array.from(w).forEach(key); key('Enter'); }, undo: undo, hint: hint,
+  giveUp() { giveArmed = Date.now() - 100; giveUp(); }, start: start, shareText: shareText, Daily: Daily,
+  setToday(k) { DAY_TEST = /^\d{8}$/.test(k) ? k : ''; }
+};
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="poopdle" defer></script>
+</body>
+</html>
