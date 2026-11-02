@@ -96,7 +96,9 @@
       if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v);
     } catch (e) { return null; }
   }
-  function cleanName(s) { return String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14); }
+  // Rude words in names are masked by the shared name filter (/namefilter.js) when the page has loaded it.
+  function byFilter(v) { return window.NameFilter ? window.NameFilter.clean(v) : v; }
+  function cleanName(s) { return byFilter(String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14)); }
   function cleanCode(s) { return String(s || '').toLowerCase().replace(/^.*#?pt-/, '').replace(/[^a-z0-9]/g, '').slice(0, 8); }
   function rand(n) { var a = 'abcdefghjkmnpqrstuvwxyz23456789', s = ''; for (var i = 0; i < n; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
   function colorOf(uid) { var h = 0; for (var i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) >>> 0; return COLORS[h % COLORS.length]; }

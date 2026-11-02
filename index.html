@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="/namefilter.js"></script> <!-- masks rude words in player names (see README) -->
+<script>
+// On ascoding11.com (not ascoding11.github.io) the landing page is the showcase (showcase/). Only a bare visit goes there:
+// anything after the address (#new, invite links like #br-1234, #pt- parties, ?game=) still opens this page.
+if(/^(www\.)?ascoding11\.com$/.test(location.hostname)&&!location.hash&&!location.search)location.replace('/showcase/');
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Arjun's Projects – Free Browser Games &amp; Productivity Tools</title>
 <meta name="description" content="Arjun's projects: free browser games, including Hype Cycle Exchange, a stock market game, and Boxed, a competition math game, plus Docket, a study planner for Canvas.">
@@ -124,6 +130,47 @@
   // Party invites start with pt-: they don't open a game, they join the party in the Back Room's Party panel (party.js).
   var m=/^#([a-z0-9-]{1,20})$/.exec(location.hash);
   if(m&&m[1]!=='notrack'&&m[1]!=='track'){room=m[1];history.replaceState(null,'',location.pathname+location.search)}
+  // A share link (home page + # + the hidden folder's name) opens the hidden page without the code. The folder name
+  // isn't written here: the page only goes there if a folder with that name exists. If it doesn't, it's kept as a room code.
+  if(/^[0-9a-f]{16}$/.test(room)){
+    var key=room;room='';
+    fetch('/'+key+'/',{cache:'no-store'}).then(function(r){return r.ok?r.text():null}).then(function(html){
+      if(html&&!shown)reveal(html,'/'+key+'/');else if(!html)room=key;
+    }).catch(function(){room=key});
+  }
+  // The showcase link, home page + #new, keeps the main site as it is and adds a fourth card, Games, next to the others.
+  // The card opens the whole Back Room here without the code, with its Party, Online (chat) and Leaderboard panels;
+  // on a phone too, since the phone version has no Online panel. This does put the Back Room's folder name in this page.
+  if(room==='new'){
+    room='';
+    var cats=document.querySelector('.cats');
+    if(cats){
+      var BR='/e63334287a3deaa3/',card=document.createElement('article'),st=document.createElement('style');
+      st.textContent='@media (min-width:980px){.cats.with-games{grid-template-columns:repeat(2,minmax(0,1fr))}}';
+      document.head.appendChild(st);cats.classList.add('with-games');
+      card.className='cat';
+      card.innerHTML='<a class="cat-art" href="'+BR+'" aria-label="Open the games">'+
+        ['rumble-karts','shell-crackers','slipstream'].map(function(g){return '<img src="'+BR+'m/thumbs/'+g+'.jpg" alt="" loading="lazy" style="object-position:center">'}).join('')+'</a>'+
+        '<div class="body"><span class="count">20 games · most are multiplayer</span><h3>Games</h3>'+
+        '<p>Original browser games for a computer or a phone. Make a party with friends, see who else is online, chat, send invites, and climb the leaderboards.</p>'+
+        '<ul class="cat-list">'+
+        '<li><a href="'+BR+'"><b>Rumble Karts</b><span>Kart battles, up to 12</span></a></li>'+
+        '<li><a href="'+BR+'"><b>Shell Crackers</b><span>Egg shooter, ranked</span></a></li>'+
+        '<li><a href="'+BR+'"><b>Showdown</b><span>Texas Hold\'em, up to 8</span></a></li>'+
+        '</ul><div class="actions"><a class="btn primary" href="'+BR+'">Open the games</a></div></div>';
+      card.addEventListener('click',function(e){
+        var a=e.target.closest&&e.target.closest('a[href]');if(!a||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        e.preventDefault();
+        fetch(BR,{cache:'no-store'}).then(function(r){return r.ok?r.text():null}).then(function(html){
+          if(!html)location.href=BR;else if(!shown)reveal(html,BR,true);
+        }).catch(function(){location.href=BR});
+      });
+      cats.appendChild(card);
+    }
+    // The "Tell Arjun" feedback bar (feedback.js, in the Back Room folder) goes at the top of the page, so showcase
+    // visitors can send a note before opening the games. reveal() loads it again later; it only draws the bar once.
+    var fbs=document.createElement('script');fbs.src='/e63334287a3deaa3/feedback.js';document.body.appendChild(fbs);
+  }
   async function h(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ascoding11:'+s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('').slice(0,16)}
   function close(){if(box){box.remove();box=null;miss=0}}
 
@@ -139,8 +186,9 @@
   }
 
   // Show the hidden page's games right here, without changing the address.
-  function reveal(html,dir){
-    if(matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches)return revealPhone(dir);
+  // full: show the whole hidden page even on a phone (the #new Games card), instead of the phone version.
+  function reveal(html,dir,full){
+    if(!full&&matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches)return revealPhone(dir);
     var d=new DOMParser().parseFromString(html,'text/html');
     var hd=document.querySelector('header'),sec=document.querySelector('section[aria-label="Sections"]');
     hd.replaceWith(document.importNode(d.querySelector('header'),true));

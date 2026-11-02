@@ -33,8 +33,10 @@
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var DOCS = 'projects/' + CFG.projectId + '/databases/(default)/documents';
 
-  // Back Room game folders, in the order of the Back Room page. Add new games here.
+  // Back Room game folders, in the order of the Back Room page. Add new games here. 'site' (first) is for notes about
+  // the website itself, e.g. from the home page's #new view; it passes the rules' [a-z0-9-] check like the folders.
   var GAMES = [
+    ['site', 'The website, not a game'],
     ['rumble-karts', 'Rumble Karts'], ['shell-crackers', 'Shell Crackers'], ['backrooms-1v1', 'Backrooms 1v1–4v4'],
     ['slipstream', 'Slipstream'], ['boostball', 'Boostball'], ['coil', 'Coil'], ['trivium', 'Trivium'],
     ['showdown', 'Showdown'], ['chromaflage', 'Chromaflage'], ['spire', 'Spire'], ['turbo-trail', 'Turbo Trail'],
@@ -205,7 +207,7 @@
       e.preventDefault();
       if (send.disabled) return;
       var text = cut(ta.value, MAX.msg);
-      if (!sel.value) { say('Pick which game it\'s about (or "Something else").', true); sel.focus(); return; }
+      if (!sel.value) { say('Pick which game it\'s about, or "The website, not a game".', true); sel.focus(); return; }
       if (!text) { say('Write a few words first.', true); ta.value = ''; count(); ta.focus(); return; }
       var t = sentTimes(), now = Date.now();
       if (t.length >= PER_DAY) { say('That\'s ' + PER_DAY + ' notes from this browser today. Thanks! Try again tomorrow.', true); return; }
