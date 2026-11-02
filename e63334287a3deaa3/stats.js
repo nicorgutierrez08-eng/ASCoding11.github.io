@@ -117,7 +117,9 @@
   function okGame(k) { return typeof k === 'string' && /^[a-z0-9-]{1,30}$/.test(k); }
   function okUid(u) { return typeof u === 'string' && /^[A-Za-z0-9_-]{6,128}$/.test(u); }
   function lower(k) { return k.indexOf('lap:') === 0 || k.indexOf('rec:') === 0 || LOWER[k] === 1; }
-  function cleanName(s, n) { return String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, n || 14); }
+  // Rude words in names are masked by the shared name filter (/namefilter.js) when the page has loaded it.
+  function byFilter(v) { return window.NameFilter ? window.NameFilter.clean(v) : v; }
+  function cleanName(s, n) { return byFilter(String(s == null ? '' : s).replace(/[<>\u0000-\u001f\u007f​-‏‪-‮⁦-⁩]/g, '').replace(/\s+/g, ' ').trim().slice(0, n || 14)); }
   function rid(n) { var s = ''; try { var a = new Uint8Array(n); crypto.getRandomValues(a); for (var i = 0; i < n; i++) s += 'abcdefghijklmnopqrstuvwxyz0123456789'.charAt(a[i] % 36); } catch (e) { while (s.length < n) s += Math.random().toString(36).slice(2); } return s.slice(0, n); }
   // The same seat and colour social.js (Online) gives a uid, so a name reads the same everywhere.
   function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
