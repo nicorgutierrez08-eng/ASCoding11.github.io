@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Warmer</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/sem-data/sem.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="warmer" defer></script>
+<style>
+/* Warmer: each guess shows a score and, near the secret word, how near out of 1000, with a temperature. */
+.g .temp.burning{color:#ff9a6b}.g .temp.hot{color:#ffb36b}.g .temp.warm{color:var(--sun)}.g .temp.tepid{color:#ffe7a3}
+.g .temp.cool{color:#a9d8ff}.g .temp.cold{color:#7fc4ff}.g .temp.freezing{color:#b8e6ff}
+.g .temp .m i{background:linear-gradient(90deg,#ffd166,#ff7a59)}
+.cols{display:flex;gap:8px;padding:0 11px;font:800 11px var(--f-u);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);flex:none}
+.cols .nm{flex:1}.cols .n{width:30px}.cols .sc{width:54px;text-align:right}.cols .temp{width:132px}
+@media (max-width:380px){.cols .temp{width:104px}.cols .sc{width:46px}}
+</style>
+</head>
+<body>
+<main id="game"></main>
+<script src="/e63334287a3deaa3/sem-data/sem.js"></script>
+<script>
+'use strict';
+(function () {
+const S = Sem, h = S.h;
+// temperature from the rank: inside the top 1,000 it's exact, outside it's the middle of the word's group
+const TEMPS = [[1, 'found', '🎉', 'Found it'], [10, 'burning', '🔥', 'Burning'], [100, 'hot', '♨️', 'Hot'], [400, 'warm', '☀️', 'Warm'], [1000, 'tepid', '🌤️', 'Tepid'],
+  [3000, 'cool', '🌥️', 'Cool'], [10000, 'cold', '❄️', 'Cold'], [Infinity, 'freezing', '🧊', 'Freezing']];
+function temp(r) { for (const t of TEMPS) if (r <= t[0]) return t; return TEMPS[TEMPS.length - 1]; }
+function score(i) { return i.exact ? (i.sim * 100).toFixed(2) : (i.sim * 100).toFixed(1); }
+const ex = (n, w, sc, t, prox) => '<div class="g"><span class="n">' + n + '</span><span class="nm">' + w + '</span><span class="sc' + (prox ? '' : ' approx') + '">' + sc + '</span>' +
+  '<span class="temp ' + t[1] + '">' + t[2] + ' ' + (prox ? '<span class="m"><i style="width:' + prox / 10 + '%"></i></span>' + prox : t[3]) + '</span></div>';
+const HOW = '<p>Find the <b>secret word</b> by getting warmer. Every guess gets a <b>score</b> for how close its meaning is to the secret word, which scores 100.</p>' +
+  '<p>If your guess is one of the <b>1,000 words nearest</b> the secret, you also see how near: <b>999/1000</b> is the very nearest word, <b>1/1000</b> only just made it.</p>' +
+  '<div class="ex">' + ex(7, 'snow', '53.08', TEMPS[1], 994) + ex(4, 'holiday', '32.17', TEMPS[3], 788) + ex(2, 'jacket', '18.6', TEMPS[5], 0) + ex(1, 'piano', '2.4', TEMPS[7], 0) + '</div>' +
+  '<ul><li>Guess as many times as you like. Guesses stay sorted, best first, numbered in the order you made them.</li>' +
+  '<li>Scores aren\'t percentages: 30 is often already warm, and plenty of words score below zero. Words outside the nearest 1,000 show a rounded score.</li>' +
+  '<li>From cold to hot: 🧊 Freezing, ❄️ Cold, 🌥️ Cool, then inside the 1,000: 🌤️ Tepid, ☀️ Warm, ♨️ Hot and 🔥 Burning.</li>' +
+  '<li>Stuck? <b>Hint</b> shows a word about halfway between your best guess and the secret. You can also give up.</li></ul>';
+const DIST = [['1-25', '1–25', 25], ['26-50', '26–50', 50], ['51-100', '51–100', 100], ['101-150', '101–150', 150], ['151-250', '151–250', 250], ['251+', '251+', Infinity], ['X', 'Gave up', null]];
+function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : w === 'guess' ? 'es' : 's'); }
+const game = S.game({
+  slug: 'warmer', name: 'Warmer', how: HOW, dist: DIST,
+  empty: 'Guess any word. The nearer its meaning to the secret word, the higher its score.',
+  row(x, P, st) {
+    const i = x.info, r = i.rank, t = temp(r), prox = i.exact && r > 1 ? P.T + 1 - r : 0;
+    return [h('span', { class: 'n', text: x.reveal ? '' : String(st.g.indexOf(x) + 1) }),
+      h('span', { class: 'nm', text: (x.hint ? '💡 ' : '') + P.words.list[x.w] }),
+      h('span', { class: 'sc' + (i.exact ? '' : ' approx'), text: r === 1 ? '100' : score(i) }),
+      h('span', { class: 'temp ' + t[1], title: t[3] + (prox ? ', ' + prox + '/1000' : '') }, [t[2] + ' ', prox ? h('span', { class: 'm' }, [h('i', { style: 'width:' + (prox / 10) + '%' })]) : null, prox ? String(prox) : x.reveal ? 'The word' : t[3]])];
+  },
+  order(a, b) { return b.info.sim - a.info.sim; },
+  shareLine(st) {
+    const n = st.g.length, k = st.g.filter(x => x.hint).length;
+    return (st.win ? 'got it in ' + plural(n, 'guess') : 'gave up after ' + plural(n, 'guess')) + (k ? ', ' + plural(k, 'hint') : '');
+  },
+  shareRest(st, P) {
+    const c = {};
+    st.g.forEach(x => { if (x.w !== P.secret) { const t = temp(x.info.rank); c[t[1]] = (c[t[1]] || 0) + 1; } });
+    let best = 0; st.g.forEach(x => { if (x.w !== P.secret && x.info.exact) best = Math.max(best, P.T + 1 - x.info.rank); });
+    const line = TEMPS.slice(1).reverse().filter(t => c[t[1]]).map(t => t[2] + ' ' + c[t[1]]).join('  ');
+    return (line || '') + (st.win ? '' : best ? '\nWarmest: ' + best + '/1000' : '');
+  },
+  endLine(st, P) {
+    const n = st.g.length, k = st.g.filter(x => x.hint).length;
+    let best = 0; st.g.forEach(x => { if (x.w !== P.secret && x.info.exact) best = Math.max(best, P.T + 1 - x.info.rank); });
+    if (st.win) return 'Found in <b>' + plural(n, 'guess') + '</b>' + (k ? ' with ' + plural(k, 'hint') : '') + '.';
+    return (best ? 'Your warmest guess was <b>' + best + '/1000</b>. ' : '') + 'See which words were nearest.';
+  },
+  closestNote: 'The 100 words nearest in meaning, with their scores (your guesses are highlighted).',
+  closest(i, P) { return [h('span', { class: 'r', text: (P.T - i) + '' }), h('span', { class: 'w', text: P.words.list[P.top(i)] }), h('span', { class: 's', text: (P.sim(i) * 100).toFixed(2) })]; }
+});
+// column headings above the list
+const lb = document.querySelector('.listbox');
+lb.insertBefore(h('div', { class: 'cols', 'aria-hidden': 'true' }, [h('span', { class: 'n', text: '#' }), h('span', { class: 'nm', text: 'Guess' }), h('span', { class: 'sc', text: 'Score' }), h('span', { class: 'temp', text: 'Nearness' })]), lb.firstChild);
+if (navigator.webdriver) window.__wm = game;
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="warmer" defer></script>
+</body>
+</html>

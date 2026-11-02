@@ -1,0 +1,28 @@
+Data used by Nearword and Warmer (the files in this folder)
+
+words.txt and d/*.bin were made by tools/build.py from these sources. No source file is included here as it was;
+the build only keeps a word list and, for each secret word, the order of the words by closeness in meaning.
+
+1. GloVe word vectors (glove.6B, 300 dimensions; Wikipedia 2014 + Gigaword 5)
+   Jeffrey Pennington, Richard Socher and Christopher D. Manning, "GloVe: Global Vectors for Word Representation", 2014.
+   https://nlp.stanford.edu/projects/glove/
+   Released by the Stanford NLP Group under the Open Data Commons Public Domain Dedication and License (PDDL):
+   https://opendatacommons.org/licenses/pddl/1-0/
+   (Copy used: Hugging Face sentence-transformers/average_word_embeddings_glove.6B.300d, the same vectors.)
+
+2. SCOWL (Spell Checker Oriented Word Lists), via the npm package wordlist-english 1.2.1 (MIT), used to choose
+   which words can be guessed:
+
+   Copyright 2000-2016 by Kevin Atkinson
+
+   Permission to use, copy, modify, distribute and sell these word
+   lists, the associated scripts, the output created from the scripts,
+   and its documentation for any purpose is hereby granted without fee,
+   provided that the above copyright notice appears in all copies and
+   that both that copyright notice and this permission notice appear in
+   supporting documentation. Kevin Atkinson makes no representations
+   about the suitability of this array for any purpose. It is provided
+   "as is" without express or implied warranty.
+
+   SCOWL also builds on other word lists; SCOWL's whole Copyright file, with all of their notices, is copied
+   unchanged into SCOWL-Copyright.txt next to this file.

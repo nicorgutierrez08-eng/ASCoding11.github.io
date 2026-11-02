@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>Nearword</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#04111f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="/e63334287a3deaa3/sem-data/sem.css">
+<script src="/e63334287a3deaa3/stats.js" data-game="nearword" defer></script>
+<style>
+/* Nearword: each guess shows its rank, with a bar that fills up and turns green the closer it is. */
+.g .rk{min-width:52px;text-align:right}
+.g.far .bar{background:linear-gradient(90deg,rgba(255,122,89,.55),rgba(255,92,122,.35))}
+.g.mid .bar{background:linear-gradient(90deg,rgba(255,209,102,.6),rgba(255,209,102,.3))}
+.g.near .bar{background:linear-gradient(90deg,rgba(94,240,143,.6),rgba(79,227,193,.35))}
+.ex .g{min-height:34px}
+</style>
+</head>
+<body>
+<main id="game"></main>
+<script src="/e63334287a3deaa3/sem-data/sem.js"></script>
+<script>
+'use strict';
+(function () {
+const S = Sem, h = S.h;
+function band(r) { return r <= 300 ? 'near' : r <= 1500 ? 'mid' : 'far'; }
+function width(r, V) { return Math.max(4, Math.round(100 * (1 - Math.log(r) / Math.log(V)))); }
+function rankText(i) { return i.rank === 1 ? '#1' : (i.exact ? '' : '~') + S.fmt(i.rank); }
+const ex = (w, r, b, pct) => '<div class="g ' + b + '"><i class="bar" style="width:' + pct + '%"></i><span class="nm">' + w + '</span><span class="rk">' + r + '</span></div>';
+const HOW = '<p>Find the <b>secret word</b>. Guess any word to see where it ranks: every word the game knows is lined up by how close its meaning is to the secret word, which is <b>#1</b>.</p>' +
+  '<div class="ex">' + ex('snow', '6', 'near', 82) + ex('holiday', '214', 'near', 46) + ex('jacket', '~1,300', 'mid', 29) + ex('piano', '~11,500', 'far', 8) + '</div>' +
+  '<ul><li>Guess as many times as you like. Your guesses stay sorted, closest first.</li>' +
+  '<li><b>Green</b> is the top 300, <b>yellow</b> the top 1,500, <b>red</b> further away. Ranks past 1,000 are rounded (~).</li>' +
+  '<li>It\'s about meaning and how words are used, not spelling: <i>snow</i> is near <i>winter</i>, <i>winner</i> isn\'t.</li>' +
+  '<li>Stuck? <b>Hint</b> shows a word about halfway between your best guess and the secret. You can also give up.</li></ul>';
+const DIST = [['1-15', '1–15', 15], ['16-30', '16–30', 30], ['31-50', '31–50', 50], ['51-80', '51–80', 80], ['81-150', '81–150', 150], ['151+', '151+', Infinity], ['X', 'Gave up', null]];
+function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : w === 'guess' ? 'es' : 's'); }
+const game = S.game({
+  slug: 'nearword', name: 'Nearword', how: HOW, dist: DIST,
+  empty: 'Guess any word. The closer its meaning is to the secret word, the smaller its number. The secret word is <b>#1</b>.',
+  row(x, P) {
+    const i = x.info, r = i.rank;
+    return [h('i', { class: 'bar', style: 'width:' + (r === 1 ? 100 : width(r, P.V)) + '%' }),
+      x.hint ? h('span', { class: 'tag', title: 'Hint', text: '💡' }) : null,
+      h('span', { class: 'nm', text: P.words.list[x.w] }),
+      h('span', { class: 'rk', title: i.exact ? 'Rank ' + r : 'About rank ' + S.fmt(r) + ' (' + S.fmt(i.lo) + '–' + S.fmt(i.hi) + ')', text: x.reveal ? 'The word' : rankText(i) })];
+  },
+  rowClass(x) { return band(x.info.rank); },
+  order(a, b) { return a.info.rank - b.info.rank; },
+  shareLine(st) {
+    const n = st.g.length, k = st.g.filter(x => x.hint).length;
+    return (st.win ? 'got it in ' + plural(n, 'guess') : 'gave up after ' + plural(n, 'guess')) + (k ? ', ' + plural(k, 'hint') : '');
+  },
+  shareRest(st) {
+    const c = { near: 0, mid: 0, far: 0 };
+    st.g.forEach(x => { if (x.info.rank > 1) c[band(x.info.rank)]++; });
+    return '🟩 ' + c.near + '\n🟨 ' + c.mid + '\n🟥 ' + c.far;
+  },
+  endLine(st, P) {
+    const n = st.g.length, k = st.g.filter(x => x.hint).length;
+    let best = P.V; st.g.forEach(x => { if (x.w !== P.secret) best = Math.min(best, x.info.rank); });
+    if (st.win) return 'Found in <b>' + plural(n, 'guess') + '</b>' + (k ? ' with ' + plural(k, 'hint') : '') + '.';
+    return st.g.length ? 'Your closest guess was <b>#' + S.fmt(best) + '</b>. See which words were nearest.' : 'See which words were nearest.';
+  },
+  closestNote: 'The 100 words nearest in meaning (your guesses are highlighted).',
+  closest(i, P) { return [h('span', { class: 'r', text: '#' + (i + 1) }), h('span', { class: 'w', text: P.words.list[P.top(i)] })]; }
+});
+if (navigator.webdriver) window.__nw = game;
+})();
+</script>
+<script src="/analytics/tracker.js" data-site="nearword" defer></script>
+</body>
+</html>
