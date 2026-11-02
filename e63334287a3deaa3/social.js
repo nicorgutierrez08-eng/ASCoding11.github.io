@@ -33,6 +33,17 @@
  * and joining goes through party.js. One open request per party, 10 minutes, same rate limit as chat requests.
  * Block (localStorage ol:block) hides someone for good; Block for this session (sessionStorage ol:sblock) does the same
  * until the tab closes.
+ * Parties: people in the same party (party.js's member list, minus anyone on the leader's kick list) can send each other
+ * private messages without the chat request; outside a party the request is still needed. The party also has its own
+ * Party chat, kept in our node as
+ *   pc { <member uid>: [{ i, t, b }] }   the last PC_KEEP party-chat messages, sealed separately to each member
+ * with b = { f, to, k: 'g', c: party code, x: text }. A copy goes only to the members in the party when it's sent (not to
+ * anyone we blocked), and a browser only shows one that names its current party and comes from a current member, so
+ * only the party can read it; like a private message, everyone can see that something was sent to whom. Muted and
+ * blocked people's party messages are hidden, the same rate limit applies, and they aren't logged; Report in someone's
+ * conversation also includes the recent party chat when they wrote in it. The party chat is kept for the tab in
+ * sessionStorage ol:pchat ({ c: code, m: [...] }). window.BackRoomChat lets the games' in-game chat (gamechat.js, inside
+ * the game's iframe) read and send party chat through this page.
  * The key pair is kept in this browser's IndexedDB so the same identity survives reloads.
  * Closing the tab removes the node (onDisconnect), and nodes without a heartbeat for STALE are ignored.
  * Every browser downloads every node, so this suits tens of people, not thousands.
@@ -69,6 +80,7 @@
   var GAP = 1500, BURST = 5, BURST_MS = 10000;
   var REPORT_MSGS = 20, REPORT_MAX = 4000, REPORT_BYTES = 8000, REPORT_GAP = 60000;
   var REQ_TTL = 10 * 60000, REQ_BURST = 10, REQ_BURST_MS = 10 * 60000, CHATS_MAX = 60;
+  var PC_KEEP = 6, NODE_SOFT = 50000;
   var COLORS = ['#1D6A4B', '#C0562F', '#3E5BA9', '#9A3F8F', '#B07A12', '#2A8A8A', '#B42318', '#5B6B2E'];
 
   var me0 = document.currentScript && document.currentScript.src;
@@ -92,6 +104,7 @@
     { k: 'up', n: 'Updraft', d: 'updraft', room: ROOM },
     { k: 'ph', n: 'Odd One Out', d: 'odd-one-out', room: ROOM },
     { k: 'ko', n: 'Tumble Trials', d: 'tumble-trials', room: ROOM },
+    { k: 'dw', n: 'Deepword', d: 'deepword', room: ROOM },
     { k: 'tv', n: 'Trivium', d: 'trivium', room: /^[a-z]{5}$/ },
     { k: 'hm', n: 'Hail Mary', d: 'hail-mary' },
     { k: 'qy', n: 'Quarry', d: 'quarry' },
@@ -253,6 +266,8 @@
     // The button added to a game's top bar.
     '.onl-bar{font-family:var(--mono,var(--f-m,monospace));font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);background:none;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;margin-left:auto;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none}' +
     '.onl-bar + #turn{margin-left:8px}' +
+    '.onl-bar[hidden]{display:none}.onl-pbar:not([hidden]) + .onl-bar{margin-left:0}' +
+    '.onl-wn{font:inherit;font-weight:700;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}' +
     '@media (max-width:600px){.onl{padding:14px}.onl-list{grid-template-columns:minmax(0,1fr) minmax(0,1fr);max-height:252px}.onl-sub{font-size:14px;order:3;flex-basis:100%}.onl-top > .onl-b{margin-left:auto}}' +
     '@media (max-width:420px){.onl-list{grid-template-columns:minmax(0,1fr)}.onl-me .onl-lbl{display:none}.onl-me input[type=text]{width:10ch}}' +
     '@media (max-height:500px){.onl-ts{top:calc(40px + env(safe-area-inset-top,0px))}.onl-dh{padding:8px 12px}.onl-db{padding:8px 12px}.onl-df{padding:8px 12px}}';
@@ -265,9 +280,11 @@
   var top = el('div', 'onl-top');
   var live = el('span', 'onl-live'); live.setAttribute('aria-hidden', 'true');
   var $title = el('h2'); $title.append('Online ', el('span'));
-  var $sub = el('p', 'onl-sub', 'Everyone in the Back Room right now. Tap someone to request a chat, invite them to your party or send them a room code, or say hi to the whole cabin.');
+  var $sub = el('p', 'onl-sub', 'Everyone in the Back Room right now. Tap someone to request a chat (people in your party can message you straight away), invite them to your party or send them a room code, or say hi to the whole cabin.');
   var $loungeBtn = btn('Cabin chat', '', 'lounge'); $loungeBtn.append(el('span', 'onl-n'));
-  top.append(live, $title, $sub, $loungeBtn);
+  // Party chat: only while in a party.
+  var $partyBtn = btn('Party chat', '', 'pchat'); $partyBtn.append(el('span', 'onl-n')); $partyBtn.style.display = 'none';
+  top.append(live, $title, $sub, $partyBtn, $loungeBtn);
   var meRow = el('div', 'onl-me');
   var nameLbl = el('label'); nameLbl.append(el('span', 'onl-lbl', 'You'));
   var $name = el('input'); $name.type = 'text'; $name.maxLength = NAME_MAX; $name.autocomplete = 'nickname'; $name.spellcheck = false; $name.placeholder = 'Your name'; $name.setAttribute('aria-label', 'Your name in the Online list');
@@ -301,7 +318,7 @@
   // ---------------- State ----------------
   var P = null, db = null, auth = null, project = 'rumblekarts', uid = '', meRef = null, listRef = null, connRef = null, wasConnected = false;
   var people = {};                         // uid -> parsed node of everyone else
-  var mine = { l: [], d: {}, i: {} };      // what's in our own node besides the basics
+  var mine = { l: [], d: {}, i: {}, pc: {} }; // what's in our own node besides the basics
   var published = false, beat = 0, status = { p: 0, g: '', pl: '' };
   var keys = { pair: null, pub: '', derived: {} };
   var threads = json(sess('ol:threads'), {}); if (!threads || typeof threads !== 'object') threads = {};
@@ -313,6 +330,9 @@
   function isBlocked(u) { return !!(blocked[u] || sblocked[u]); }
   // People who accepted a chat with us (or whose request we accepted): uid -> when. Only what this browser saw.
   var chats = loadChats();
+  // The party chat this tab has seen, for one party code at a time: { c: code, m: [{ id, from, t, x, n, c }] }.
+  var pchat = json(sess('ol:pchat'), null);
+  if (!pchat || typeof pchat !== 'object' || typeof pchat.c !== 'string' || !Array.isArray(pchat.m)) pchat = { c: '', m: [] };
   var chains = {};                         // uid -> promise: their sealed items are opened in the order they were sent
   var reqSent = [];                        // when we sent chat requests, for the rate limit
   var opened = {};                         // sender:id -> 1 once decrypted (or failed)
@@ -353,6 +373,8 @@
   }
   var saveT = 0;
   function saveThreads() { clearTimeout(saveT); saveT = setTimeout(function () { sess('ol:threads', JSON.stringify(threads)); }, 400); }
+  var savePT = 0;
+  function savePchat() { clearTimeout(savePT); savePT = setTimeout(function () { sess('ol:pchat', pchat.m.length ? JSON.stringify(pchat) : null); }, 400); }
 
   // ---------------- Keys (ECDH P-256 + AES-GCM, kept in IndexedDB) ----------------
   function b64(buf) { var u = new Uint8Array(buf), s = ''; for (var i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); }
@@ -417,7 +439,7 @@
       party: Math.max(0, Math.min(99, Math.floor(num(v.p)) || 0)),
       pl: typeof v.pl === 'string' && /^[A-Za-z0-9_-]{6,64}$/.test(v.pl) ? v.pl : '',
       g: typeof v.g === 'string' && gameOf(v.g) ? v.g : '',
-      l: [], dm: [], inv: null
+      l: [], dm: [], pc: [], inv: null
     };
     arr(v.l, LOUNGE_KEEP).forEach(function (m) {
       if (!m || typeof m !== 'object') return;
@@ -430,6 +452,13 @@
         if (!m || typeof m !== 'object' || typeof m.b !== 'string' || !BOX_RE.test(m.b) || typeof m.i !== 'string' || !/^[a-z0-9]{1,12}$/.test(m.i)) return;
         var mt = when(m.t, t); if (!(mt > 0)) return;
         p.dm.push({ i: m.i, t: mt, b: m.b });
+      });
+    }
+    if (uid && v.pc && typeof v.pc === 'object' && !Array.isArray(v.pc)) {
+      arr(v.pc[uid], PC_KEEP).forEach(function (m) {
+        if (!m || typeof m !== 'object' || typeof m.b !== 'string' || !BOX_RE.test(m.b) || typeof m.i !== 'string' || !/^[a-z0-9]{1,12}$/.test(m.i)) return;
+        var mt = when(m.t, t); if (!(mt > 0)) return;
+        p.pc.push({ i: m.i, t: mt, b: m.b });
       });
     }
     var iv = uid && v.i && typeof v.i === 'object' && !Array.isArray(v.i) ? v.i[uid] : null;
@@ -487,19 +516,43 @@
   function openAll(p) {
     p.dm.forEach(function (m) { queueOpen(p, m, false); });
     if (p.inv) queueOpen(p, p.inv, true);
+    p.pc.forEach(function (m) { queueOpen(p, m, 'pc'); });
   }
   function queueOpen(p, m, isInv) {
-    var key = p.uid + ':' + m.i + ':' + p.pk.slice(0, 12);
+    var key = (isInv === 'pc' ? 'g:' : '') + p.uid + ':' + m.i + ':' + p.pk.slice(0, 12);
     if (opened[key]) return; opened[key] = 1;
-    chains[p.uid] = (chains[p.uid] || Promise.resolve()).then(function () { return openOne(p, m, isInv); }).catch(function () {});
+    chains[p.uid] = (chains[p.uid] || Promise.resolve()).then(function () { return isInv === 'pc' ? openParty(p, m, key) : openOne(p, m, isInv); }).catch(function () {});
+  }
+  // A party-chat message sealed to us. Only shown when it's for the party we're in now and comes from someone in it;
+  // one for our party from someone the member list doesn't show yet (they've only just joined) is tried again a few times.
+  var pcRetry = {};
+  function openParty(p, m, key) {
+    return unseal(p.pk, m.b).then(function (o) {
+      if (!o || typeof o !== 'object' || o.k !== 'g' || o.f !== p.uid || o.to !== uid) return;
+      var u = p.uid, x = cleanText(o.x);
+      if (!x || !P || !P.code || o.c !== P.code) return;
+      if (!partyMate(u)) {
+        pcRetry[key] = (pcRetry[key] || 0) + 1;
+        if (pcRetry[key] <= 5) setTimeout(function () { delete opened[key]; var q = people[u]; if (q && q.pk === p.pk) queueOpen(q, m, 'pc'); }, 2000);
+        return;
+      }
+      var pm = { id: m.i, from: u, t: m.t, x: x, n: p.n, c: p.c };
+      if (!addParty(pm)) return;
+      if (isBlocked(u) || muted[u]) { schedule(); return; }
+      var shown = tellGames(pm);
+      if (shown) markParty(m.t);
+      else if (m.t > started - 120000 && !(view && view.v === 'party' && dr.classList.contains('open'))) toast(p, { k: 'g', x: x, t: m.t });
+      schedule();
+    }, function () {});
   }
   function openOne(p, m, isInv) {
     return unseal(p.pk, m.b).then(function (o) {
       if (!o || typeof o !== 'object' || o.f !== p.uid || o.to !== uid) return;
       var u = p.uid, msg = { id: m.i, from: u, t: m.t }, t = now();
       if (!isInv && o.k === 'm') {
-        // A message from someone who isn't an accepted chat (an older client, or someone trying their luck) isn't shown.
-        if (!chats[u]) return;
+        // A message from someone who isn't an accepted chat (an older client, or someone trying their luck) isn't shown,
+        // unless they're in our party: party members can message each other without a request.
+        if (!chats[u] && !partyMate(u)) return;
         msg.k = 'm'; msg.x = cleanText(o.x); if (!msg.x) return;
       } else if (!isInv && o.k === 'q') {
         // They'd like to chat. Not from someone blocked, and not once it has run out.
@@ -644,6 +697,95 @@
     if ((P.members || []).indexOf(u) >= 0) return true;
     return !!(p && p.pl && P.leader && p.pl === P.leader.uid);
   }
+  // ---------------- Party chat ----------------
+  // The other people in our party, from party.js's own member list (the party nodes), leaving out anyone the leader
+  // has removed. Not from what someone says in their Online node, so nobody can talk their way into a party's chat.
+  function partyMembers() {
+    if (!P || !P.code || !uid) return [];
+    var out = P.out || [];
+    return (P.members || []).filter(function (u) { return u !== uid && out.indexOf(u) < 0; });
+  }
+  function partyMate(u) { return !!u && partyMembers().indexOf(u) >= 0; }
+  // Members a party message can go to now: online here with a key, and not blocked by us.
+  function partyTargets() { return partyMembers().filter(function (u) { var p = people[u]; return visible(p) && p.pk; }); }
+  function partyName(u) {
+    if (u === uid) return myName();
+    var p = people[u]; if (p) return p.n;
+    var r = P && P.roster ? P.roster.filter(function (m) { return m.uid === u; })[0] : null;
+    return r ? cleanName(r.n) || 'Player' : 'Player';
+  }
+  // The party chat as it shows here: our current party's messages, without blocked or muted people's.
+  function partyMsgs() {
+    if (!P || !P.code || pchat.c !== P.code) return [];
+    return pchat.m.filter(function (m) { return m.from === uid || (!isBlocked(m.from) && !muted[m.from]); });
+  }
+  function partyUnread() { if (!P || !P.code) return 0; var s = seen['pt:' + P.code] || 0; return partyMsgs().filter(function (m) { return m.from !== uid && m.t > s; }).length; }
+  function markParty(t) { if (!P || !P.code) return false; var k = 'pt:' + P.code; if (t > (seen[k] || 0)) { seen[k] = t; saveSeen(); return true; } return false; }
+  function addParty(m) {
+    if (!P || !P.code) return false;
+    if (pchat.c !== P.code) pchat = { c: P.code, m: [] };
+    for (var i = 0; i < pchat.m.length; i++) if (pchat.m[i].id === m.id && pchat.m[i].from === m.from) return false;
+    pchat.m.push(m); pchat.m.sort(function (a, b) { return a.t - b.t; });
+    if (pchat.m.length > THREAD_KEEP) pchat.m.splice(0, pchat.m.length - THREAD_KEEP);
+    savePchat();
+    return true;
+  }
+  function canParty() {
+    var why = canTalk(); if (why) return why;
+    if (!P || !P.code) return 'You’re not in a party.';
+    if (!keys.pair) return 'This browser can’t encrypt, so party chat is off here.';
+    if (!partyMembers().length) return 'Nobody else is in your party yet.';
+    if (!partyTargets().length) return 'Nobody in your party can get messages right now (they may be hidden or still connecting).';
+    return '';
+  }
+  // Seal the message once for every member (each copy can only be opened by that member) and write them all at once.
+  async function sendParty(x) {
+    var why = canParty() || limited(); if (why) throw new Error(why);
+    var code = P.code, t = Math.round(now()), id = rid(), to = partyTargets(), patch = {};
+    var boxes = await Promise.all(to.map(function (u) { return seal(people[u].pk, { f: uid, to: u, k: 'g', c: code, x: x }); }));
+    to.forEach(function (u, j) { mine.pc[u] = (mine.pc[u] || []).concat({ i: id, t: t, b: boxes[j] }).slice(-PC_KEEP); patch['pc/' + u] = mine.pc[u]; });
+    prunePc(patch);
+    await write(patch);
+    var pm = { id: id, from: uid, t: t, x: x, n: myName(), c: colorOf(uid) };
+    addParty(pm); markParty(t); tellGames(pm);
+    schedule();
+  }
+  // Drop party copies for anyone who isn't in the party any more, and keep the node well under the size other browsers
+  // accept (NODE_MAX): the oldest party copies go first, down to one per member.
+  function prunePc(patch) {
+    var ms = partyMembers();
+    Object.keys(mine.pc).forEach(function (u) { if (ms.indexOf(u) < 0) { delete mine.pc[u]; patch['pc/' + u] = null; } });
+    var size; try { size = JSON.stringify(nodeState()).length; } catch (e) { size = 0; }
+    while (size > NODE_SOFT) {
+      var best = '', bt = Infinity;
+      Object.keys(mine.pc).forEach(function (u) { var l = mine.pc[u]; if (l.length > 1 && l[0].t < bt) { bt = l[0].t; best = u; } });
+      if (!best) break;
+      size -= JSON.stringify(mine.pc[best].shift()).length;
+      patch['pc/' + best] = mine.pc[best];
+    }
+    return patch;
+  }
+  // The party or its members changed (poll() notices): a new party starts a new chat, and copies for anyone who left go.
+  function partyChanged() {
+    var c = P && P.code || '';
+    if (c && pchat.c !== c) { pchat = { c: c, m: [] }; savePchat(); }
+    var patch = prunePc({});
+    if (Object.keys(patch).length && published) write(patch).catch(function () {});
+  }
+  // The in-game chat (gamechat.js inside the open game's iframe) listens through window.BackRoomChat. A listener
+  // returns true when it showed the message, so it counts as read and no toast is needed.
+  var gameSubs = [];
+  function partyPublic(m) {
+    var isMe = m.from === uid, p = people[m.from];
+    return { id: m.id, t: m.t, mine: isMe, u: m.from, name: mask(isMe ? myName() : p ? p.n : cleanName(m.n) || 'Player'), seat: seatOf(m.from), color: isMe ? colorOf(uid) : (p ? p.c : m.c) || colorOf(m.from), x: mask(m.x) };
+  }
+  function tellGames(m) {
+    if (!m || (m.from !== uid && (isBlocked(m.from) || muted[m.from]))) return false;
+    var shown = false, pub = partyPublic(m);
+    gameSubs = gameSubs.filter(function (fn) { try { if (fn(pub) === true) shown = true; return true; } catch (e) { return false; } });
+    return shown;
+  }
+
   function canAskJoin(u) {
     var why = canTalk(u); if (why) return why;
     var p = people[u];
@@ -703,6 +845,7 @@
     if (mine.l.length) s.l = mine.l;
     if (Object.keys(mine.d).length) s.d = mine.d;
     if (Object.keys(mine.i).length) s.i = mine.i;
+    if (Object.keys(mine.pc).length) s.pc = mine.pc;
     return s;
   }
   function write(patch) {
@@ -726,7 +869,7 @@
   function unpublish() {
     clearInterval(beat); published = false;
     if (meRef) { var r = meRef; try { r.onDisconnect().cancel(); } catch (e) {} r.remove().catch(function () {}); }
-    mine.l = []; mine.i = {};
+    mine.l = []; mine.i = {}; mine.pc = {};
     schedule();
   }
   // Drop lounge messages and invites that have run out, along with the heartbeat.
@@ -765,6 +908,9 @@
       if (published) write({ p: p, g: g || null, pl: pl || null }).catch(function () {});
       schedule();
     }
+    // The party's members changed (someone joined, left or was removed): new copies of the party chat follow the new list.
+    var sig = (P && P.code || '') + ':' + partyMembers().join(',');
+    if (sig !== status.sig) { status.sig = sig; partyChanged(); schedule(); }
   }
   // The room the game that's open is in, as far as we can tell: the one party.js last opened, or the game's room box.
   function currentRoom() {
@@ -884,12 +1030,22 @@
       else if (m.k === 'y') what = ' let them into the party';
       else if (m.k === 'x') what = ' turned down the join request' + (m.w && m.w !== 'no' ? ' (' + m.w + ')' : '');
       else return '';
-      return stamp(m.t) + ' ' + who + what;
+      return { t: m.t, s: stamp(m.t) + ' ' + who + what };
     }).filter(Boolean);
+    // When they wrote in our party chat, its recent messages too (everyone's, as this browser shows them), marked [party].
+    var pm = pchat.m.slice(-REPORT_MSGS), inParty = pm.some(function (m) { return m.from === u; });
+    if (inParty) {
+      pm.forEach(function (m) {
+        var w = m.from === uid ? meL : m.from === u ? theirs : (cleanName(people[m.from] ? people[m.from].n : m.n) || 'Guest') + ' (' + seatOf(m.from) + ')';
+        lines.push({ t: m.t, s: stamp(m.t) + ' [party] ' + w + ': ' + cleanText(m.x) });
+      });
+      lines.sort(function (a, b) { return a.t - b.t; });
+    }
+    lines = lines.map(function (l) { return l.s; });
     var text = lines.join('\n'), bytes = function (x) { return new TextEncoder().encode(x).length; };
     while ((text.length > REPORT_MAX || bytes(text) > REPORT_BYTES) && lines.length > 1) { lines.shift(); text = '(older messages cut)\n' + lines.join('\n'); }
     while (text.length > REPORT_MAX || bytes(text) > REPORT_BYTES) text = text.slice(Math.max(1, Math.floor(text.length / 10)));
-    return { text: text || '(no messages in this chat: reporting the person)', n: lines.length };
+    return { text: text || '(no messages in this chat: reporting the person)', n: lines.length, party: inParty };
   }
   async function report(u) {
     if (!uid) throw new Error('Not connected yet.');
@@ -897,7 +1053,7 @@
     var t = threads[u], p = people[u], who = (p ? label(p) : mask(cleanName(t && t.n) || 'Someone') + ' · ' + seatOf(u));
     var tr = transcript(u);
     var ok = confirm('Report ' + who + ' to Arjun?\n\n' +
-      'This sends Arjun ' + (tr.n ? 'a copy of the last ' + tr.n + ' message' + (tr.n === 1 ? '' : 's') + ' in this chat, as they appear on your screen (yours and theirs)' : 'a note that you reported them (there are no messages in this chat)') +
+      'This sends Arjun ' + (tr.n ? 'a copy of the last ' + tr.n + ' message' + (tr.n === 1 ? '' : 's') + (tr.party ? ' in this chat and your party chat, as they appear on your screen (yours, theirs and, from the party chat, the other members’)' : ' in this chat, as they appear on your screen (yours and theirs)') : 'a note that you reported them (there are no messages in this chat)') +
       ', with both your names, seats and account IDs. Nothing else is sent. Only Arjun and the site\u2019s admins can read reports.\n\n' +
       'You can also Block them so you stop seeing their messages.');
     if (!ok) return false;
@@ -931,7 +1087,7 @@
   async function sendDm(u, payload, quiet) {
     var step = quiet || /^[qanejyx]$/.test(payload.k);
     var why = canTalk(u) || (step ? '' : limited()); if (why) throw new Error(why);
-    if (payload.k === 'm' && !chats[u]) throw new Error(pendingIn(u) ? 'Accept their request to chat.' : 'Request to chat first.');
+    if (payload.k === 'm' && !chats[u] && !partyMate(u)) throw new Error(pendingIn(u) ? 'Accept their request to chat.' : 'Request to chat first.');
     var p = people[u], t = Math.round(now()), id = rid();
     var b = await seal(p.pk, Object.assign({ f: uid, to: u }, payload));
     var patch = {}, isInv = payload.k === 'p' || payload.k === 'r';
@@ -1075,7 +1231,12 @@
     fillList($list);
     if (uid && !os.length) { var li = el('li'); li.append(el('p', 'onl-empty', hidden ? 'You’re hidden, so nobody can see you. Nobody else is around right now either.' : 'Nobody else is here right now. Leave this open and you’ll see people as they arrive.')); $list.append(li); }
     var dmTotal = 0; Object.keys(threads).forEach(function (u) { dmTotal += unreadOf(u); });
-    document.querySelectorAll('.onl-bar').forEach(function (b) { b.firstChild.textContent = 'Online ' + n; b.lastChild.textContent = dmTotal + lu ? String(dmTotal + lu) : ''; });
+    document.querySelectorAll('.onl-bar:not(.onl-pbar)').forEach(function (b) { b.firstChild.textContent = 'Online ' + n; b.lastChild.textContent = dmTotal + lu ? String(dmTotal + lu) : ''; });
+    // Party chat buttons: the Online panel, the Party panel (party.js) and the open game's top bar.
+    var inParty = !!(P && P.code), mates = partyMembers().length, pu = partyUnread(), pus = pu ? String(pu) : '';
+    $partyBtn.style.display = inParty ? '' : 'none'; $partyBtn.lastChild.textContent = pus;
+    document.querySelectorAll('.onl-pbar').forEach(function (b) { b.hidden = !mates; b.lastChild.textContent = pus; });
+    var pp = document.querySelector('#party [data-a="chat"]'); if (pp && pp.lastChild && pp.lastChild.className === 'onl-n') pp.lastChild.textContent = pus;
     if (dr.classList.contains('open')) drawDrawer();
   }
 
@@ -1086,14 +1247,26 @@
     var b = el('button', 'onl-bar'); b.type = 'button'; b.append('Online', el('span', 'onl-n'));
     b.setAttribute('aria-label', 'Online: people, chats and invites');
     b.addEventListener('click', function () { openDrawer({ v: 'people' }); });
+    // Party chat, while in a party with someone: opens the game's own chat box (gamechat.js) when it has one, so a phone
+    // player can talk without leaving the game; otherwise the Party chat drawer.
+    var c = el('button', 'onl-bar onl-pbar'); c.type = 'button'; c.append('Chat', el('span', 'onl-n')); c.hidden = true;
+    c.setAttribute('aria-label', 'Party chat');
+    c.addEventListener('click', function () {
+      var gc = null; try { gc = fr.contentWindow && fr.contentWindow.BackRoomGameChat; } catch (e) {}
+      var ok = false; try { ok = !!(gc && gc.open()); } catch (e) {}
+      if (!ok) openDrawer({ v: 'party' });
+    });
     var turn = bar.querySelector('#turn');
-    if (turn) bar.insertBefore(b, turn); else bar.append(b);
+    if (turn) { bar.insertBefore(c, turn); bar.insertBefore(b, turn); } else bar.append(c, b);
     schedule();
   }
 
   // ---------------- Drawer ----------------
   var drawnView = '';
-  function openDrawer(v) { view = v; drawnView = ''; dr.classList.add('open'); drawDrawer(); setTimeout(function () { var i = dr.querySelector('.onl-df input[type=text]'); if (i && matchMedia('(pointer: fine)').matches) i.focus(); }, 220); }
+  function openDrawer(v) {
+    // The party chat shows everything its toasts said.
+    if (v && v.v === 'party') toasts.querySelectorAll('.onl-t[data-k="g"]').forEach(function (t) { t.remove(); });
+    view = v; drawnView = ''; dr.classList.add('open'); drawDrawer(); setTimeout(function () { var i = dr.querySelector('.onl-df input[type=text]'); if (i && matchMedia('(pointer: fine)').matches) i.focus(); }, 220); }
   function closeDrawer() { dr.classList.remove('open'); view = null; drawnView = ''; schedule(); }
   function drawDrawer() {
     if (!view) return;
@@ -1115,6 +1288,7 @@
       h.textContent = 'Online';
       var sub = el('div', 'onl-dsub'), acts = el('div', 'onl-acts'), lb = btn('Cabin chat', '', 'lounge');
       var lu = loungeUnread(); lb.append(el('span', 'onl-n', lu ? String(lu) : ''));
+      if (P && P.code) { var pb = btn('Party chat', '', 'pchat'), pu = partyUnread(); pb.append(el('span', 'onl-n', pu ? String(pu) : '')); acts.append(pb); }
       acts.append(lb, btn(hidden ? 'Show me' : 'Hide me', '', 'hide'));
       sub.append(el('span', '', hidden ? 'You’re hidden. Others can’t see or message you.' : 'Tap someone to request a chat or invite them.'), acts);
       parts.push(sub);
@@ -1147,6 +1321,32 @@
       parts.push(body);
       if (!keep) keep = composer('Message everyone', 'say');
       var lt = all.length ? all[all.length - 1].m.t : 0; if (lt > (seen.lounge || 0)) { seen.lounge = lt; saveSeen(); }
+    } else if (view.v === 'party') {
+      h.textContent = 'Party chat';
+      var psub = el('div', 'onl-dsub'), ms = partyMembers(), tg = partyTargets();
+      if (P && P.code) {
+        psub.append(el('span', '', 'Only your party (' + P.code + ') can read this: each message is encrypted separately for every member, and people who join later don’t see earlier ones. Tap a name to message, mute, block or report them.'));
+        var off = ms.filter(function (x2) { return tg.indexOf(x2) < 0; });
+        if (off.length && !hidden) psub.append(el('span', '', 'Not getting party chat right now: ' + off.map(function (x2) { return mask(partyName(x2)) + (isBlocked(x2) ? ' (blocked)' : ''); }).join(', ') + '.'));
+      } else psub.append(el('span', '', 'You’re not in a party. Create or join one in the Party panel, then chat with everyone in it here.'));
+      parts.push(psub);
+      var pms = partyMsgs();
+      if (P && P.code && !pms.length) body.append(el('p', 'onl-note', ms.length ? 'Say hi to your party. In a game, press T or tap Chat at the top to talk without leaving it.' : 'Nobody else is in your party yet.'));
+      pms.forEach(function (m) {
+        var isMe = m.from === uid, pp = people[m.from], pn = isMe ? myName() : pp ? pp.n : cleanName(m.n) || partyName(m.from);
+        var mm = el('div', 'onl-m' + (isMe ? ' mine' : '')), who = el('span', 'who');
+        who.append(avatarEl(m.from, pn, isMe ? colorOf(uid) : pp ? pp.c : m.c, 18));
+        if (isMe) who.append(el('b', '', 'You'));
+        else { var nb = el('button', 'onl-wn', mask(pn)); nb.type = 'button'; nb.setAttribute('data-act', 'opendm'); nb.setAttribute('data-u', m.from); nb.setAttribute('aria-label', 'Open ' + mask(pn) + '’s card'); who.append(nb); }
+        who.append(' · ' + seatOf(m.from) + ' · ' + clock(m.t));
+        mm.append(who, el('span', '', mask(m.x)));
+        body.append(mm);
+      });
+      parts.push(body);
+      if (!keep) keep = composer('Message your party', 'send');
+      var pwhy = canParty(), pin = keep.querySelector('input'); if (pin) { pin.disabled = !!pwhy; pin.placeholder = pwhy || 'Message your party'; }
+      var psb = keep.querySelector('[data-act=send]'); if (psb) psb.disabled = !!pwhy;
+      if (pms.length && markParty(pms[pms.length - 1].t)) schedule();
     } else if (view.v === 'dm') {
       var u = view.u, p = people[u], t = threads[u];
       var nm = p ? label(p) : (t ? mask(cleanName(t.n)) : 'Someone') + ' · ' + seatOf(u);
@@ -1155,9 +1355,9 @@
       if (dbadge) dline.append(dbadge, ' ');
       dline.append((p && visible(p) ? statusText(p) : 'Not online') + ' · private: only the two of you can read this.');
       dsub.append(dline);
-      var da = el('div', 'onl-acts'), why = canTalk(u), theirs = mask(p ? p.n : (t ? cleanName(t.n) : '') || 'them');
+      var da = el('div', 'onl-acts'), why = canTalk(u), theirs = mask(p ? p.n : (t ? cleanName(t.n) : '') || 'them'), mate = partyMate(u);
       if (chats[u]) da.append(btn('End chat', '', 'endchat'));
-      else if (!pendingIn(u) && !isBlocked(u)) {
+      else if (!mate && !pendingIn(u) && !isBlocked(u)) {
         var rq = btn(pendingOut(u) ? 'Request sent' : declined(u) ? 'Declined' : 'Request to chat', 'pri', 'request');
         var rwhy = canRequest(u); rq.disabled = !!rwhy; if (rwhy) rq.title = rwhy;
         da.append(rq);
@@ -1182,7 +1382,8 @@
       var msgs = t && Array.isArray(t.m) ? t.m : [];
       if (isBlocked(u)) body.append(el('p', 'onl-note', 'You blocked this person' + (blocked[u] ? '' : ' for this session') + '. Their messages, invites and chat requests are hidden.'));
       else {
-        if (chats[u] && !msgs.some(function (m) { return m.k === 'm'; })) body.append(el('p', 'onl-note', 'Say hi. Messages are end-to-end encrypted: other people online can see that you sent something, but not what.'));
+        if (mate && !chats[u]) body.append(el('p', 'onl-note', 'You’re in the same party, so you can message each other without a chat request. Block stops their messages.'));
+        if ((chats[u] || mate) && !msgs.some(function (m) { return m.k === 'm'; })) body.append(el('p', 'onl-note', 'Say hi. Messages are end-to-end encrypted: other people online can see that you sent something, but not what.'));
         msgs.forEach(function (m) { body.append(msgEl(u, m)); });
         if (jt && jt.uid !== u) {
           // Their leader is someone else: say where the request goes, and how that is going.
@@ -1205,8 +1406,8 @@
           rc.append(el('span', '', theirs + ' wants to chat with you. Accept their request to see their messages.'));
           ra.append(btn('Accept', 'pri', 'accept'), btn('Decline', '', 'decline'), btn('Block', 'warn', 'block'));
           rc.append(ra); body.append(rc);
-          mwhy = 'Accept their request to chat.';
-        } else if (!chats[u]) {
+          if (!mate) mwhy = 'Accept their request to chat.';
+        } else if (!chats[u] && !mate) {
           if (pendingOut(u)) { body.append(el('p', 'onl-note', 'Request sent. Waiting for ' + theirs + ' to accept.')); mwhy = 'Waiting for them to accept.'; }
           else if (declined(u)) { body.append(el('p', 'onl-note', theirs + ' declined your request.')); mwhy = 'They declined your request.'; }
           else { body.append(el('p', 'onl-note', 'Request to chat with ' + theirs + '. They see your messages once they accept.')); mwhy = 'Request to chat first.'; }
@@ -1279,7 +1480,7 @@
       var x = cleanText(i.value); if (!x) return;
       var u = view && view.u;
       err.textContent = ''; err.classList.remove('err');
-      (view.v === 'lounge' ? sendLounge(x) : sendDm(u, { k: 'm', x: x })).then(function () { i.value = ''; cnt.textContent = ''; }, function (e2) { err.textContent = e2.message || String(e2); err.classList.add('err'); });
+      (view.v === 'lounge' ? sendLounge(x) : view.v === 'party' ? sendParty(x) : sendDm(u, { k: 'm', x: x })).then(function () { i.value = ''; cnt.textContent = ''; }, function (e2) { err.textContent = e2.message || String(e2); err.classList.add('err'); });
     });
     return f;
   }
@@ -1326,6 +1527,10 @@
       line.append(who, joinNoText(m));
       var al = askLeaderBtn(m); if (al) { acts.append(al); life = 20000; }
       acts.append(btn('Dismiss', '', 'dismiss'));
+    } else if (m.k === 'g') {
+      line.append(who, ' to your party: ' + mask(m.x).slice(0, 120));
+      acts.append(btn('Reply', 'pri', 'pchat'), btn('Dismiss', '', 'dismiss'));
+      t.setAttribute('data-k', 'g');
     } else if (m.k === 'p') {
       line.append(who, ' invited you to their party.' + (P && P.code ? ' Joining takes you out of your current one.' : ''));
       var j = btn('Join', 'pri', 'joinp'); j.setAttribute('data-c', m.c);
@@ -1347,9 +1552,14 @@
   function onAct(e) {
     var b = e.target.closest('[data-act],[data-u]'); if (!b || b.disabled) return;
     var a = b.getAttribute('data-act'), host = b.closest('.onl-t');
-    if (host && a) { var hu = host.getAttribute('data-u'), ht = +host.getAttribute('data-t') || 0; if (hu && ht > (seen[hu] || 0)) { seen[hu] = ht; saveSeen(); schedule(); } }
+    if (host && a) {
+      var hu = host.getAttribute('data-u'), ht = +host.getAttribute('data-t') || 0;
+      if (host.getAttribute('data-k') === 'g') { markParty(ht); schedule(); }
+      else if (hu && ht > (seen[hu] || 0)) { seen[hu] = ht; saveSeen(); schedule(); }
+    }
     if (!a && b.classList.contains('onl-p')) { openDrawer({ v: 'dm', u: b.getAttribute('data-u') }); return; }
     if (a === 'lounge') openDrawer({ v: 'lounge' });
+    else if (a === 'pchat') { if (host) host.remove(); openDrawer({ v: 'party' }); }
     else if (a === 'list') openDrawer({ v: 'people' });
     else if (a === 'close') closeDrawer();
     else if (a === 'hide') setHidden(!hidden);
@@ -1477,7 +1687,7 @@
     // Signing in with Google switches to another uid: show up under the new one.
     auth.onAuthStateChanged(function (u) {
       if (!u || u.uid === uid) return;
-      uid = u.uid; meRef = db.ref(PATH + '/' + uid); delete people[uid]; opened = {}; chains = {}; mine.d = {}; mine.i = {};
+      uid = u.uid; meRef = db.ref(PATH + '/' + uid); delete people[uid]; opened = {}; chains = {}; mine.d = {}; mine.i = {}; mine.pc = {};
       listRef.once('value', function (s) { s.forEach(function (c) { onNode(c); }); });
       if (!hidden) publish();
     });
@@ -1485,6 +1695,22 @@
   }
   start();
 
+  // For the in-game chat (gamechat.js), which runs inside the game's iframe and reaches this page as window.parent.
+  // It only ever gets party chat that this page already checked, filtered and masked, and sends through sendParty.
+  window.BackRoomChat = {
+    v: 1,
+    state: function () { return { party: P && P.code || '', mates: partyMembers().length, why: canParty(), unread: partyUnread() }; },
+    recent: function (n) { return partyMsgs().slice(-Math.max(1, Math.min(40, n || 12))).map(partyPublic); },
+    send: function (x) { x = cleanText(x); return x ? sendParty(x).then(function () { return true; }) : Promise.resolve(false); },
+    listen: function (fn) {
+      if (typeof fn !== 'function') return function () {};
+      gameSubs.push(fn);
+      return function () { gameSubs = gameSubs.filter(function (f) { return f !== fn; }); };
+    },
+    seen: function (t) { markParty(num(t) || 0); schedule(); },
+    open: function () { openDrawer({ v: 'party' }); }
+  };
+
   // Test hook for the automated checks; harmless in normal play.
-  if (navigator.webdriver) window.__social = { get uid() { return uid; }, get people() { return people; }, get threads() { return threads; }, get mine() { return mine; }, get published() { return published; }, get pub() { return keys.pub; }, get chats() { return chats; }, get sent() { return sent; }, get sblocked() { return sblocked; }, get status() { return status; }, seatOf: seatOf, mask: mask, loungeAll: loungeAll, PATH: PATH, transcript: transcript };
+  if (navigator.webdriver) window.__social = { get uid() { return uid; }, get people() { return people; }, get threads() { return threads; }, get mine() { return mine; }, get published() { return published; }, get pub() { return keys.pub; }, get chats() { return chats; }, get sent() { return sent; }, get sblocked() { return sblocked; }, get status() { return status; }, seatOf: seatOf, mask: mask, loungeAll: loungeAll, PATH: PATH, transcript: transcript, get pchat() { return pchat; }, partyMembers: partyMembers, sendParty: sendParty, get muted() { return muted; } };
 })();

@@ -515,13 +515,15 @@
       $main.innerHTML =
         '<div class="pty-row split" style="align-items:center">' +
           '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pty-h" style="margin:0">Code</span><span class="pty-code"></span><span class="pty-count"></span></div>' +
-          '<div class="pty-acts"><button type="button" class="btn sm" data-a="copy">Copy invite link</button><button type="button" class="btn sm" data-a="leave">Leave party</button></div>' +
+          '<div class="pty-acts"><button type="button" class="btn sm" data-a="chat" style="display:none">Party chat<span class="onl-n"></span></button><button type="button" class="btn sm" data-a="copy">Copy invite link</button><button type="button" class="btn sm" data-a="leave">Leave party</button></div>' +
         '</div>' +
         '<ul class="pty-mem" aria-label="Party members"></ul>' +
         '<div class="pty-pick"></div>';
       $main.querySelector('.pty-code').textContent = code;
     }
     $main.querySelector('.pty-count').textContent = n + ' of ' + MAX;
+    // Party chat lives in the Online panel (social.js); this button opens it once there's someone to talk to.
+    var chatB = $main.querySelector('[data-a="chat"]'); if (chatB) chatB.style.display = n > 1 && window.BackRoomChat ? '' : 'none';
     var t0 = now(); kicked = kicked.filter(function (e) { return e.t > t0 - KICK_TTL; });
     var mem = $main.querySelector('.pty-mem');
     mem.classList.toggle('pty-lead', !!lead);   // wider cards for the leader: the kick button and the tier badge both need room
@@ -581,6 +583,7 @@
         join(c, false);
       }
     } else if (a === 'leave') leave();
+    else if (a === 'chat') { if (window.BackRoomChat) window.BackRoomChat.open(); }
     else if (a === 'copy') {
       var url = location.origin + '/#pt-' + code;
       var done = function (ok) { say(ok ? 'Invite link copied. Friends open it, enter the Back Room code, and join the party.' : 'Invite link: ' + url); };
@@ -642,6 +645,13 @@
     get size() { return refs ? members.length : 0; },
     get leader() { var L = refs && leader(); return L ? { uid: L.uid, n: L.n } : null; },
     get members() { return refs ? members.map(function (m) { return m.uid; }) : []; },
+    // Members with their party names, and the people the current leader has removed (still listed until they go).
+    get roster() { return refs ? members.map(function (m) { return { uid: m.uid, n: m.n }; }) : []; },
+    get out() {
+      var L = refs && leader(); if (!L) return [];
+      var t = now(), list = L.uid === uid ? kicked : (L.kick || []);
+      return list.filter(function (e) { return e.t > t - KICK_TTL; }).map(function (e) { return e.u; });
+    },
     max: MAX,
     get room() { return lastRoom; },
     games: GAMES.map(function (g) { return { k: g.k, n: g.n, d: g.d, pre: g.pre != null ? g.pre : g.k + '-' }; }),
