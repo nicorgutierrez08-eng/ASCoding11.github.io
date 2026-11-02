@@ -1,5 +1,6 @@
 /*
- * Back Room games launcher: the Multiplayer and Single player sections and their game cards.
+ * Back Room games launcher: the Puzzles, Parkour, Shooter / Action, Multiplayer and Single player sections, their
+ * game cards, and the Daily Puzzles feature card at the top of Puzzles.
  *
  * Linked from inside <section aria-label="Games"> in e63334287a3deaa3/index.html (not from <head>), because the
  * home page's reveal() copies that section into the home page and the link comes along with it. Builds on site.css
@@ -11,6 +12,9 @@
   --gc-shadow:0 1px 2px rgba(16,38,28,.06),0 6px 18px -8px rgba(16,38,28,.18);
   --gc-shadow-hi:0 3px 6px rgba(16,38,28,.08),0 22px 40px -14px rgba(16,38,28,.34);
   --solo:#B4532A;--solo-ink:#FFFFFF;
+  --puz:#5B45B0;--puz-ink:#FFFFFF;
+  --park:#1C6B9C;--park-ink:#FFFFFF;
+  --act:#B3263A;--act-ink:#FFFFFF;
   padding-top:34px;
 }
 @media (prefers-color-scheme: dark){
@@ -18,6 +22,9 @@
     --gc-shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px -10px rgba(0,0,0,.7);
     --gc-shadow-hi:0 3px 8px rgba(0,0,0,.5),0 24px 44px -14px rgba(0,0,0,.9);
     --solo:#F0905F;--solo-ink:#1A0D06;
+    --puz:#A796FF;--puz-ink:#140B33;
+    --park:#5DB6EC;--park-ink:#06182A;
+    --act:#F2727F;--act-ink:#2A070D;
   }
 }
 
@@ -26,6 +33,9 @@
 .br-games .gs + .gs{margin-top:48px}
 .gs-multi{--gs-c:var(--accent);--gs-ink:var(--accent-ink)}
 .gs-solo{--gs-c:var(--solo);--gs-ink:var(--solo-ink)}
+.gs-puzzles{--gs-c:var(--puz);--gs-ink:var(--puz-ink)}
+.gs-parkour{--gs-c:var(--park);--gs-ink:var(--park-ink)}
+.gs-action{--gs-c:var(--act);--gs-ink:var(--act-ink)}
 .gs-head{display:flex;align-items:center;gap:14px;margin:0 0 18px}
 .gs-ic{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--gs-c);color:var(--gs-ink);box-shadow:0 8px 18px -8px var(--gs-c)}
 .gs-tt{flex:1;min-width:0}
@@ -52,15 +62,18 @@
 .br-games .gc .gc-blurb{margin:0;font-size:14px;line-height:1.4;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
 .gc-chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0;padding:0;list-style:none}
 .gc-chips li{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.1;white-space:nowrap;padding:4px 9px;border-radius:999px;background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
-.gc-chips li.on,.gs-solo .gc-chips li:first-child{color:var(--gs-c);background:color-mix(in srgb,var(--gs-c) 11%,var(--panel));border-color:color-mix(in srgb,var(--gs-c) 32%,transparent)}
+.gc-chips li.on,.gs-solo .gc-chips li:first-child,.gc-chips:not(:has(.on)) li:first-child{color:var(--gs-c);background:color-mix(in srgb,var(--gs-c) 11%,var(--panel));border-color:color-mix(in srgb,var(--gs-c) 32%,transparent)}
 .gc-chips li.on::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);animation:gc-live 2.4s ease-in-out infinite}
 @keyframes gc-live{50%{box-shadow:0 0 0 5px color-mix(in srgb,currentColor 0%,transparent)}}
 .br-games .gc .actions{margin-top:auto;padding-top:5px}
 .br-games .gc .btn.primary{width:100%;justify-content:center;min-height:42px;border-radius:11px;font-size:15px;background:var(--gs-c);border-color:var(--gs-c);color:var(--gs-ink);box-shadow:0 6px 14px -8px var(--gs-c);transition:filter .15s ease,transform .15s ease}
 .br-games .gc .btn.primary:active{transform:scale(.97)}
 
-/* The first four (the most played) are wide on computers and tablets: picture on the left, the rest on the right.
-   With 16 multiplayer games that fills five rows of four exactly; between 560 and 960 px they take a whole row of two. */
+/* Wide cards (two columns, picture on the left) keep each section's rows full on computers: Parkour and Shooter /
+   Action have 5 games (3 wide + 2 = two rows of four), Single player 2 (both wide = one row); Puzzles has the
+   Daily Puzzles card on its own row and 4 regular cards, Multiplayer 4 regular. Between 560 and 960 px a wide card
+   takes a whole row of two, which keeps the other cards in pairs. On phones (560 px and less) only .pw cards (the first
+   of Parkour and of Shooter / Action) take a whole row and the rest pair up. If a section's count changes, fix wide/pw. */
 @media (min-width:960px), (min-width:561px) and (max-width:879px){
   .br-games .gc.wide{grid-column:span 2;flex-direction:row}
   .br-games .gc.wide .shot{flex:0 0 52%;aspect-ratio:auto;min-height:220px;margin:7px 0 7px 7px}
@@ -79,6 +92,23 @@
 }
 .br-games .gc:focus-within{border-color:color-mix(in srgb,var(--gs-c) 55%,var(--line))}
 .br-games .gc .btn.primary:focus-visible{outline:3px solid var(--gs-c);outline-offset:3px}
+
+/* The Daily Puzzles card: a whole row at the top of Puzzles, picture on the left (on top on phones), with today's
+   progress (#dailyToday, filled in by a small script on the Back Room page; hidden on the home page's copy). */
+.br-games .gc.gc-daily{grid-column:1 / -1;background:linear-gradient(115deg,color-mix(in srgb,var(--gs-c) 12%,var(--panel)) 0%,var(--panel) 70%)}
+.br-games .gc-daily .gc-blurb{-webkit-line-clamp:3;min-height:0}
+.gc-today{margin:0;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.04em;color:var(--gs-c)}
+@media (min-width:561px){
+  .br-games .gc.gc-daily{flex-direction:row}
+  .br-games .gc-daily .shot{flex:0 0 46%;aspect-ratio:auto;min-height:250px;margin:7px 0 7px 7px}
+  .br-games .gc-daily .shot img{position:absolute;inset:0;object-position:left top}
+  .br-games .gc-daily .body{padding:20px 22px 18px;gap:10px;justify-content:center}
+  .br-games .gc-daily h3{font-size:40px}
+  .br-games .gc-daily .gc-blurb{font-size:16px;max-width:52ch}
+  .br-games .gc-daily .actions{margin-top:6px;max-width:320px}
+  .br-games .gc-daily .gc-more summary{right:auto;left:calc(46% - 31px)}
+  .br-games .gc-daily .gc-more[open] summary{left:auto;right:15px}
+}
 
 /* "i" opens everything the game has (the longer description and feature list) over the card, so cards stay short. */
 .gc-more summary{position:absolute;top:15px;right:15px;z-index:3;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(8,16,12,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;cursor:pointer;list-style:none;font:600 15px/1 var(--mono);transition:background .15s ease,transform .15s ease}
@@ -125,10 +155,13 @@
   .br-games .gc .gc-blurb{font-size:12.5px;line-height:1.35;-webkit-line-clamp:3;min-height:2.7em}
   .gc-chips{gap:4px}
   .gc-chips li{font-size:10.5px;padding:3px 7px;gap:5px}
-  .gc:not(.wide) .gc-chips li:nth-child(n+2){display:none}
-  .br-games .gc.wide{grid-column:1 / -1}
-  .br-games .gc.wide h3{font-size:26px}
-  .br-games .gc.wide .gc-blurb{font-size:14px;min-height:0}
+  .gc:not(.pw):not(.gc-daily) .gc-chips li:nth-child(n+2){display:none}
+  .br-games .gc-daily h3{font-size:30px}
+  .br-games .gc-daily .gc-blurb{font-size:14px}
+  /* phones: only the first card of Parkour and Shooter / Action (.pw) stays a whole row; the others pair up */
+  .br-games .gc.pw{grid-column:1 / -1}
+  .br-games .gc.pw h3{font-size:26px}
+  .br-games .gc.pw .gc-blurb{font-size:14px;min-height:0}
   .gc-chips li.on::before{width:6px;height:6px}
   .br-games .gc .btn.primary{min-height:38px;font-size:14px;border-radius:9px;padding:6px 10px}
   .gc-info{padding:12px 12px 14px;font-size:13px}

@@ -60,7 +60,7 @@ h1 span{color:var(--accent)}
 h2{font-family:var(--f-m);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:22px 0 10px}
 .mode{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:30px 0 2px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .mode h2{font-family:var(--f-d);font-weight:800;font-size:32px;line-height:.95;letter-spacing:.01em;text-transform:uppercase;margin:0;color:var(--ink)}
-.mode.multi h2{color:var(--accent)}.mode.solo h2{color:#8fd3ff}
+.mode.multi h2{color:var(--accent)}.mode.solo h2{color:#8fd3ff}.mode.puzzles h2{color:#b7a8ff}.mode.parkour h2{color:#6cc8ff}.mode.action h2{color:#ff8a94}
 .mode p{margin:4px 0 0;font-size:13px;color:var(--ink-2)}
 .mode .n{flex:none;font-family:var(--f-m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
 #lists h3{font-family:var(--f-m);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:18px 0 10px}
@@ -120,40 +120,51 @@ body .pty h2{font-family:var(--f-d);font-weight:800;font-size:30px;letter-spacin
 (function(){
   // land: plays best with the phone turned sideways
   var B='/e63334287a3deaa3/';
-  // Each group: [kind, games, mode]. mode 'multi' or 'solo' puts it under the Multiplayer or Single player heading
-  // (a game with online rooms counts as multiplayer, even if it can also be played alone); keep groups of one mode together.
+  // Each group: [kind, games, mode]. mode puts it under one of the five headings in MODES, in this order (the same
+  // sections as the computer version): keep groups of one mode together. A game goes where it fits best, so an online
+  // puzzle game is under Puzzles and an online shooter under Shooter / Action; Multiplayer has the other online games.
   // A game: [folder, name, one line, best sideways (1/0), and its address if it lives outside the Back Room folder].
-  var MODES={multi:['Multiplayer','Play online with friends, or against bots.'],solo:['Single player','Puzzles for one.']};
+  // daily (Daily Puzzles) is the dashboard for every daily puzzle; the daily games open from it inside the same frame.
+  var MODES={puzzles:['Puzzles','Daily puzzles, word games, trivia and numbers.'],parkour:['Parkour','Obbies, towers and climbs.'],action:['Shooter / Action','Shoot, hide, build and wreck.'],multi:['Multiplayer','Play online with friends, or against bots.'],solo:['Single player','Drop-and-stack games for one.']};
   var GROUPS=[
-    ['Action',[
-      ['shell-crackers','Shell Crackers','First-person egg shooter. Crack the most shells before the clock runs out.',1],
-      ['backrooms-1v1','Backrooms 1v1–4v4','Red vs Blue in Level 0. Build cover and wipe out the other team.',1],
-      ['chromaflage','Chromaflage','Paint yourself to match the room, then hide. Or hunt the painted.',1],
+    ['Every day',[
+      ['daily','Daily Puzzles','Today\'s word, geography, logic and soccer puzzles, with your streak.',0]
+    ],'puzzles'],
+    ['Words and trivia',[
+      ['deepword','Deepword','Find the answer nobody else thought of and dive deeper.',0],
+      ['trivium','Trivium','Trivia: a daily ten, quick play or a live contest.',0],
+      ['boxed','Boxed','Real AMC 10 and AIME problems, five a day.',0,'/boxed/']
+    ],'puzzles'],
+    ['Number and block puzzles',[
+      ['gridpop','Gridpop','Drop blocks on an 8 × 8 grid and pop full rows and columns.',0],
+      ['2048','2048','Join tiles to 2048: Classic, 6 × 6 Mega, or College and Dessert ladders.',0]
+    ],'puzzles'],
+    ['Obbies and climbs',[
       ['spire','Spire','Race up a random tower. Every landing saves your place, so mind the red.',1],
       ['turbo-trail','Turbo Trail','A speedrun obby: 25 quick levels, medals, splits and online races.',1],
       ['escapade','Escapade','Parkour out of eight escape rooms. Find the key, crack the code.',1],
       ['updraft','Updraft','Climb a thousand metres of junk, clouds and sky. Miss a jump and you fall.',1],
-      ['odd-one-out','Odd One Out','Props vs Hunters: turn into anything in the room, or shoot what doesn\'t belong.',1],
       ['tumble-trials','Tumble Trials','A wobbly knockout show for up to 16. Last bean standing wins.',1]
-    ],'multi'],
+    ],'parkour'],
+    ['Shoot and hide',[
+      ['shell-crackers','Shell Crackers','First-person egg shooter. Crack the most shells before the clock runs out.',1],
+      ['backrooms-1v1','Backrooms 1v1–4v4','Red vs Blue in Level 0. Build cover and wipe out the other team.',1],
+      ['chromaflage','Chromaflage','Paint yourself to match the room, then hide. Or hunt the painted.',1],
+      ['odd-one-out','Odd One Out','Props vs Hunters: turn into anything in the room, or shoot what doesn\'t belong.',1]
+    ],'action'],
+    ['Battle',[
+      ['rumble-karts','Rumble Karts','Three-minute kart brawls with weapons.',1]
+    ],'action'],
     ['Racing and sports',[
-      ['rumble-karts','Rumble Karts','Three-minute kart brawls with weapons.',1],
       ['slipstream','Slipstream','22-car open-wheel races. Draft, brake late, pass.',1],
       ['boostball','Boostball','Rocket-car soccer with a giant ball.',1]
     ],'multi'],
-    ['Quick games',[
-      ['coil','Coil','Grow your snake and cut off the bigger ones.',0]
-    ],'multi'],
-    ['Brains and cards',[
-      ['trivium','Trivium','Trivia: a daily ten, quick play or a live contest.',0],
+    ['Arenas, cards and markets',[
+      ['coil','Coil','Grow your snake and cut off the bigger ones.',0],
       ['showdown','Showdown','No-limit Hold\'em with friends or bots.',0],
-      ['deepword','Deepword','Find the answer nobody else thought of and dive deeper.',0],
-      ['boxed','Boxed','Real AMC 10 and AIME problems, five a day.',0,'/boxed/'],
       ['hype-cycle-exchange','Hype Cycle Exchange','A stock market game: trade the rumors, beat the index.',0,'/hype-cycle-exchange/']
     ],'multi'],
-    ['Puzzles',[
-      ['gridpop','Gridpop','Drop blocks on an 8 × 8 grid and pop full rows and columns.',0],
-      ['2048','2048','Join tiles to 2048: Classic, 6 × 6 Mega, or College and Dessert ladders.',0],
+    ['Drop and stack',[
       ['stackfall','Stackfall','Falling blocks: clear rows, or link sand wall to wall.',0],
       ['melon-merge','Melon Merge','Drop fruit, merge twins, grow a watermelon.',0]
     ],'solo']
@@ -184,8 +195,8 @@ body .pty h2{font-family:var(--f-d);font-weight:800;font-size:30px;letter-spacin
     }
     var k=document.createElement('h3');k.textContent=gr[0];
     var grid=document.createElement('div');grid.className='grid';
-    gr[1].forEach(function(r){var g={id:r[0],name:r[1],desc:r[2],land:!!r[3],url:r[4]||B+r[0]+'/'};byId[g.id]=g;total++;modeCount++;grid.append(tile(g))});
-    modeN.textContent=modeCount+(modeCount===1?' game':' games');
+    gr[1].forEach(function(r){var g={id:r[0],name:r[1],desc:r[2],land:!!r[3],url:r[4]||B+r[0]+'/'};if(g.id==='daily')g.scope=B;byId[g.id]=g;if(g.id!=='daily'){total++;modeCount++}grid.append(tile(g))});
+    modeN.textContent=modeCount+(modeCount===1?' game':' games')+(mode==='puzzles'?' + daily':'');
     $('lists').append(k,grid);
   });
   $('count').textContent=total+' games · made for touch';
@@ -249,7 +260,7 @@ body .pty h2{font-family:var(--f-d);font-weight:800;font-size:30px;letter-spacin
     history.replaceState(null,'',location.pathname);
     var pre=/^([a-z]{2})-/.exec(inv[1]),g=byId[pre&&PREFIX[pre[1]]||'rumble-karts'];
     if(pre&&pre[1]==='pt')party=inv[1].slice(3);
-    else if(g)openGame({id:g.id,name:g.name,land:g.land,url:g.url,hash:'#'+inv[1]});
+    else if(g)openGame({id:g.id,name:g.name,land:g.land,url:g.url,scope:g.scope,hash:'#'+inv[1]});
   }
   addEventListener('popstate',function(){closeGame()});
 
@@ -257,7 +268,7 @@ body .pty h2{font-family:var(--f-d);font-weight:800;font-size:30px;letter-spacin
   window.BackRoom={
     openGame:function(path,name){
       var m=/\/([a-z0-9-]+)\/(#[a-z0-9-]*)?$/.exec(path),g=m&&byId[m[1]];if(!g||cur)return null;
-      openGame({id:g.id,name:g.name,land:g.land,url:g.url,hash:m[2]||''});return $('frame');
+      openGame({id:g.id,name:g.name,land:g.land,url:g.url,scope:g.scope,hash:m[2]||''});return $('frame');
     },
     isOpen:function(){return !!cur},
     invite:party
@@ -267,14 +278,18 @@ body .pty h2{font-family:var(--f-d);font-weight:800;font-size:30px;letter-spacin
   var os=document.createElement('script');os.src=B+'social.js';document.body.appendChild(os);
 
   // Links that leave the game (back to the main site, other pages) close the game instead of loading inside it.
+  // The Daily Puzzles page (scope: the Back Room folder) may open its games in the frame; the Back Room page itself still closes it.
+  function inside(p){return cur.scope?p.indexOf(cur.scope)===0&&p!==cur.scope:p.indexOf(cur.url)===0}
   $('frame').addEventListener('load',function(){
     if(!cur)return;
     try{
-      var w=$('frame').contentWindow,gp=cur.url;
-      if(w.location.pathname.indexOf(gp)!==0){history.back();return}
+      var w=$('frame').contentWindow;
+      if(!inside(w.location.pathname)){history.back();return}
       w.document.addEventListener('click',function(e){
         var a=e.target.closest&&e.target.closest('a[href]');if(!a||a.target==='_blank')return;
-        var u=new URL(a.href,w.location.href);if(u.origin!==location.origin||u.pathname.indexOf(gp)===0)return;
+        var u=new URL(a.href,w.location.href);if(u.origin!==location.origin)return;
+        // inside the Daily Puzzles scope, step without adding history, so ‹ Games (history.back) still closes the frame
+        if(inside(u.pathname)){if(cur.scope&&!u.hash){e.preventDefault();w.location.replace(u.href)}return}
         e.preventDefault();
         if(u.pathname==='/privacy.html')window.open(u.href,'_blank','noopener');else history.back();
       },true);

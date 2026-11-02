@@ -234,13 +234,17 @@ if(/^(www\.)?ascoding11\.com$/.test(location.hostname)&&!location.hash&&!locatio
     fr.style.cssText='flex:1;width:100%;border:0;display:block;background:#000';
     fr.addEventListener('load',function(){
       try{
-        var w=fr.contentWindow,gp=path.split(/[?#]/)[0];
-        if(w.location.pathname.indexOf(gp)!==0){shut();return}
+        // The Daily Puzzles page (daily/) opens its games in the same layer; the Back Room page itself still closes it.
+        var w=fr.contentWindow,gp=path.split(/[?#]/)[0],sc=gp===base+'daily/';
+        var inside=function(p){return sc?p.indexOf(base)===0&&p!==base:p.indexOf(gp)===0};
+        if(!inside(w.location.pathname)){shut();return}
         if(!lbl.textContent)lbl.textContent=w.document.title.split(/\s[\u2013\u2014|-]\s/)[0];
         // Links that leave the game close this layer instead of loading inside it.
         w.document.addEventListener('click',function(e){
           var a=e.target.closest&&e.target.closest('a[href]');if(!a||a.target==='_blank')return;
-          var u=new URL(a.href,w.location.href);if(u.origin!==location.origin||u.pathname.indexOf(gp)===0)return;
+          var u=new URL(a.href,w.location.href);if(u.origin!==location.origin)return;
+          // inside the Daily Puzzles scope, step without adding history, so ← Back (history.back) still closes the layer
+          if(inside(u.pathname)){if(sc&&!u.hash){e.preventDefault();w.location.replace(u.href)}return}
           e.preventDefault();
           if(u.pathname==='/privacy.html')window.open(u.href,'_blank','noopener');else history.back();
         },true);

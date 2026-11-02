@@ -26,20 +26,322 @@
   <header>
     <p class="kicker"><span data-door style="position:relative;z-index:1;padding:18px 16px;margin:-18px -16px">Y</span>ou found it</p>
     <h1>The Back Room</h1>
-    <p class="intro">Twenty games that aren't on the main site.</p>
+    <p class="intro">Twenty games and a fresh set of daily puzzles that aren't on the main site.</p>
     <p class="intro"><a href="/e63334287a3deaa3/m/" data-direct>On a phone? Open the phone version →</a> Every game, made for touch, and you can add it to your home screen.</p>
   </header>
   <section aria-label="Games" class="br-games">
     <!-- Card styles live in games.css, linked here (not in <head>) so the home page's reveal(), which copies this section, gets them too. -->
     <link rel="stylesheet" href="/e63334287a3deaa3/games.css">
-    <section class="gs gs-multi" aria-labelledby="gs-multi">
+    <section class="gs gs-puzzles" aria-labelledby="gs-puzzles">
       <div class="gs-head">
-        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.8 13.6c2.9-.3 5.2 1.7 5.2 4.6"/></svg></span>
-        <div class="gs-tt"><h2 id="gs-multi">Multiplayer</h2><p>Jump into Quick match, or send friends a room code. Most have bots too.</p></div>
-        <span class="gs-n">16 games</span>
+        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h3V8a2 2 0 1 1 4 0v3h3v3a2 2 0 1 0 0 4v2H6v-3a2 2 0 1 0 0-4z"/></svg></span>
+        <div class="gs-tt"><h2 id="gs-puzzles">Puzzles</h2><p>Today’s daily puzzles, then word games, trivia and number puzzles.</p></div>
+        <span class="gs-n">4 games + daily</span>
       </div>
       <div class="gc-grid">
+      <article class="project gc gc-daily">
+        <a class="shot" href="/e63334287a3deaa3/daily/" aria-label="Open Daily Puzzles" tabindex="-1">
+          <img src="/e63334287a3deaa3/daily/preview.jpg" alt="The Daily Puzzles page: a dark navy dashboard headed Daily Puzzles, with a ring showing 1 of 3 done today, a 6-day streak with a flame, a countdown to midnight, and tiles for Hunch (solved in 3), Fourcast and Deepword under a Word heading." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">New every day</span>
+        </a>
+        <div class="body">
+          <h3>Daily Puzzles</h3>
+          <p class="gc-blurb">A fresh set of word, geography, logic and soccer puzzles every day, the same for everyone. Play one or play them all, and keep your streak going.</p>
+          <p class="gc-today" id="dailyToday" hidden></p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">New every midnight</li><li>Streaks</li><li>Share cards</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Daily Puzzles"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">Every daily puzzle in one place. Each one changes at midnight on your own clock, so everyone gets the same puzzle that day, and the page shows which ones you've done, how you did and how long your streak is.</p>
+              <ul class="feats">
+                <li>Hunch: guess the five-letter word in six tries, with a hard mode</li>
+                <li>Fourcast: four words at once in nine guesses</li>
+                <li>Deepword's daily dive, and more word, geography, logic and soccer puzzles on the way</li>
+                <li>Every puzzle has its own stats, a share card with no spoilers, and an Unlimited mode for practice</li>
+              </ul>
+              <p class="note">Works on a phone or a computer. Your results stay in this browser.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/daily/">▶ Today's puzzles</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/deepword/" aria-label="Open Deepword" tabindex="-1">
+          <img src="/e63334287a3deaa3/deepword/preview.jpg" alt="Deepword in play: a dark navy card in the midnight zone asks &quot;Name a sea creature&quot;, with &quot;anglerfish&quot; typed into a green-outlined answer box ticked as valid. Anglerfish with glowing lures drift above the card in the deep blue water, the depth pill reads 2,350 m · Midnight, and a depth gauge runs down the right edge." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Word game</span>
+        </a>
+        <div class="body">
+          <h3>Deepword</h3>
+          <p class="gc-blurb">A daily word dive: the rarer your answer, the deeper you go.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · 2 to 12</li><li>Daily</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Deepword"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">A daily word dive. Each day brings eight open-ended prompts, the same for everyone, and the rarer your answer, the deeper you sink, from the sunlit surface down to the trench. Then take it online in Blowfish Brawl, where an answer someone else already sent puffs you up.</p>
+              <ul class="feats">
+                <li>Daily Dive: eight prompts a day, the same for everyone, one each from geography, animals, food, words, pop culture, science, sports and everyday life</li>
+                <li>Rarity comes from what other divers answered today, so the answer nobody else thought of sinks you deepest</li>
+                <li>332 prompts and more than 13,000 answers, all written for the game; spelling, accents and &quot;the&quot; don&#x27;t matter</li>
+                <li>A share card with emoji squares, a streak, a best depth and a calendar of your month</li>
+                <li>Blowfish Brawl for 2 to 12 players: one prompt for the room, a shrinking timer, an answer someone already sent puffs you up, and three puffs pops you; bots fill small rooms</li>
+                <li>Practice with random prompts any time</li>
+              </ul>
+              <p class="note">Type your answer and press Enter. Works with a keyboard or a phone's own keyboard.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/deepword/" data-invite="dw">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/trivium/" aria-label="Open Trivium" tabindex="-1">
+          <img src="/e63334287a3deaa3/trivium/preview.jpg" alt="Trivium contest on the host's screen: the question 'What is the capital of Poland?' with four colored answer tiles showing how many players picked each, Warsaw marked right, a fact about Warsaw's rebuilt Old Town, and live standings with points gained." width="1920" height="1200" loading="lazy" style="object-position:left top">
+          <span class="gc-genre">Trivia</span>
+        </a>
+        <div class="body">
+          <h3>Trivium</h3>
+          <p class="gc-blurb">About 1,800 questions: a daily ten or a live contest.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Live contests</li><li>Daily ten</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Trivium"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">Trivia with nearly 1,800 questions in 19 categories, from geography and space to money, mythology and New York City, and a fact behind every answer. Play a daily ten alone, or host a contest where everyone answers on their phone.</p>
+              <ul class="feats">
+                <li><b>Daily ten:</b> the same ten questions for everyone, easy to hard, with a shareable result and streaks</li>
+                <li>Quick play by category and difficulty, Survival with three lives, and a 60-second Blitz</li>
+                <li>Live contests: friends join with a 5-letter code or a QR code, and the host picks categories, difficulty, length and the timer</li>
+                <li>Points for speed and streaks, a breakdown of everyone's answers after each question, live standings and a podium</li>
+                <li>Autopilot runs a contest by itself, and the host can play along from the same screen</li>
+              </ul>
+              <p class="note">Works on a laptop, a projector or a phone. Host a contest from the menu, or join one with a code or an invite link.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/trivium/" data-invite="tv">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/gridpop/" aria-label="Open Gridpop" tabindex="-1">
+          <img src="/e63334287a3deaa3/gridpop/preview.jpg" alt="Gridpop in play: a gold &quot;Amazing!&quot; with &quot;+90&quot; and &quot;Combo ×3&quot; bursts over an 8 × 8 navy board as two rows pop into coloured sparks, with glossy coloured blocks below and two pieces waiting in the tray." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Puzzle</span>
+        </a>
+        <div class="body">
+          <h3>Gridpop</h3>
+          <p class="gc-blurb">Drop blocks on an 8 × 8 grid and pop full lines.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li>Solo</li><li>Saves every move</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Gridpop"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">A block-placement puzzle on an 8 × 8 board. Drag three pieces at a time onto the grid and fill whole rows or columns to pop them. Pieces can&#x27;t be turned, and clearing again within a few moves builds a combo. The game ends when nothing in your tray fits anywhere.</p>
+              <ul class="feats">
+                <li>41 fixed pieces, from single squares to 3 × 3 blocks, Ls, Ts, zigzags and staircases, dealt three at a time with big pieces kept rare</li>
+                <li>Rows and columns clear together, and more lines in one move score much more (10, 30, 60, 100, 150, 210)</li>
+                <li>A combo multiplier that keeps going as long as you clear again within your next three placements</li>
+                <li>A preview shows where the piece will land and lights up the lines it would clear</li>
+                <li>Your game is saved after every move, with a best score kept in your browser</li>
+              </ul>
+              <p class="note">Plays with a mouse, a touch screen or the keyboard (1 2 3 to pick, arrows to move, Enter to place).</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/gridpop/">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/2048/" aria-label="Open 2048" tabindex="-1">
+          <img src="/e63334287a3deaa3/2048/preview.jpg" alt="2048 in play: a 4 × 4 tan board of rounded number tiles, cream 2s and 4s, orange 8 to 32, red 64 and 128 and golden 256 to 2048, with a 512 tile just formed in the bottom row." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Puzzle</span>
+        </a>
+        <div class="body">
+          <h3>2048</h3>
+          <p class="gc-blurb">Slide and join tiles to 2048, or go big on 6 × 6.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li>Solo</li><li>4 modes</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about 2048"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">The number-sliding puzzle on a 4 × 4 board. Slide every tile at once, join matching numbers into one tile worth double, and keep the board from filling up long enough to build a 2048 tile. After you win you can keep going for 4096 and beyond. Four modes: Classic, a 6 × 6 Mega board, and College and Dessert, where the tiles climb a ladder of colleges or desserts instead of numbers.</p>
+              <ul class="feats">
+                <li>Arrow keys or WASD (change them in Controls), or swipe on a phone; one move per swipe</li>
+                <li>Smooth slides, a pop on every join, a floating &quot;+N&quot; by the score, and confetti at 2048</li>
+                <li>Strict mode (on by default) is the game with no Undo; switch it off for a one-step Undo</li>
+                <li>Each mode keeps its own game in progress, best score and leaderboard</li>
+                <li>The game in progress, best score and settings save in this browser, so you can close the tab and finish later</li>
+              </ul>
+              <p class="note">Plays with the keyboard, a mouse drag or a swipe.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/2048/">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      </div>
+    </section>
+    <section class="gs gs-parkour" aria-labelledby="gs-parkour">
+      <div class="gs-head">
+        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15.5" cy="4.5" r="2"/><path d="M9.5 9.2l4.2-1.7 2.6 3.6 3 1.2"/><path d="M13.7 7.5l-2.2 6.3 3.6 2.6-.9 5.1"/><path d="M11.5 13.8l-3.3 2.4-3.4-.9"/><path d="M9.5 9.2L7 12"/></svg></span>
+        <div class="gs-tt"><h2 id="gs-parkour">Parkour</h2><p>Obbies, towers and climbs. Race friends or chase your best time.</p></div>
+        <span class="gs-n">5 games</span>
+      </div>
+      <div class="gc-grid">
+      <article class="project gc wide pw">
+        <a class="shot" href="/e63334287a3deaa3/spire/" aria-label="Open Spire" tabindex="-1">
+          <img src="/e63334287a3deaa3/spire/preview.jpg" alt="Spire mid-climb inside a glass tower: a purple climber in a gold crown stands on a mint checkpoint landing in a shower of confetti, a turquoise launch pad marked with chevrons waits beside it, a climber in a propeller cap stands on the platform it throws you to, another in a top hat slides across pale ice steps below, and one in a wizard hat waits higher up. The clock, the tower name, a coin count and a height bar striped in each section's colour are on screen." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Parkour race</span>
+        </a>
+        <div class="body">
+          <h3>Spire</h3>
+          <p class="gc-blurb">Race up a random tower. Mind the red, and grab the coins.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>Solo too</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Spire"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">A parkour race up a tower stacked from random sections, gentle at the bottom and nasty near the top: beams, spinning bars, vanishing tiles, ice, launch pads, gusts of wind and lasers. Every landing between sections is a checkpoint, and anything glowing red sends you back to it. Everyone in the room climbs the same tower against one clock, which runs twice as fast once someone reaches the top.</p>
+              <ul class="feats">
+                <li>Online rooms for up to 12 climbers: Quick match drops you into a public tower, or pick a room code and send friends the invite link</li>
+                <li>A new tower every round from 23 hand-built sections, each one checked by a bot that climbs it with the real movement, and a gold shortcut for the brave</li>
+                <li>Your place in the race beside the clock, split times at every landing, and a height bar showing where everyone is</li>
+                <li>Coins along the way and hats to spend them on (or unlock by levelling up), from a party hat to a propeller cap</li>
+                <li>Checkpoints can be turned off for the classic climb, where red means the bottom</li>
+                <li>Obby mode: 49 stages over seven themed worlds, and practice for any single section</li>
+              </ul>
+              <p class="note">Best with a keyboard and mouse (rebindable keys); phones get a joystick and buttons. Press Quick match, play in a room with friends, or climb on your own.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/spire/" data-invite="tw">▶ Play</a>
+          </div>
+        </div>
+      </article>
       <article class="project gc wide">
+        <a class="shot" href="/e63334287a3deaa3/turbo-trail/" aria-label="Open Turbo Trail" tabindex="-1">
+          <img src="/e63334287a3deaa3/turbo-trail/preview.jpg" alt="Turbo Trail in play on level 1-2, Gumdrop Hop: a blocky runner leaps between mint-green gumdrop stepping stones over a pink candy sea, leaving a curving rainbow trail, with a swirling portal ahead among giant lollipops and sugar cones. The level clock reads 2.62 at the top and a panel on the right lists the gold, silver and bronze times." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Speedrun obby</span>
+        </a>
+        <div class="body">
+          <h3>Turbo Trail</h3>
+          <p class="gc-blurb">25 quick levels on the clock. Chase gold, race friends.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>25 levels</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Turbo Trail"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">A speedrun obby in short bursts. Each level takes seconds if you know the line: hit the speed pads, bounce off the jump pads, wall-jump up the striped walls and dive through the portal before the clock gets away from you. Earn medals, beat your own ghost, then take on all 25 in one go or race friends online.</p>
+              <ul class="feats">
+                <li>25 levels across five worlds, Candy Coast, Neon City, Lava Forge, Frost Peaks and Star Drift, each about 6 to 12 seconds at gold pace</li>
+                <li>Speed pads, jump pads, climbing walls, moving, spinning, blinking and crumbling platforms, lasers, ice and low gravity</li>
+                <li>A clock that starts when you move, gold, silver and bronze medals, and a see-through ghost of your best run</li>
+                <li>Full run: all 25 levels on one clock, with green or red splits against your best at every portal</li>
+                <li>Stars from medals unlock three speed upgrades and eight trails in the Garage</li>
+                <li>Online races for up to 12 over one world, a mix of five levels or all 25; the other runners show up as ghosts</li>
+              </ul>
+              <p class="note">Best with a keyboard and mouse (rebindable keys); phones get a stick, a jump button and a restart button, best held sideways. Press Quick race, play in a room with friends, or run the levels on your own.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/turbo-trail/" data-invite="sr">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc wide">
+        <a class="shot" href="/e63334287a3deaa3/escapade/" aria-label="Open Escapade" tabindex="-1">
+          <img src="/e63334287a3deaa3/escapade/preview.jpg" alt="Escapade in play: a classroom with mint walls and windows, where the floor between the rows of desks is glowing red lava. A blocky yellow escaper hops from desk to desk toward the teacher's desk and a gold door with a key sign, while other escapers with name tags (Maya, Jordan, Theo) jump across the desks, a blue gem glows on top of a bookshelf, a sign reads &quot;The floor is lava! Hop the desks. Find the key.&quot;, and the timer and level name sit along the top." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Escape obby</span>
+        </a>
+        <div class="body">
+          <h3>Escapade</h3>
+          <p class="gc-blurb">Parkour out of eight escape rooms. Find the key, get out.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>8 levels</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Escapade"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">A 3D escape-room obby. Every level is a themed set of rooms with one way out: hop the desks while the floor is lava, slip past laser curtains and spinning bars, ride carts and barrels, and solve the room's puzzle (a key, a keypad code hidden somewhere in the level, a recipe pressed in the right order, a block pushed onto a plate, a valve that holds a gate open, a fuse for the power) to reach the green EXIT. Play the eight levels alone for times and stars, or online, where the whole room plays the same level at once.</p>
+              <ul class="feats">
+                <li>Eight levels, gentle to hard: Detention, Lab Rats, Hot Kitchen, Toy Box, Down the Drain, The Vault, Orbit Station and The Warden</li>
+                <li>Puzzles: keys and keycards, keypad codes read off a board, foods pressed in a recipe's order, a block pushed onto a star, a valve that holds a gate open, a fuse that powers a bridge, three switches that shut down the Warden</li>
+                <li>Obstacles: lava, laser curtains, burners and spinning bars (anything red and glowing), moving carts, conveyor belts, crumbling floors, blinking tiles, trampolines, ladders and low gravity</li>
+                <li>Checkpoints in every level and a quick respawn; keys, codes and opened doors stay done</li>
+                <li>Three stars a level: escape, beat the target time, and find the hidden gem</li>
+                <li>Online rooms for up to 12 with an invite link, or Quick match: everyone plays the same level, each with their own copy of the puzzles, and the next level starts when everyone's out</li>
+              </ul>
+              <p class="note">Plays with a keyboard and mouse or a touch screen. Press Quick match, play in a room with friends, or play the levels on your own.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/escapade/" data-invite="er">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/updraft/" aria-label="Open Updraft" tabindex="-1">
+          <img src="/e63334287a3deaa3/updraft/preview.jpg" alt="Updraft: a climber in a cap and backpack walks up a giant pencil leaning into the sky high above a city. Dice, toy blocks, mugs, a desk lamp and plates hung on chains float along the route ahead, and the keyboard they climbed lies below, with the altitude, run clock and height bar on screen." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Climbing</span>
+        </a>
+        <div class="body">
+          <h3>Updraft</h3>
+          <p class="gc-blurb">Climb 1,000 m to the edge of space. No checkpoints.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>Solo too</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Updraft"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">One way to go, and it's a thousand metres. Climb out of a scrapyard street, over a pile of giant lost things and through the clouds to the edge of space. There are no checkpoints: miss a jump and you fall until something catches you, maybe the street.</p>
+              <ul class="feats">
+                <li>One continuous course from a city street to a summit 1000 m up, through five zones that change with the altitude: a tower and its cranes, giant everyday things, floating islands, thin air and the edge of space</li>
+                <li>Standing jumps are short, running jumps go farther and sprint jumps farthest, with a ledge grab for jumps that only just fall short</li>
+                <li>Lifts, swings, drifting clouds, a turning island, fans that lift you, bouncy mushrooms, ice that cracks, and a few launch pads that skip a stretch</li>
+                <li>Your run is saved where you stand, so you can stop and come back; best height, best time and summits are kept</li>
+                <li>Online rooms for up to 12 climbers with a live board of who's highest; after the top, watch the others climb</li>
+              </ul>
+              <p class="note">Best with a keyboard and mouse; phones get a joystick and buttons. Climb solo, press Quick match, or play in a room with friends.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/updraft/" data-invite="up">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/tumble-trials/" aria-label="Open Tumble Trials" tabindex="-1">
+          <img src="/e63334287a3deaa3/tumble-trials/preview.jpg" alt="Tumble Trials on Whirligig Way: a crowd of round, colourful beans with smiling faces and name tags runs off the start pad under a pink GO! arch onto a spinning pink disc over purple slime, with the round, the qualified count and the timer along the top." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Party show</span>
+        </a>
+        <div class="body">
+          <h3>Tumble Trials</h3>
+          <p class="gc-blurb">A wobbly knockout show. Last bean standing wins.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 16</li><li>Bots</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Tumble Trials"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">A wobbly knockout party show for up to 16 players. Race through obstacle courses before the qualifying spots fill up, survive the sweepers, and be the last bean standing on the vanishing honeycomb to win the crown.</p>
+              <ul class="feats">
+                <li>Online rooms for up to 16 players with an invite link, or Quick match into a public lobby; the host picks the show length, bots to fill seats and bumping on or off</li>
+                <li>Shows of two to four rounds: races where only the first few qualify, survivals, then a final for the crown</li>
+                <li>Five races (spinning discs and hammers, tipping seesaws, doors that may be fake, bounce pads and fans, swinging wrecking balls), two survivals and two finals, including three floors of hexagon tiles that vanish after you touch them</li>
+                <li>Run, jump, dive and grab, with bumping, tumbles when something hits you hard, and checkpoints in races</li>
+                <li>A solo show against bots, practice on any level, your own colour, face and pattern, and stats for shows, crowns and rounds qualified</li>
+              </ul>
+              <p class="note">Plays with a keyboard and mouse or a touch screen. Press Quick match, play in a room with friends, or run a solo show against bots.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/tumble-trials/" data-invite="ko">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      </div>
+    </section>
+    <section class="gs gs-action" aria-labelledby="gs-action">
+      <div class="gs-head">
+        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 1.8v4.4M12 17.8v4.4M1.8 12h4.4M17.8 12h4.4"/></svg></span>
+        <div class="gs-tt"><h2 id="gs-action">Shooter / Action</h2><p>Shoot, hide, build and wreck. Quick match, or a room with friends.</p></div>
+        <span class="gs-n">5 games</span>
+      </div>
+      <div class="gc-grid">
+      <article class="project gc wide pw">
         <a class="shot" href="/e63334287a3deaa3/rumble-karts/" aria-label="Open Rumble Karts" tabindex="-1">
           <img src="/e63334287a3deaa3/rumble-karts/preview.jpg" alt="Rumble Karts on the Lava Foundry map: a pink kart with a spike shield drives between two lava pools toward rival karts and smokestacks, with a leaderboard, round timer and minimap on screen." width="1920" height="1200" loading="lazy">
           <span class="gc-genre">Kart battle</span>
@@ -128,7 +430,75 @@
           </div>
         </div>
       </article>
-      <article class="project gc wide">
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/chromaflage/" aria-label="Open Chromaflage" tabindex="-1">
+          <img src="/e63334287a3deaa3/chromaflage/preview.jpg" alt="Chromaflage paint studio: a soft, round-headed doll hangs flat on the green damask wallpaper of a country house's grand hall, beside a wall lamp and under a gilt-framed portrait. Its head and chest are painted to match the wallpaper and blend in, while its hips and legs are still plain white. Through a doorway beside it is a terracotta-floored conservatory with palms and evening windows. The paint studio panel with the colour picker, tools, poses and body options is open on the right." width="1920" height="1200" loading="lazy" style="object-position:35% center">
+          <span class="gc-genre">Hide and seek</span>
+        </a>
+        <div class="body">
+          <h3>Chromaflage</h3>
+          <p class="gc-blurb">Paint yourself to match the room. Or hunt the painted.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 8</li><li>Bots</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Chromaflage"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">Hide and seek where you paint yourself to disappear. Hiders start plain white and copy the room onto their own bodies, then freeze in a pose. Seekers get a blaster with limited ink and have to spot them by eye.</p>
+              <ul class="feats">
+                <li>Online rooms for up to 8 players: Quick match drops you into a public lobby, or pick a room code and send friends the invite link</li>
+                <li>A paint studio: brush, eyedropper that picks colours off anything in the room, fill, undo, a matte-to-glossy finish and a camo check that scores your paint job</li>
+                <li>A soft, rounded Doll or a slim Block body in three sizes, and poses to hide your outline: crouch under tables, lie under beds, squash flat, turn, or stick yourself to a wall up high like a poster</li>
+                <li>Two modes: Classic (tagged hiders are out) and Infection (tagged hiders join the seekers)</li>
+                <li>Misses cost ink and a reload, and the host can make hiders squeak every 20 to 45 seconds</li>
+                <li>Three big indoor maps full of patterns and furniture: Hollyhock Manor, a country house on a party night with a grand staircase; Marlowe Museum, an art museum after closing time; and Kirinoya Inn, a Japanese inn round a garden courtyard</li>
+                <li>Hide practice against a seeker bot that only notices you when your paint doesn't match what's behind you, and Seek practice against bots that paint themselves</li>
+              </ul>
+              <p class="note">Best with a keyboard and mouse; phones get a joystick and buttons. Press Quick match, play in a room with friends, or practice alone.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/chromaflage/" data-invite="cf">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      <article class="project gc">
+        <a class="shot" href="/e63334287a3deaa3/odd-one-out/" aria-label="Open Odd One Out" tabindex="-1">
+          <img src="/e63334287a3deaa3/odd-one-out/preview.jpg" alt="Odd One Out in the shopping mall's food court: a hunter in an orange vest takes aim across rows of teal plastic chairs and round tables, and a tracer streaks toward one of the chairs, which is really a player in disguise. The clock, the props and hunters left, and the hunter's health and ammo are on screen." width="1920" height="1200" loading="lazy">
+          <span class="gc-genre">Prop hunt</span>
+        </a>
+        <div class="body">
+          <h3>Odd One Out</h3>
+          <p class="gc-blurb">Props vs Hunters: become anything and keep very still.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 16</li><li>Bots</li></ul>
+          <details class="gc-more">
+            <summary aria-label="More about Odd One Out"><span aria-hidden="true"></span></summary>
+            <div class="gc-info">
+              <p class="gc-long">Props vs Hunters. Props aim at anything in the room and turn into an exact copy of it: a cardboard box, an office chair, a garden gnome. Then they park beside the real ones and keep still. Hunters get a rifle and a few minutes, and every shot at a real object costs them health.</p>
+              <ul class="feats">
+                <li>Online rooms for up to 16 players: Quick match drops you into a public lobby, or pick a room code and send friends the invite link</li>
+                <li>More than fifty things to turn into, each copied exactly (shape, colours, size and the way it faces), with lock rotation, turning keys and a line-up button that matches the real ones nearby</li>
+                <li>Matches of 3 to 10 rounds: a hide phase while the hunters wait in a locked room, then the hunt, and everyone takes turns hunting</li>
+                <li>Every prop pings every few seconds (faster in the last minute), so hunters can hear roughly where to look</li>
+                <li>Three maps packed with hundreds of objects: Starlight Galleria, a shopping mall; Willow Lane, a house with a garage and a yard; and Brightside Office</li>
+                <li>Hunt practice against bots that hide by copying nearby objects, and Hide practice against hunter bots that notice movement and things out of place</li>
+              </ul>
+              <p class="note">Best with a keyboard and mouse; phones get a joystick, buttons and drag to look. Press Quick match, play in a room with friends, or practice alone.</p>
+            </div>
+          </details>
+          <div class="actions">
+            <a class="btn primary" href="/e63334287a3deaa3/odd-one-out/" data-invite="ph">▶ Play</a>
+          </div>
+        </div>
+      </article>
+      </div>
+    </section>
+    <section class="gs gs-multi" aria-labelledby="gs-multi">
+      <div class="gs-head">
+        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.8 13.6c2.9-.3 5.2 1.7 5.2 4.6"/></svg></span>
+        <div class="gs-tt"><h2 id="gs-multi">Multiplayer</h2><p>Racing, ball games, cards and arenas online. Most have bots too.</p></div>
+        <span class="gs-n">4 games</span>
+      </div>
+      <div class="gc-grid">
+      <article class="project gc">
         <a class="shot" href="/e63334287a3deaa3/slipstream/" aria-label="Open Slipstream" tabindex="-1">
           <img src="/e63334287a3deaa3/slipstream/preview.jpg" alt="Slipstream in play: a pack of open-wheel race cars in team colours brakes into a corner on a desert circuit at dusk, with red and white kerbs, sponsor-style barriers and flat-topped mesas behind, and the timing tower, lap and position box, speed and gear dash and track map on screen." width="1920" height="1200" loading="lazy" style="object-position:50% 55%">
           <span class="gc-genre">Racing</span>
@@ -193,63 +563,6 @@
         </div>
       </article>
       <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/coil/" aria-label="Open Coil" tabindex="-1">
-          <img src="/e63334287a3deaa3/coil/preview.jpg" alt="Coil in play: a glowing mint snake boosts diagonally across a dark hexagon-tiled arena scattered with coloured pellets, a striped green snake curls nearby, and the leaderboard, length counter and round minimap sit in the corners." width="1920" height="1200" loading="lazy" style="object-position:50% 45%">
-          <span class="gc-genre">Arcade</span>
-        </a>
-        <div class="body">
-          <h3>Coil</h3>
-          <p class="gc-blurb">Grow your snake and cut off the bigger ones.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 10</li><li>Bots</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Coil"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">An online snake arena. Eat glowing pellets to grow, boost to slip in front of other snakes, and when they run into your body their whole length spills out as food for you. Stay inside the red ring.</p>
-              <ul class="feats">
-                <li>Online arenas for up to 10 players: Quick match drops you into the busiest public arena, or pick a room code and send friends the invite link</li>
-                <li>Bots fill every online arena up to 12 snakes, run by whoever has been in the room longest</li>
-                <li>Hold click or Space to boost; boosting burns length and leaves a trail of food behind you</li>
-                <li>A live leaderboard, kill feed, minimap and a personal best saved in your browser</li>
-                <li>14 skins, from Candy Cane to Spectrum</li>
-                <li>Practice against 12 to 20 bots on Easy, Normal or Hard; Hard bots try to cut you off</li>
-              </ul>
-              <p class="note">Steer with the mouse, keyboard or a finger. Press Quick match, play in a room with friends, or practice against bots.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/coil/" data-invite="cl">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/trivium/" aria-label="Open Trivium" tabindex="-1">
-          <img src="/e63334287a3deaa3/trivium/preview.jpg" alt="Trivium contest on the host's screen: the question 'What is the capital of Poland?' with four colored answer tiles showing how many players picked each, Warsaw marked right, a fact about Warsaw's rebuilt Old Town, and live standings with points gained." width="1920" height="1200" loading="lazy" style="object-position:left top">
-          <span class="gc-genre">Trivia</span>
-        </a>
-        <div class="body">
-          <h3>Trivium</h3>
-          <p class="gc-blurb">About 1,800 questions: a daily ten or a live contest.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Live contests</li><li>Daily ten</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Trivium"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">Trivia with nearly 1,800 questions in 19 categories, from geography and space to money, mythology and New York City, and a fact behind every answer. Play a daily ten alone, or host a contest where everyone answers on their phone.</p>
-              <ul class="feats">
-                <li><b>Daily ten:</b> the same ten questions for everyone, easy to hard, with a shareable result and streaks</li>
-                <li>Quick play by category and difficulty, Survival with three lives, and a 60-second Blitz</li>
-                <li>Live contests: friends join with a 5-letter code or a QR code, and the host picks categories, difficulty, length and the timer</li>
-                <li>Points for speed and streaks, a breakdown of everyone's answers after each question, live standings and a podium</li>
-                <li>Autopilot runs a contest by itself, and the host can play along from the same screen</li>
-              </ul>
-              <p class="note">Works on a laptop, a projector or a phone. Host a contest from the menu, or join one with a code or an invite link.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/trivium/" data-invite="tv">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
         <a class="shot" href="/e63334287a3deaa3/showdown/" aria-label="Open Showdown" tabindex="-1">
           <img src="/e63334287a3deaa3/showdown/preview.jpg" alt="Showdown in play: a green stadium-shaped poker table with five bots seated around the rail, the turn showing ace, five, eight, eight, a bet of 200 in front of one player, your jack and queen at the bottom, and a coach panel giving your win chance against the pot odds." width="1920" height="1200" loading="lazy" style="object-position:50% 50%">
           <span class="gc-genre">Poker</span>
@@ -281,233 +594,31 @@
         </div>
       </article>
       <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/chromaflage/" aria-label="Open Chromaflage" tabindex="-1">
-          <img src="/e63334287a3deaa3/chromaflage/preview.jpg" alt="Chromaflage paint studio: a soft, round-headed doll hangs flat on the green damask wallpaper of a country house's grand hall, beside a wall lamp and under a gilt-framed portrait. Its head and chest are painted to match the wallpaper and blend in, while its hips and legs are still plain white. Through a doorway beside it is a terracotta-floored conservatory with palms and evening windows. The paint studio panel with the colour picker, tools, poses and body options is open on the right." width="1920" height="1200" loading="lazy" style="object-position:35% center">
-          <span class="gc-genre">Hide and seek</span>
+        <a class="shot" href="/e63334287a3deaa3/coil/" aria-label="Open Coil" tabindex="-1">
+          <img src="/e63334287a3deaa3/coil/preview.jpg" alt="Coil in play: a glowing mint snake boosts diagonally across a dark hexagon-tiled arena scattered with coloured pellets, a striped green snake curls nearby, and the leaderboard, length counter and round minimap sit in the corners." width="1920" height="1200" loading="lazy" style="object-position:50% 45%">
+          <span class="gc-genre">Arcade</span>
         </a>
         <div class="body">
-          <h3>Chromaflage</h3>
-          <p class="gc-blurb">Paint yourself to match the room. Or hunt the painted.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 8</li><li>Bots</li></ul>
+          <h3>Coil</h3>
+          <p class="gc-blurb">Grow your snake and cut off the bigger ones.</p>
+          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 10</li><li>Bots</li></ul>
           <details class="gc-more">
-            <summary aria-label="More about Chromaflage"><span aria-hidden="true"></span></summary>
+            <summary aria-label="More about Coil"><span aria-hidden="true"></span></summary>
             <div class="gc-info">
-              <p class="gc-long">Hide and seek where you paint yourself to disappear. Hiders start plain white and copy the room onto their own bodies, then freeze in a pose. Seekers get a blaster with limited ink and have to spot them by eye.</p>
+              <p class="gc-long">An online snake arena. Eat glowing pellets to grow, boost to slip in front of other snakes, and when they run into your body their whole length spills out as food for you. Stay inside the red ring.</p>
               <ul class="feats">
-                <li>Online rooms for up to 8 players: Quick match drops you into a public lobby, or pick a room code and send friends the invite link</li>
-                <li>A paint studio: brush, eyedropper that picks colours off anything in the room, fill, undo, a matte-to-glossy finish and a camo check that scores your paint job</li>
-                <li>A soft, rounded Doll or a slim Block body in three sizes, and poses to hide your outline: crouch under tables, lie under beds, squash flat, turn, or stick yourself to a wall up high like a poster</li>
-                <li>Two modes: Classic (tagged hiders are out) and Infection (tagged hiders join the seekers)</li>
-                <li>Misses cost ink and a reload, and the host can make hiders squeak every 20 to 45 seconds</li>
-                <li>Three big indoor maps full of patterns and furniture: Hollyhock Manor, a country house on a party night with a grand staircase; Marlowe Museum, an art museum after closing time; and Kirinoya Inn, a Japanese inn round a garden courtyard</li>
-                <li>Hide practice against a seeker bot that only notices you when your paint doesn't match what's behind you, and Seek practice against bots that paint themselves</li>
+                <li>Online arenas for up to 10 players: Quick match drops you into the busiest public arena, or pick a room code and send friends the invite link</li>
+                <li>Bots fill every online arena up to 12 snakes, run by whoever has been in the room longest</li>
+                <li>Hold click or Space to boost; boosting burns length and leaves a trail of food behind you</li>
+                <li>A live leaderboard, kill feed, minimap and a personal best saved in your browser</li>
+                <li>14 skins, from Candy Cane to Spectrum</li>
+                <li>Practice against 12 to 20 bots on Easy, Normal or Hard; Hard bots try to cut you off</li>
               </ul>
-              <p class="note">Best with a keyboard and mouse; phones get a joystick and buttons. Press Quick match, play in a room with friends, or practice alone.</p>
+              <p class="note">Steer with the mouse, keyboard or a finger. Press Quick match, play in a room with friends, or practice against bots.</p>
             </div>
           </details>
           <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/chromaflage/" data-invite="cf">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/spire/" aria-label="Open Spire" tabindex="-1">
-          <img src="/e63334287a3deaa3/spire/preview.jpg" alt="Spire mid-climb inside a glass tower: a purple climber in a gold crown stands on a mint checkpoint landing in a shower of confetti, a turquoise launch pad marked with chevrons waits beside it, a climber in a propeller cap stands on the platform it throws you to, another in a top hat slides across pale ice steps below, and one in a wizard hat waits higher up. The clock, the tower name, a coin count and a height bar striped in each section's colour are on screen." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Parkour race</span>
-        </a>
-        <div class="body">
-          <h3>Spire</h3>
-          <p class="gc-blurb">Race up a random tower. Mind the red, and grab the coins.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>Solo too</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Spire"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">A parkour race up a tower stacked from random sections, gentle at the bottom and nasty near the top: beams, spinning bars, vanishing tiles, ice, launch pads, gusts of wind and lasers. Every landing between sections is a checkpoint, and anything glowing red sends you back to it. Everyone in the room climbs the same tower against one clock, which runs twice as fast once someone reaches the top.</p>
-              <ul class="feats">
-                <li>Online rooms for up to 12 climbers: Quick match drops you into a public tower, or pick a room code and send friends the invite link</li>
-                <li>A new tower every round from 23 hand-built sections, each one checked by a bot that climbs it with the real movement, and a gold shortcut for the brave</li>
-                <li>Your place in the race beside the clock, split times at every landing, and a height bar showing where everyone is</li>
-                <li>Coins along the way and hats to spend them on (or unlock by levelling up), from a party hat to a propeller cap</li>
-                <li>Checkpoints can be turned off for the classic climb, where red means the bottom</li>
-                <li>Obby mode: 49 stages over seven themed worlds, and practice for any single section</li>
-              </ul>
-              <p class="note">Best with a keyboard and mouse (rebindable keys); phones get a joystick and buttons. Press Quick match, play in a room with friends, or climb on your own.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/spire/" data-invite="tw">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/turbo-trail/" aria-label="Open Turbo Trail" tabindex="-1">
-          <img src="/e63334287a3deaa3/turbo-trail/preview.jpg" alt="Turbo Trail in play on level 1-2, Gumdrop Hop: a blocky runner leaps between mint-green gumdrop stepping stones over a pink candy sea, leaving a curving rainbow trail, with a swirling portal ahead among giant lollipops and sugar cones. The level clock reads 2.62 at the top and a panel on the right lists the gold, silver and bronze times." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Speedrun obby</span>
-        </a>
-        <div class="body">
-          <h3>Turbo Trail</h3>
-          <p class="gc-blurb">25 quick levels on the clock. Chase gold, race friends.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>25 levels</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Turbo Trail"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">A speedrun obby in short bursts. Each level takes seconds if you know the line: hit the speed pads, bounce off the jump pads, wall-jump up the striped walls and dive through the portal before the clock gets away from you. Earn medals, beat your own ghost, then take on all 25 in one go or race friends online.</p>
-              <ul class="feats">
-                <li>25 levels across five worlds, Candy Coast, Neon City, Lava Forge, Frost Peaks and Star Drift, each about 6 to 12 seconds at gold pace</li>
-                <li>Speed pads, jump pads, climbing walls, moving, spinning, blinking and crumbling platforms, lasers, ice and low gravity</li>
-                <li>A clock that starts when you move, gold, silver and bronze medals, and a see-through ghost of your best run</li>
-                <li>Full run: all 25 levels on one clock, with green or red splits against your best at every portal</li>
-                <li>Stars from medals unlock three speed upgrades and eight trails in the Garage</li>
-                <li>Online races for up to 12 over one world, a mix of five levels or all 25; the other runners show up as ghosts</li>
-              </ul>
-              <p class="note">Best with a keyboard and mouse (rebindable keys); phones get a stick, a jump button and a restart button, best held sideways. Press Quick race, play in a room with friends, or run the levels on your own.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/turbo-trail/" data-invite="sr">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/escapade/" aria-label="Open Escapade" tabindex="-1">
-          <img src="/e63334287a3deaa3/escapade/preview.jpg" alt="Escapade in play: a classroom with mint walls and windows, where the floor between the rows of desks is glowing red lava. A blocky yellow escaper hops from desk to desk toward the teacher's desk and a gold door with a key sign, while other escapers with name tags (Maya, Jordan, Theo) jump across the desks, a blue gem glows on top of a bookshelf, a sign reads &quot;The floor is lava! Hop the desks. Find the key.&quot;, and the timer and level name sit along the top." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Escape obby</span>
-        </a>
-        <div class="body">
-          <h3>Escapade</h3>
-          <p class="gc-blurb">Parkour out of eight escape rooms. Find the key, get out.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>8 levels</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Escapade"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">A 3D escape-room obby. Every level is a themed set of rooms with one way out: hop the desks while the floor is lava, slip past laser curtains and spinning bars, ride carts and barrels, and solve the room's puzzle (a key, a keypad code hidden somewhere in the level, a recipe pressed in the right order, a block pushed onto a plate, a valve that holds a gate open, a fuse for the power) to reach the green EXIT. Play the eight levels alone for times and stars, or online, where the whole room plays the same level at once.</p>
-              <ul class="feats">
-                <li>Eight levels, gentle to hard: Detention, Lab Rats, Hot Kitchen, Toy Box, Down the Drain, The Vault, Orbit Station and The Warden</li>
-                <li>Puzzles: keys and keycards, keypad codes read off a board, foods pressed in a recipe's order, a block pushed onto a star, a valve that holds a gate open, a fuse that powers a bridge, three switches that shut down the Warden</li>
-                <li>Obstacles: lava, laser curtains, burners and spinning bars (anything red and glowing), moving carts, conveyor belts, crumbling floors, blinking tiles, trampolines, ladders and low gravity</li>
-                <li>Checkpoints in every level and a quick respawn; keys, codes and opened doors stay done</li>
-                <li>Three stars a level: escape, beat the target time, and find the hidden gem</li>
-                <li>Online rooms for up to 12 with an invite link, or Quick match: everyone plays the same level, each with their own copy of the puzzles, and the next level starts when everyone's out</li>
-              </ul>
-              <p class="note">Plays with a keyboard and mouse or a touch screen. Press Quick match, play in a room with friends, or play the levels on your own.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/escapade/" data-invite="er">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/updraft/" aria-label="Open Updraft" tabindex="-1">
-          <img src="/e63334287a3deaa3/updraft/preview.jpg" alt="Updraft: a climber in a cap and backpack walks up a giant pencil leaning into the sky high above a city. Dice, toy blocks, mugs, a desk lamp and plates hung on chains float along the route ahead, and the keyboard they climbed lies below, with the altitude, run clock and height bar on screen." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Climbing</span>
-        </a>
-        <div class="body">
-          <h3>Updraft</h3>
-          <p class="gc-blurb">Climb 1,000 m to the edge of space. No checkpoints.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 12</li><li>Solo too</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Updraft"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">One way to go, and it's a thousand metres. Climb out of a scrapyard street, over a pile of giant lost things and through the clouds to the edge of space. There are no checkpoints: miss a jump and you fall until something catches you, maybe the street.</p>
-              <ul class="feats">
-                <li>One continuous course from a city street to a summit 1000 m up, through five zones that change with the altitude: a tower and its cranes, giant everyday things, floating islands, thin air and the edge of space</li>
-                <li>Standing jumps are short, running jumps go farther and sprint jumps farthest, with a ledge grab for jumps that only just fall short</li>
-                <li>Lifts, swings, drifting clouds, a turning island, fans that lift you, bouncy mushrooms, ice that cracks, and a few launch pads that skip a stretch</li>
-                <li>Your run is saved where you stand, so you can stop and come back; best height, best time and summits are kept</li>
-                <li>Online rooms for up to 12 climbers with a live board of who's highest; after the top, watch the others climb</li>
-              </ul>
-              <p class="note">Best with a keyboard and mouse; phones get a joystick and buttons. Climb solo, press Quick match, or play in a room with friends.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/updraft/" data-invite="up">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/odd-one-out/" aria-label="Open Odd One Out" tabindex="-1">
-          <img src="/e63334287a3deaa3/odd-one-out/preview.jpg" alt="Odd One Out in the shopping mall's food court: a hunter in an orange vest takes aim across rows of teal plastic chairs and round tables, and a tracer streaks toward one of the chairs, which is really a player in disguise. The clock, the props and hunters left, and the hunter's health and ammo are on screen." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Prop hunt</span>
-        </a>
-        <div class="body">
-          <h3>Odd One Out</h3>
-          <p class="gc-blurb">Props vs Hunters: become anything and keep very still.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 16</li><li>Bots</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Odd One Out"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">Props vs Hunters. Props aim at anything in the room and turn into an exact copy of it: a cardboard box, an office chair, a garden gnome. Then they park beside the real ones and keep still. Hunters get a rifle and a few minutes, and every shot at a real object costs them health.</p>
-              <ul class="feats">
-                <li>Online rooms for up to 16 players: Quick match drops you into a public lobby, or pick a room code and send friends the invite link</li>
-                <li>More than fifty things to turn into, each copied exactly (shape, colours, size and the way it faces), with lock rotation, turning keys and a line-up button that matches the real ones nearby</li>
-                <li>Matches of 3 to 10 rounds: a hide phase while the hunters wait in a locked room, then the hunt, and everyone takes turns hunting</li>
-                <li>Every prop pings every few seconds (faster in the last minute), so hunters can hear roughly where to look</li>
-                <li>Three maps packed with hundreds of objects: Starlight Galleria, a shopping mall; Willow Lane, a house with a garage and a yard; and Brightside Office</li>
-                <li>Hunt practice against bots that hide by copying nearby objects, and Hide practice against hunter bots that notice movement and things out of place</li>
-              </ul>
-              <p class="note">Best with a keyboard and mouse; phones get a joystick, buttons and drag to look. Press Quick match, play in a room with friends, or practice alone.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/odd-one-out/" data-invite="ph">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/tumble-trials/" aria-label="Open Tumble Trials" tabindex="-1">
-          <img src="/e63334287a3deaa3/tumble-trials/preview.jpg" alt="Tumble Trials on Whirligig Way: a crowd of round, colourful beans with smiling faces and name tags runs off the start pad under a pink GO! arch onto a spinning pink disc over purple slime, with the round, the qualified count and the timer along the top." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Party show</span>
-        </a>
-        <div class="body">
-          <h3>Tumble Trials</h3>
-          <p class="gc-blurb">A wobbly knockout show. Last bean standing wins.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · up to 16</li><li>Bots</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Tumble Trials"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">A wobbly knockout party show for up to 16 players. Race through obstacle courses before the qualifying spots fill up, survive the sweepers, and be the last bean standing on the vanishing honeycomb to win the crown.</p>
-              <ul class="feats">
-                <li>Online rooms for up to 16 players with an invite link, or Quick match into a public lobby; the host picks the show length, bots to fill seats and bumping on or off</li>
-                <li>Shows of two to four rounds: races where only the first few qualify, survivals, then a final for the crown</li>
-                <li>Five races (spinning discs and hammers, tipping seesaws, doors that may be fake, bounce pads and fans, swinging wrecking balls), two survivals and two finals, including three floors of hexagon tiles that vanish after you touch them</li>
-                <li>Run, jump, dive and grab, with bumping, tumbles when something hits you hard, and checkpoints in races</li>
-                <li>A solo show against bots, practice on any level, your own colour, face and pattern, and stats for shows, crowns and rounds qualified</li>
-              </ul>
-              <p class="note">Plays with a keyboard and mouse or a touch screen. Press Quick match, play in a room with friends, or run a solo show against bots.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/tumble-trials/" data-invite="ko">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/deepword/" aria-label="Open Deepword" tabindex="-1">
-          <img src="/e63334287a3deaa3/deepword/preview.jpg" alt="Deepword in play: a dark navy card in the midnight zone asks &quot;Name a sea creature&quot;, with &quot;anglerfish&quot; typed into a green-outlined answer box ticked as valid. Anglerfish with glowing lures drift above the card in the deep blue water, the depth pill reads 2,350 m · Midnight, and a depth gauge runs down the right edge." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Word game</span>
-        </a>
-        <div class="body">
-          <h3>Deepword</h3>
-          <p class="gc-blurb">A daily word dive: the rarer your answer, the deeper you go.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li class="on">Online · 2 to 12</li><li>Daily</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Deepword"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">A daily word dive. Each day brings eight open-ended prompts, the same for everyone, and the rarer your answer, the deeper you sink, from the sunlit surface down to the trench. Then take it online in Blowfish Brawl, where an answer someone else already sent puffs you up.</p>
-              <ul class="feats">
-                <li>Daily Dive: eight prompts a day, the same for everyone, one each from geography, animals, food, words, pop culture, science, sports and everyday life</li>
-                <li>Rarity comes from what other divers answered today, so the answer nobody else thought of sinks you deepest</li>
-                <li>332 prompts and more than 13,000 answers, all written for the game; spelling, accents and &quot;the&quot; don&#x27;t matter</li>
-                <li>A share card with emoji squares, a streak, a best depth and a calendar of your month</li>
-                <li>Blowfish Brawl for 2 to 12 players: one prompt for the room, a shrinking timer, an answer someone already sent puffs you up, and three puffs pops you; bots fill small rooms</li>
-                <li>Practice with random prompts any time</li>
-              </ul>
-              <p class="note">Type your answer and press Enter. Works with a keyboard or a phone's own keyboard.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/deepword/" data-invite="dw">▶ Play</a>
+            <a class="btn primary" href="/e63334287a3deaa3/coil/" data-invite="cl">▶ Play</a>
           </div>
         </div>
       </article>
@@ -515,68 +626,12 @@
     </section>
     <section class="gs gs-solo" aria-labelledby="gs-solo">
       <div class="gs-head">
-        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h3V8a2 2 0 1 1 4 0v3h3v3a2 2 0 1 0 0 4v2H6v-3a2 2 0 1 0 0-4z"/></svg></span>
-        <div class="gs-tt"><h2 id="gs-solo">Single player</h2><p>Puzzles for one. Your best scores still go on the Leaderboards.</p></div>
-        <span class="gs-n">4 games</span>
+        <span class="gs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-6.6 7-6.6s7 2.7 7 6.6"/></svg></span>
+        <div class="gs-tt"><h2 id="gs-solo">Single player</h2><p>Drop-and-stack games for one. Your best scores still go on the Leaderboards.</p></div>
+        <span class="gs-n">2 games</span>
       </div>
       <div class="gc-grid">
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/gridpop/" aria-label="Open Gridpop" tabindex="-1">
-          <img src="/e63334287a3deaa3/gridpop/preview.jpg" alt="Gridpop in play: a gold &quot;Amazing!&quot; with &quot;+90&quot; and &quot;Combo ×3&quot; bursts over an 8 × 8 navy board as two rows pop into coloured sparks, with glossy coloured blocks below and two pieces waiting in the tray." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Puzzle</span>
-        </a>
-        <div class="body">
-          <h3>Gridpop</h3>
-          <p class="gc-blurb">Drop blocks on an 8 × 8 grid and pop full lines.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li>Solo</li><li>Saves every move</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about Gridpop"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">A block-placement puzzle on an 8 × 8 board. Drag three pieces at a time onto the grid and fill whole rows or columns to pop them. Pieces can&#x27;t be turned, and clearing again within a few moves builds a combo. The game ends when nothing in your tray fits anywhere.</p>
-              <ul class="feats">
-                <li>41 fixed pieces, from single squares to 3 × 3 blocks, Ls, Ts, zigzags and staircases, dealt three at a time with big pieces kept rare</li>
-                <li>Rows and columns clear together, and more lines in one move score much more (10, 30, 60, 100, 150, 210)</li>
-                <li>A combo multiplier that keeps going as long as you clear again within your next three placements</li>
-                <li>A preview shows where the piece will land and lights up the lines it would clear</li>
-                <li>Your game is saved after every move, with a best score kept in your browser</li>
-              </ul>
-              <p class="note">Plays with a mouse, a touch screen or the keyboard (1 2 3 to pick, arrows to move, Enter to place).</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/gridpop/">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
-        <a class="shot" href="/e63334287a3deaa3/2048/" aria-label="Open 2048" tabindex="-1">
-          <img src="/e63334287a3deaa3/2048/preview.jpg" alt="2048 in play: a 4 × 4 tan board of rounded number tiles, cream 2s and 4s, orange 8 to 32, red 64 and 128 and golden 256 to 2048, with a 512 tile just formed in the bottom row." width="1920" height="1200" loading="lazy">
-          <span class="gc-genre">Puzzle</span>
-        </a>
-        <div class="body">
-          <h3>2048</h3>
-          <p class="gc-blurb">Slide and join tiles to 2048, or go big on 6 × 6.</p>
-          <ul class="gc-chips" aria-label="At a glance"><li>Solo</li><li>4 modes</li></ul>
-          <details class="gc-more">
-            <summary aria-label="More about 2048"><span aria-hidden="true"></span></summary>
-            <div class="gc-info">
-              <p class="gc-long">The number-sliding puzzle on a 4 × 4 board. Slide every tile at once, join matching numbers into one tile worth double, and keep the board from filling up long enough to build a 2048 tile. After you win you can keep going for 4096 and beyond. Four modes: Classic, a 6 × 6 Mega board, and College and Dessert, where the tiles climb a ladder of colleges or desserts instead of numbers.</p>
-              <ul class="feats">
-                <li>Arrow keys or WASD (change them in Controls), or swipe on a phone; one move per swipe</li>
-                <li>Smooth slides, a pop on every join, a floating &quot;+N&quot; by the score, and confetti at 2048</li>
-                <li>Strict mode (on by default) is the game with no Undo; switch it off for a one-step Undo</li>
-                <li>Each mode keeps its own game in progress, best score and leaderboard</li>
-                <li>The game in progress, best score and settings save in this browser, so you can close the tab and finish later</li>
-              </ul>
-              <p class="note">Plays with the keyboard, a mouse drag or a swipe.</p>
-            </div>
-          </details>
-          <div class="actions">
-            <a class="btn primary" href="/e63334287a3deaa3/2048/">▶ Play</a>
-          </div>
-        </div>
-      </article>
-      <article class="project gc">
+      <article class="project gc wide">
         <a class="shot" href="/e63334287a3deaa3/stackfall/" aria-label="Open Stackfall" tabindex="-1">
           <img src="/e63334287a3deaa3/stackfall/preview.jpg" alt="Stackfall in Sand mode: a piece falls toward a mountain of red, yellow, green and blue sand in a dark well, with the score on the left, the next pieces on the right and a dashed red danger line near the top." width="1920" height="1200" loading="lazy">
           <span class="gc-genre">Puzzle</span>
@@ -603,7 +658,7 @@
           </div>
         </div>
       </article>
-      <article class="project gc">
+      <article class="project gc wide">
         <a class="shot" href="/e63334287a3deaa3/melon-merge/" aria-label="Open Melon Merge" tabindex="-1">
           <img src="/e63334287a3deaa3/melon-merge/preview.jpg" alt="Melon Merge in play: a tall glass jar on a wooden base, over half full of smiling cartoon fruit (a big netted melon, a pineapple with a spiky crown, a peach, pears, apples, tangerines, persimmons, grapes and cherries), a grape hanging above the opening on its aim line, the red dashed danger line near the top, the score of 2545 and a persimmon as the next fruit on the left, and the 11-fruit evolution guide from cherry to watermelon on the right." width="1920" height="1200" loading="lazy">
           <span class="gc-genre">Physics puzzle</span>
@@ -641,6 +696,32 @@
   </section>
   <footer>© 2026 Arjun</footer>
 </div>
+<script>
+// The Daily Puzzles card: how many daily puzzles are done today and the overall streak, read from each game's
+// daily:<slug> record (and Deepword's deepword:days), the same records the Daily Puzzles page reads.
+(function(){
+  var el=document.getElementById('dailyToday');if(!el)return;
+  function pad(n){return (n<10?'0':'')+n}
+  function key(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())}
+  try{
+    var t=new Date(),today=key(t),done=0,days={},i,k,r,o;
+    var kept=JSON.parse(localStorage.getItem('daily-hub:days')||'[]');if(Array.isArray(kept))kept.forEach(function(x){days[x]=1});
+    for(i=0;i<localStorage.length;i++){
+      k=localStorage.key(i);if(!/^daily:[a-z0-9-]+$/.test(k))continue;
+      o=JSON.parse(localStorage.getItem(k)||'null');if(!o||!o.days)continue;
+      for(r in o.days)if(o.days[r]&&o.days[r].done===true)days[r]=1;
+      if(o.days[today]&&o.days[today].done===true)done++;
+    }
+    o=JSON.parse(localStorage.getItem('deepword:days')||'null');
+    if(o&&typeof o==='object'){for(r in o)days[r]=1;if(o[today]!=null)done++}
+    var n=0,d=new Date(t.getFullYear(),t.getMonth(),t.getDate());if(!days[key(d)])d.setDate(d.getDate()-1);
+    while(days[key(d)]&&n<5000){n++;d.setDate(d.getDate()-1)}
+    if(!done&&!n)return;
+    el.textContent=(done?'✓ '+done+' done today':'Nothing done yet today')+(n?' · 🔥 '+n+(n===1?' day':' days')+' in a row':'');
+    el.hidden=false;
+  }catch(e){}
+})();
+</script>
 <script src="/analytics/tracker.js" data-site="back-room" defer></script>
 <script src="/account/account.js" defer></script>
 <script src="/account/wheel.js" defer></script>
