@@ -69,7 +69,7 @@
     <p class="crumbs"><a href="../">Home</a> / <a href="../engineering/">Engineering Projects</a> / Project Daedalus</p>
     <p class="kicker">Build plan · hardware, firmware and case</p>
     <h1>Project Daedalus</h1>
-    <p class="intro">A compact Bluetooth game controller with one drift-free stick, designed from the start to be made in a batch of 30, for about $22 of parts each.</p>
+    <p class="intro">A compact Bluetooth game controller with one drift-free stick, designed from the start to be made in a batch of 30, for $22 to $27 of parts each.</p>
   </header>
   <article class="guide">
 
@@ -122,6 +122,7 @@
 <li><a href="#decisions">The five design decisions</a></li>
 <li><a href="#parts">Parts list</a></li>
 <li><a href="#shop">What to buy first, with links</a></li>
+<li><a href="#options">Options for each part</a></li>
 <li><a href="#wiring">Wiring and pin assignments</a></li>
 <li><a href="#firmware">Firmware</a></li>
 <li><a href="#test">Test a controller in the browser</a></li>
@@ -230,7 +231,7 @@
 <tbody>
 <tr><td>Stick</td><td>YTL 13-series Hall module, YHE-YG13-013 SH3B166A5</td><td>LCSC, no. C42410941</td><td class="num">$1.35 to $2.20</td><td>Runs on 1.7 to 3.6 V. The TMR version, YTMR-YG13-006 (C42411048), uses a tenth of the current and costs about $2.15 to $2.85</td></tr>
 <tr><td>Thumb cap</td><td>Replacement thumbstick cap for a 4 mm D-shaped shaft</td><td>AliExpress, eBay, Amazon</td><td class="num">about $0.20</td><td>Price unconfirmed. Or print one</td></tr>
-<tr><td>Battery</td><td>3.7 V lithium-polymer cell, size 603450, 1,200 mAh, with protection board and a JST-PH 2.0 plug</td><td>AliExpress; Adafruit in the US</td><td class="num">about $3</td><td>AliExpress price unconfirmed. US shops charge $7.40 to $9, which the budget cannot carry. Buy all 30 from one listing</td></tr>
+<tr><td>Battery</td><td>3.7 V lithium-polymer cell, size 603450, 1,200 mAh, with protection board and a JST-PH 2.0 plug</td><td>AliExpress; Adafruit in the US</td><td class="num">$3 to $7.41</td><td>See the <a href="#options">options</a>: $7.41 is the cheapest price that could be confirmed; about $3 from marketplace sellers is unconfirmed. Buy all 30 from one listing</td></tr>
 <tr><td>Rubber pad</td><td>Conductive rubber pad set for a Super Nintendo style controller</td><td>eBay, AliExpress, retro repair shops</td><td class="num">$2.25 to $2.99</td><td>$2.99 a set from Hand Held Legend; about $2.25 in a lot of 100 on eBay. Buy one first and measure it</td></tr>
 <tr><td>Case</td><td>About 70 g of PETG filament</td><td>Any filament brand</td><td class="num">about $1.50</td><td>Two shells, four button caps, four plungers, three small caps</td></tr>
 <tr><td>Fixings</td><td>6 brass M2 heat-set inserts, 6 M2 × 8 mm screws, thin foam tape</td><td>Amazon, AliExpress</td><td class="num">about $0.35</td><td></td></tr>
@@ -272,12 +273,101 @@
 
 <h3>For the two prototype units and the batch</h3>
 <ul>
-<li><b>Battery.</b> This is the unsolved one. US shops that could be checked charge $7.40 to $9 for a protected 1,200 mAh cell (<a href="https://www.adafruit.com/product/258" rel="noopener">Adafruit's</a> is $8.96 in tens, and it is a longer, thinner shape than the 603450 cell the case is drawn for). The $3 in the cost table assumes buying from AliExpress, whose pages could not be opened to confirm it.</li>
+<li><b>Battery.</b> Still the weak point of the budget: see the <a href="#options">battery options</a>. The cheapest listing that could be read is $7.41 a cell in a pack of ten; about $3 from marketplace sellers is unconfirmed.</li>
 <li><b>Inserts:</b> <a href="https://www.prusa3d.com/product/heat-set-inserts-m2-short-100-pcs/" rel="noopener">Heat Set Inserts, M2 short, 100 pieces</a>, Prusa, $11.99 (read).</li>
 <li><b>Screws:</b> M2 × 8 mm pan-head machine screws, about $10 a hundred from industrial suppliers.</li>
 <li><b>Filament:</b> <a href="https://www.prusa3d.com/product/prusament-petg-jet-black-1kg/" rel="noopener">Prusament PETG, 1 kg</a>, $23.99 to $29.99 (read). One spool makes about 13 cases.</li>
 <li><b>Rubber pads in bulk:</b> $2.99 a set from Hand Held Legend with no bulk price; an eBay lot of 100 sets for about $225 was seen in a search result only.</li>
 </ul>
+
+<h2 id="options">Options for each part</h2>
+<p>Two or three choices for everything you buy, with the one this plan assumes marked <b>Pick</b>. Prices are from the listing pages on 14 and 15 November 2026 unless a row says "search result", which means the shop's page would not load and the price is unconfirmed.</p>
+
+<h3>Stick</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Option</th><th>Listing</th><th>Seller</th><th class="num">Per stick</th><th>Why you would choose it</th></tr></thead>
+<tbody>
+<tr><td><b>Pick</b>: cheapest</td><td><a href="https://www.lcsc.com/product-detail/C42410941.html" rel="noopener">YTL YHE-YG13-013 SH3B166A5</a>, Hall</td><td>LCSC</td><td class="num">about $2.20; less in hundreds</td><td>The one the board's holes are drawn from, with a full datasheet. Ships from China with the other LCSC parts</td></tr>
+<tr><td>Lower power</td><td><a href="https://www.lcsc.com/product-detail/C42411048.html" rel="noopener">YTL YTMR-YG13-006 SH3B174A5</a>, TMR</td><td>LCSC</td><td class="num">about $2.15 to $2.85</td><td>Same holes and pin order. A tenth of the current and a finer signal</td></tr>
+<tr><td>Small packs, quicker</td><td><a href="https://aknes.com" rel="noopener">AKNES HallPi V7 TMR Joysticks, without cap</a></td><td>AKNES</td><td class="num">$3.00 ($5.99 a pair)</td><td>Sold as controller repair parts. Check the pin order against the board before soldering: these are made for a PlayStation or Xbox board</td></tr>
+<tr><td>Best known brand</td><td>GuliKit V6 TMR Joystick, 1 pair (NS51)</td><td>AKNES; also <a href="https://handheldlegend.com" rel="noopener">Hand Held Legend</a> with caps at $16.49 a pair</td><td class="num">$5.50 to $8.25</td><td>The brand most repair guides use. Same caution about pin order</td></tr>
+</tbody></table></div>
+
+<h3>Battery</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Option</th><th>Listing</th><th>Seller</th><th class="num">Each</th><th>Size, and what to know</th></tr></thead>
+<tbody>
+<tr><td><b>Pick</b>: fits the case</td><td><a href="https://pmdway.com/products/lithium-ion-polymer-battery-3-7v-1200mah" rel="noopener">Lithium Ion Polymer Battery 3.7 V 1200 mAh 603450</a></td><td>PMD Way</td><td class="num">$7.41 in a 10-pack ($74.11); $23.64 for one</td><td>50 × 34 × 6 mm, JST-PH 2.0 plug. Ships from China or Hong Kong in 3 to 4 weeks. The listing does not say whether a protection board is fitted or which way the plug is wired</td></tr>
+<tr><td>Confirmed and quick</td><td><a href="https://www.adafruit.com/product/1578" rel="noopener">Lithium Ion Polymer Battery 3.7 V 500 mAh</a></td><td>Adafruit</td><td class="num">$7.16 in tens; $7.95 for one</td><td>29 × 36 × 4.75 mm, protected, JST-PH, in stock in the US. Fits the pocket with room to spare, for roughly 10 to 16 hours of play</td></tr>
+<tr><td>Most capacity, wrong shape</td><td><a href="https://www.adafruit.com/product/258" rel="noopener">Lithium Ion Polymer Battery 3.7 V 1200 mAh</a></td><td>Adafruit</td><td class="num">$8.96 in tens</td><td>34 × 62 × 5 mm: 8 mm too long for the pocket as drawn. Usable only if you lengthen <code>battery_box</code> in the case model and check it clears the stick's pins</td></tr>
+<tr><td>Cheapest, unconfirmed</td><td>"603450 1200 mAh PH2.0" cells from Amazon or AliExpress sellers</td><td>Amazon, AliExpress</td><td class="num">about $3 to $5</td><td>Search results only. Often good value, but check for a protection board and test the plug's polarity on every one</td></tr>
+</tbody></table></div>
+<p>No US shop that could be checked stocks a protected 603450 cell with the right plug. Whichever you buy, test the plug with a multimeter before it goes near the board.</p>
+
+<h3>Development board for the breadboard prototype</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Option</th><th>Listing</th><th>Seller</th><th class="num">Price</th><th>Pins</th></tr></thead>
+<tbody>
+<tr><td><b>Pick</b></td><td><a href="https://www.digikey.com/en/products/detail/espressif-systems/ESP32-C6-DEVKITC-1-N8/17728861" rel="noopener">ESP32-C6-DEVKITC-1-N8</a></td><td>DigiKey (Adafruit lists it at $9.95, out of stock)</td><td class="num">$9.00</td><td>Carries the same module as the finished board and brings out every pin the firmware uses</td></tr>
+<tr><td>Smaller, cheaper</td><td>ESP32 C6 Supermini Dev Board</td><td>AmeriDroid</td><td class="num">$6.95</td><td>No GPIO10, so L1 has nowhere to go without changing the sketch</td></tr>
+<tr><td>Smallest</td><td>Seeed Studio XIAO ESP32-C6</td><td>Seeed Studio</td><td class="num">$5.20</td><td>Too few pins on its edges for this controller. Good for other projects, not this one</td></tr>
+</tbody></table></div>
+
+<h3>Rubber pad</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Option</th><th>Listing</th><th>Seller</th><th class="num">Per set</th><th>What is in it</th></tr></thead>
+<tbody>
+<tr><td><b>Pick</b></td><td><a href="https://handheldlegend.com/products/super-nes-controller-silicone-membranes" rel="noopener">Super NES Controller Silicone Membranes</a></td><td>Hand Held Legend</td><td class="num">$2.99</td><td>D-pad, the four-button pad this design uses, Start / Select, and both shoulder pads</td></tr>
+<tr><td>Same price</td><td>Silicone Pads for Super Nintendo</td><td>Retro Modding</td><td class="num">$2.99</td><td>D-pad, four-button pad and Start / Select</td></tr>
+<tr><td>Bulk</td><td>Lot of 100 replacement rubber button sets, SNES controller</td><td>eBay</td><td class="num">about $2.25</td><td>Search result only. Ask the seller for a photo of the four-button pad before buying a hundred</td></tr>
+</tbody></table></div>
+<p>Pads from different makers differ slightly: one buyer's review measured a 4 mm carbon pill where the original has 5.1 mm. Buy all the pads for a batch from one seller, after measuring a sample.</p>
+
+<h3>Inserts, screws and filament</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Item</th><th>Option</th><th>Seller</th><th class="num">Price</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td rowspan="2">M2 brass heat-set inserts</td><td><b>Pick</b>: <a href="https://www.prusa3d.com/product/heat-set-inserts-m2-short-100-pcs/" rel="noopener">Heat Set Inserts, M2 short, 100 pcs</a></td><td>Prusa</td><td class="num">$11.99</td><td>CNC Kitchen's design. The M2 × 3 insert is 3.0 mm long and 3.6 mm across, and wants the 3.2 mm hole the case already has</td></tr>
+<tr><td>ruthex Threaded Insert M2, 70 pieces, M2 × 4</td><td>3DJake</td><td class="num">$8.79</td><td>Search result only. 4 mm long: fits, since the holes are 4.5 mm deep</td></tr>
+<tr><td>M2 × 8 mm screws</td><td>Socket-head or pan-head, stainless, 100 pack</td><td>McMaster-Carr, Zoro, Amazon</td><td class="num">about $10 to $45</td><td>Prices vary wildly for the same screw; none could be confirmed from a listing page. A head up to 4 mm across fits the 4.4 mm recess</td></tr>
+<tr><td rowspan="3">PETG, 1 kg</td><td>Cheapest: Overture High Speed PETG</td><td>Overture</td><td class="num">$14.99</td><td></td></tr>
+<tr><td><b>Pick</b>: <a href="https://shop.polymaker.com/products/polymaker-petg" rel="noopener">Polymaker PETG</a></td><td>Polymaker</td><td class="num">$18.99</td><td></td></tr>
+<tr><td>Most consistent: <a href="https://www.prusa3d.com/product/prusament-petg-jet-black-1kg/" rel="noopener">Prusament PETG Jet Black</a></td><td>Prusa</td><td class="num">$23.99</td><td>Tight diameter tolerance, so clearances come out the same on every case</td></tr>
+<tr><td>Tougher in heat</td><td>Polymaker ASA</td><td>Polymaker</td><td class="num">$24.99</td><td>Holds its shape to about 100 °C. Needs an enclosed printer and ventilation</td></tr>
+<tr><td>Hides layer lines</td><td>Fiberon PETG-rCF08 (carbon-fibre filled)</td><td>Polymaker</td><td class="num">$19.99</td><td>Matt finish that hides layers well. Needs a hardened nozzle</td></tr>
+</tbody></table></div>
+
+<h3>Soldering and bench tools</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Item</th><th>Option</th><th>Seller</th><th class="num">Price</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td rowspan="4">Soldering iron</td><td>Cheapest: Soldering Iron, 30 W</td><td>SparkFun</td><td class="num">$11.50</td><td>No temperature control. Enough for the practice kit; not what you want for 30 sticks</td></tr>
+<tr><td><b>Pick</b>: <a href="https://www.adafruit.com/product/3685" rel="noopener">Adjustable 60W Pen-Style Soldering Iron</a></td><td>Adafruit</td><td class="num">$19.95</td><td>Adjustable, plugs into the wall</td></tr>
+<tr><td>Better: <a href="https://pine64.com/product/pinecil-smart-mini-portable-soldering-iron/" rel="noopener">Pinecil V2</a></td><td>Pine64</td><td class="num">$25.99</td><td>Heats in seconds and holds its temperature. Needs a USB-C charger that gives 20 V at 3 A, such as Pine64's PinePower 65 W ($24.99), and a cable</td></tr>
+<tr><td>Bench station: Weller WLSK3012A, or Hakko FX-888DX</td><td>SparkFun</td><td class="num">$64.95; about $125</td><td>Worth it only if you expect to keep soldering after this project. Hakko price from a search result</td></tr>
+<tr><td rowspan="2">Solder</td><td><b>Pick</b>: <a href="https://www.adafruit.com/product/734" rel="noopener">SAC305 lead-free, 0.031", rosin core, 100 g</a></td><td>Adafruit</td><td class="num">$29.95</td><td>Lead-free needs the iron about 20 °C hotter and flows less easily</td></tr>
+<tr><td>Leaded 63/37, 0.031", 100 g</td><td>SparkFun</td><td class="num">$24.95</td><td>Easier to learn with. This one has a water-soluble core: wash the joints with water afterwards. Wash your hands after handling leaded solder</td></tr>
+<tr><td>Flux and wick</td><td>Chip Quik no-clean flux pen; solder wick 0.8 mm</td><td>Adafruit</td><td class="num">$7.95; $2.95</td><td>Flux makes a reluctant joint flow; wick removes a mistake</td></tr>
+<tr><td rowspan="2">Multimeter</td><td><b>Pick</b>: <a href="https://www.sparkfun.com/products/12966" rel="noopener">Digital Multimeter - Basic</a></td><td>SparkFun</td><td class="num">$21.50</td><td></td></tr>
+<tr><td>Pocket Autoranging Digital Multimeter</td><td>Adafruit</td><td class="num">$24.95</td><td>Picks the range for you</td></tr>
+<tr><td rowspan="2">Calipers</td><td><b>Pick</b>: Solar Digital Calipers</td><td>Adafruit</td><td class="num">$14.95</td><td></td></tr>
+<tr><td>Digital Caliper, 0 to 150 mm</td><td>iFixit</td><td class="num">$39.95</td><td>Reads to 0.01 mm</td></tr>
+<tr><td>Holding the work</td><td>PCB clamp holder, Pro's Kit SN-390; or a "helping hands" stand</td><td>Adafruit</td><td class="num">$19.95; $6.95</td><td>The clamp is much the better of the two for a board this size</td></tr>
+<tr><td>Bench</td><td>Insulated silicone rework mat; safety glasses</td><td>Adafruit; SparkFun</td><td class="num">$9.95; $5.10</td><td>Wear the glasses when cutting leads: the offcuts fly</td></tr>
+<tr><td>Charger for the controller</td><td>Any 5 V USB charger or computer port; for example 5 V 1 A USB power supply</td><td>Adafruit</td><td class="num">$5.95</td><td>The controller takes 0.4 A and does not need a fast charger</td></tr>
+</tbody></table></div>
+
+<h3>Who makes the board</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Service</th><th>Boards</th><th>Assembly</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><b>Pick</b>: JLCPCB</td><td>Yes</td><td>Yes, from its own parts stock</td><td>The parts list on this page uses its part numbers. Charges US import duty at checkout</td></tr>
+<tr><td>PCBWay</td><td>Yes; advertises $5 for 10 small boards</td><td>Yes; advertises $29 for 20 boards, 3 to 5 days, parts bought from DigiKey, Mouser and others</td><td>The nearest like-for-like alternative. The parts list would need re-matching to its suppliers</td></tr>
+<tr><td>Seeed Fusion</td><td>Yes; $9.90 for 10 small boards</td><td>Yes, from 7 working days, with free shipping on assembly orders</td><td>No minimum order</td></tr>
+<tr><td>Aisler</td><td>Yes, made in Europe, from €14.20</td><td>Yes, within 6 business days</td><td>Free worldwide shipping; made outside China, which may matter for duty</td></tr>
+<tr><td>OSH Park</td><td>Yes, made in the US, gold finish as standard: $5 per square inch for three boards, so about $43.50 for three of these</td><td>No</td><td>Good for the first three bare boards if you are willing to solder every part by hand, which is a hard first project</td></tr>
+</tbody></table></div>
+<p>None of these sites said how they handle US import duty, and none has quoted this board. The advertised prices are for small simple boards; treat them as a guide to which to ask for a quote.</p>
 
 <h2 id="wiring">Wiring and pin assignments</h2>
 <p>Every button connects its pin to ground when pressed; the chip's built-in pull-up resistors hold the pins high otherwise. These numbers are the ESP32-C6's GPIO numbers and are the ones the firmware uses.</p>
@@ -561,7 +651,7 @@
 
 <h2 id="cost">Cost at 10, 30, 50 and 200</h2>
 <div class="callout dd-status">
-<p><b>The $10 to $15 target is not met.</b> A realistic figure at 30 units is about <b>$20 per controller before US import duty and about $22.50 with it</b>. Even at 200 units it is about $14.50 before duty. Four things set it: the radio module ($3.48), the battery (about $3), the rubber pad ($3), and the 35 % US import duty JLCPCB adds to boards and assembly at checkout.</p>
+<p><b>The $10 to $15 target is not met.</b> A realistic figure at 30 units is <b>$22.50 to $27 per controller with US import duty</b>, depending on the battery: $22.50 if a $3 cell from Amazon or AliExpress proves good, $27 with the cheapest cell whose price could be confirmed ($7.41). Even at 200 units it is about $14.50 before duty with the cheap cell. Four things set it: the radio module ($3.48), the battery, the rubber pad ($3), and the 35 % US import duty JLCPCB adds to boards and assembly at checkout.</p>
 </div>
 <div class="dd-scroll"><table>
 <thead><tr><th>Batch</th><th class="num">Per unit, before US duty</th><th class="num">Per unit, with duty</th><th class="num">Whole batch, with duty</th><th>Board assembly service</th></tr></thead>
@@ -572,7 +662,7 @@
 <tr><td>200</td><td class="num">about $14.50</td><td class="num">about $16.50</td><td class="num">about $3,300</td><td>Standard</td></tr>
 </tbody></table></div>
 <p>JLCPCB's cheap Economic assembly service stops at 50 boards. Beyond that it is the Standard service, which costs more to set up and needs edge rails added to a board this narrow; at 200 the larger quantity more than pays for that.</p>
-<p>Treat every figure as within about $3 either way. The battery price assumes AliExpress, which could not be checked; from the US shops that could, a protected cell is $7.40 to $9, which would add $4 to $6 a unit. Shipping, the bare-board price and the shoulder switch price are estimates too.</p>
+<p>The table assumes the $3 battery. With the $7.41 one, add $4.40 to every row. Treat every figure as within about $3 either way: shipping, the bare-board price and the shoulder switch price are estimates too.</p>
 
 <h3>Where the $22.50 goes, at 30 units</h3>
 <div class="dd-scroll"><table>
@@ -584,7 +674,7 @@
 <tr><td>US import duty, 35 % of the three lines above</td><td class="num">$2.80</td><td>JLCPCB's stated rate; exactly what it is charged on is not stated</td></tr>
 <tr><td>Shipping the boards</td><td class="num">$1.65</td><td>A guess. JLCPCB only shows shipping at checkout, and one buyer reported $169 for express shipping on a 50-board assembled order in April 2026</td></tr>
 <tr><td>Stick and thumb cap</td><td class="num">$2.00</td><td>Listed price for the Hall module</td></tr>
-<tr><td>Battery</td><td class="num">$3.00</td><td>Unconfirmed (AliExpress)</td></tr>
+<tr><td>Battery</td><td class="num">$3.00</td><td>Unconfirmed (Amazon or AliExpress). $7.41 from the cheapest listing that could be read</td></tr>
 <tr><td>Rubber pad</td><td class="num">$3.00</td><td>Listed price, $2.99 a set</td></tr>
 <tr><td>Case filament, inserts, screws, tape</td><td class="num">$1.85</td><td>Estimate</td></tr>
 <tr><td><b>Total</b></td><td class="num"><b>about $22.50</b></td><td></td></tr>
@@ -617,7 +707,7 @@
 
 <h2 id="tradeoffs">Honest trade-offs against a store-bought controller</h2>
 <ul>
-<li><b>It will not save money.</b> A good budget Bluetooth controller with two sticks, a d-pad, rumble and motion sensing costs $20 to $30 in a shop. This one costs about $22 in parts plus your time, tools and prints. Build it to learn how a controller works and to own a design you can change.</li>
+<li><b>It will not save money.</b> A good budget Bluetooth controller with two sticks, a d-pad, rumble and motion sensing costs $20 to $30 in a shop. This one costs $22 to $27 in parts plus your time, tools and prints. Build it to learn how a controller works and to own a design you can change.</li>
 <li><b>"Standard gamepad" has limits on both systems.</b> Windows lists it as a game controller with no driver, and Steam, browsers and emulators use it directly. But many Windows games only listen for Xbox-style controllers and will need Steam Input or a similar remapper in between. On a Mac it pairs and works in Steam, browsers and emulators, but games that use Apple's own controller system only recognise Xbox, PlayStation and a few other named pads. Some hobby firmware gets around this by pretending to be an Xbox controller; this one does not, because copying another company's product identity is not something to ship.</li>
 <li><b>Latency is good, not the best.</b> At 7.5 ms between radio slots a press waits about 4 ms on average, 7.5 ms at worst, before it is sent. That is fine for fast games. A commercial pad on its own USB dongle, or wired, is quicker, and this controller has no wired mode. On a Mac the gap is 11 to 15 ms.</li>
 <li><b>Fewer inputs.</b> No right stick, no d-pad, no analog triggers, no rumble, no motion. Great for platformers, retro and arcade games; wrong for shooters.</li>
