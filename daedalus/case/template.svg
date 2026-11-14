@@ -1,22 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="164.0mm" height="129.0mm" viewBox="0 0 164.0 129.0">
+<svg xmlns="http://www.w3.org/2000/svg" width="149.0mm" height="122.0mm" viewBox="0 0 149.0 122.0">
 <g fill="none" stroke="#000" stroke-width="0.3">
-<path d="M149.63,25.33 L151.79,70.58 A20.00,20.00 0 0 1 150.32,79.10 L146.12,89.37 A10.50,10.50 0 0 1 134.85,95.78 L129.22,94.93 A10.50,10.50 0 0 1 120.89,88.08 L116.79,76.62 A16.00,16.00 0 0 0 101.72,66.00 L62.28,66.00 A16.00,16.00 0 0 0 47.21,76.62 L43.11,88.08 A10.50,10.50 0 0 1 34.78,94.93 L29.15,95.78 A10.50,10.50 0 0 1 17.88,89.37 L13.68,79.10 A20.00,20.00 0 0 1 12.21,70.58 L14.37,25.33 A14.00,14.00 0 0 1 28.35,12.00 L135.65,12.00 A14.00,14.00 0 0 1 149.63,25.33 Z"/>
-<circle cx="46.00" cy="41.00" r="12.50"/>
-<circle cx="46.00" cy="41.00" r="9.5" stroke-dasharray="1 1"/>
-<circle cx="118.00" cy="30.50" r="5.55"/>
-<circle cx="131.50" cy="41.00" r="5.55"/>
-<circle cx="118.00" cy="51.50" r="5.55"/>
-<circle cx="104.50" cy="41.00" r="5.55"/>
-<rect x="68.75" y="42.25" width="8.50" height="4.50" rx="2.25"/>
-<rect x="86.75" y="42.25" width="8.50" height="4.50" rx="2.25"/>
-<circle cx="82.00" cy="52.00" r="3.25"/>
-<circle cx="82.00" cy="44.50" r="1"/>
-<rect x="27.50" y="9.50" width="15.00" height="2.50" rx="1"/>
-<rect x="44.50" y="9.50" width="12.00" height="2.50" rx="1"/>
-<rect x="107.50" y="9.50" width="12.00" height="2.50" rx="1"/>
-<rect x="121.50" y="9.50" width="15.00" height="2.50" rx="1"/>
-<path d="M12.00,113.00 h50 M12.00,111.00 v4 M62.00,111.00 v4"/>
+<path d="M134.91,32.49 L136.69,58.55 A26.00,26.00 0 0 1 135.81,67.29 L131.57,82.54 A9.00,9.00 0 0 1 121.82,89.07 L117.50,88.55 A9.00,9.00 0 0 1 110.76,84.06 L105.39,74.60 A17.00,17.00 0 0 0 90.61,66.00 L58.39,66.00 A17.00,17.00 0 0 0 43.61,74.60 L38.24,84.06 A9.00,9.00 0 0 1 31.50,88.55 L27.18,89.07 A9.00,9.00 0 0 1 17.43,82.54 L13.19,67.29 A26.00,26.00 0 0 1 12.31,58.55 L14.09,32.49 A22.00,22.00 0 0 1 36.04,12.00 L112.96,12.00 A22.00,22.00 0 0 1 134.91,32.49 Z"/>
+<circle cx="44.50" cy="41.00" r="12.50"/>
+<circle cx="44.50" cy="41.00" r="9.5" stroke-dasharray="1 1"/>
+<circle cx="104.50" cy="30.50" r="5.55"/>
+<circle cx="118.00" cy="41.00" r="5.55"/>
+<circle cx="104.50" cy="51.50" r="5.55"/>
+<circle cx="91.00" cy="41.00" r="5.55"/>
+<circle cx="66.50" cy="26.60" r="2.75"/>
+<circle cx="82.50" cy="26.60" r="2.75"/>
+<circle cx="74.50" cy="30.60" r="3.25"/>
+<circle cx="74.50" cy="22.60" r="1"/>
+<path d="M30.00,14.00 v-3 M42.00,14.00 v-3"/>
+<path d="M44.00,14.00 v-3 M54.00,14.00 v-3"/>
+<path d="M95.00,14.00 v-3 M105.00,14.00 v-3"/>
+<path d="M107.00,14.00 v-3 M119.00,14.00 v-3"/>
+<path d="M12.00,106.00 h50 M12.00,104.00 v4 M62.00,104.00 v4"/>
 </g>
-<text x="65.00" y="114.00" font-family="sans-serif" font-size="3">This bar is 50 mm. If it measures anything else, print again at 100 %.</text>
-<text x="12.00" y="121.00" font-family="sans-serif" font-size="3">Project Daedalus, front, full size (140 x 85 mm). Dashed circle: thumb cap.</text>
+<text x="65.00" y="107.00" font-family="sans-serif" font-size="3">This bar is 50 mm. If it measures anything else, print again at 100 %.</text>
+<text x="12.00" y="114.00" font-family="sans-serif" font-size="3">Project Daedalus, front, full size (125 x 78 mm). Dashed circle: thumb cap. Ticks at the top: shoulder buttons.</text>
 </svg>

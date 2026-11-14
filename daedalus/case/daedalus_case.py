@@ -15,11 +15,18 @@ Axes, looking at the front of the controller as you hold it:
     Y  bottom to top, 0 in the middle of the main bar (the grips hang below)
     Z  back to front, 0 = the front face of the circuit board (the side with the parts and the stick)
 
-STATUS: version 1. Drawn from datasheets and estimates, not yet printed or fitted. The values marked MEASURE
+STATUS: version 3. Drawn from datasheets and estimates, not yet printed or fitted. The values marked MEASURE
 must be checked against the real parts with calipers before a full case is printed. Print coupon.stl first.
-Version 1 is the same inside as version 0 with a smoother outside: a curved outline with flared, rounded
-grips, and edges that are rounded instead of bevelled (each starts with a short 45-degree flat where it
-meets the print bed, so the shells still print outside-down with no supports).
+
+    version 1   a plain slab with bevelled edges, 134 x 80 x 22.7 mm
+    version 2   the same inside, with a curved outline and rounded edges, 140 x 85 x 22.7 mm (kept in v2/)
+    version 3   this one: smaller (125 x 78 x 20.9 mm) and cleaner. The board is 14 mm narrower, the radio
+                module has moved to the bottom edge so the USB-C socket sits dead centre at the top, the
+                shoulders sweep round in one curve with the shoulder buttons following it, and Select,
+                Start, Home and the light form a small diamond that echoes the face buttons.
+
+Both faces stay flat and print against the plate, which gives the cleanest surface a filament printer can
+make; the edges start with a short 45-degree flat and then curve into the wall, so nothing needs supports.
 
 Where the numbers come from (read November 2026):
     stick        YTL YHE-YG13-013 / YTMR-YG13-006 datasheets (hole pattern, 13.1 mm frame, 19.45 mm shaft height)
@@ -46,83 +53,87 @@ P = {
     # The outline seen from the front: the corners of the right-hand half, going down the right side and
     # round the grip, each with the radius it is rounded to. The left half is the mirror image.
     "outline_right": [
-        (67.0, 27.0, 14.0),     # top corner
-        (70.0, -36.0, 20.0),    # the side flares out a little towards the grip
-        (61.0, -58.0, 10.5),    # outer side of the grip's tip
-        (41.0, -55.0, 10.5),    # inner side of the grip's tip
-        (31.0, -27.0, 16.0),    # where the grip meets the underside of the bar
+        (59.0, 27.0, 22.0),     # shoulder: one long sweep from the top edge into the side
+        (62.5, -24.0, 26.0),    # widest point, at the heel of the hand
+        (55.0, -51.0, 9.0),     # outer side of the grip's tip
+        (38.5, -49.0, 9.0),     # inner side of the grip's tip
+        (26.0, -27.0, 17.0),    # the arch where the grip meets the underside of the bar
     ],
     "wall": 2.0,                # wall thickness
-    "front_gap": 10.0,          # board front face to the inside of the front shell        MEASURE against the stick
-    "back_gap": 7.5,            # board back face to the inside of the back shell (battery 6 + foam 1 + 0.5)
+    "front_gap": 8.5,           # board front face to the inside of the front shell        MEASURE against the stick
+    "back_gap": 8.0,            # board back face to the inside of the back shell: a 6 mm battery, 0.6 mm of tape
+                                #   under it, and 1.4 mm above it so it clears the USB-C socket's solder legs
     # Outside edges: (flat, radius). The edge starts with a 45-degree flat this wide where it meets the print
     # bed, then curves into the wall with this radius. A plain round would overhang too steeply to print.
-    "edge_front": (2.2, 4.0),
-    "edge_back": (3.0, 5.0),    # the palm side, so rounder
+    "edge_front": (2.0, 5.0),
+    "edge_back": (3.2, 7.5),    # the palm side, so rounder
     "edge_front_in": 1.2,       # matching bevels inside, which keep the wall an even thickness round the edge
-    "edge_back_in": 2.0,
+    "edge_back_in": 2.4,
     "hole_ease": 0.5,           # small bevel round the stick and button holes, so their rims are not sharp
     "fit": 0.2,                 # clearance between the two shells' lip and groove
 
     # ---- circuit board ------------------------------------------------------------------------------------
-    "pcb_w": 122.0,
+    "pcb_w": 108.0,
     "pcb_h": 46.0,
     "pcb_t": 1.2,
     "pcb_top_y": 24.6,          # Y of the board's top edge (0.4 mm inside the case's inner wall)
+    "pcb_clear": 0.4,           # gap between the board's edge and the inside of the case; the board's top
+                                #   corners follow the case's curve at this distance
     "pcb_corner_r": 2.0,        # bottom corners
-    "pcb_top_corner_r": 8.0,    # top corners: rounded more, to clear the case's rounded corners
     "pcb_hole_d": 2.2,          # four mounting holes, also the four main case screws
-    "pcb_holes": [(-57.0, 14.0), (57.0, 14.0), (-57.0, -17.0), (57.0, -17.0)],
-    "battery_notch": (-10.0, 6.0, 3.0),   # centre X, width, depth of the notch in the bottom edge for the battery lead
-    "antenna_notch": (-12.0, 20.0, 6.0), # centre X, width, depth of the cut-out in the top edge under the radio's antenna
+    "pcb_holes": [(-50.5, 12.0), (50.5, 12.0), (-50.5, -17.0), (50.5, -17.0)],
+    "battery_notch": (-33.0, 6.0, 3.0),  # centre X, width, depth of the notch in the bottom edge for the battery lead
+    "antenna_notch": (0.0, 20.0, 6.0),   # centre X, width, depth of the cut-out in the bottom edge under the antenna
 
     # ---- where the parts sit on the board (X, Y of each part's centre) ------------------------------------
-    "stick_xy": (-36.0, -2.0),
+    "stick_xy": (-30.0, -2.0),
     "stick_open_d": 25.0,       # hole in the front shell around the stick (clears every part of the module)
     "stick_collar_h": 2.0,      # a ring inside the shell that thickens the rim of that hole, so knocks on the stick
     "stick_collar_w": 3.0,      #   are taken by the case
-    "face_xy": (36.0, -2.0),    # centre of the four face buttons
+    "face_xy": (30.0, -2.0),    # centre of the four face buttons
     "face_pitch_x": 13.5,       # centre of the diamond to the left and right buttons      MEASURE on the rubber pad
     "face_pitch_y": 10.5,       # centre of the diamond to the top and bottom buttons      MEASURE (and check the pad is not tilted)
     "face_contact_d": 5.3,      # diameter of each gold contact pattern on the board
     "face_cap_d": 10.6,         # diameter of a face button cap                             MEASURE to suit the pad's domes
     "face_dome_top": 5.2,       # height of the top of an unpressed rubber dome above the board   MEASURE
     "face_proud": 2.6,          # how far a face button stands above the front face
-    "select_xy": (-9.0, -5.5),
-    "start_xy": (9.0, -5.5),
-    "home_xy": (0.0, -13.0),
-    "led_xy": (0.0, -5.5),
-    "boot_xy": (8.0, -17.5),
-    "small_cap": (8.0, 4.0),    # Select and Start caps: length, width (rounded ends)
+    # Select, Start, Home and the status light make a small diamond in the middle, under the USB-C socket
+    "select_xy": (-8.0, 12.4),
+    "start_xy": (8.0, 12.4),
+    "home_xy": (0.0, 8.4),
+    "led_xy": (0.0, 16.4),
+    "boot_xy": (14.0, -18.0),
+    "select_cap_d": 5.0,        # Select and Start caps (round)
     "home_cap_d": 6.0,
     "tact_top": 2.0,            # height of the top of the small push switches above the board
     "small_proud": 1.2,
-    "module_box": (-21.0, -0.9, 18.0, 25.5),  # radio module: left X, bottom Y, width, height (antenna at the top edge)
-    "usb_x": 5.0,               # centre of the USB-C socket on the top edge
+    "module_box": (-9.0, -21.4, 18.0, 25.5),  # radio module: left X, bottom Y, width, height (antenna at the BOTTOM edge)
+    "usb_x": 0.0,               # centre of the USB-C socket on the top edge
     "usb_open": (9.4, 3.6),     # opening for the plug: width, height
     "usb_z": 1.65,              # centre of the socket's mouth above the board
     "usb_recess": (13.0, 6.6, 1.4),   # shallow pocket round the opening so a cable's boot seats: w, h, depth
-    "charge_led_x": 13.3,        # light hole in the top wall for the red / green charge lights
-    "switch_x": 19.5,           # centre of the slide switch on the top edge
+    "charge_led_x": 9.5,        # light hole in the top wall for the red / green charge lights
+    "switch_x": -14.0,          # centre of the slide switch on the top edge
     "switch_slot": (4.6, 1.8),  # slot for its knob: width (knob 1.3 + travel 1.6 + clearance), height
     "switch_z": 0.7,            # centre of the knob above the board
     "switch_recess": (9.0, 4.0, 1.4),   # pocket round the slot so a fingernail can reach the knob: w, h, depth
-    "jst_xy": (-27.0, -17.0),      # battery socket, side entry, its mouth facing right; the plug lies along the bottom edge
-    # shoulder buttons: side-facing switches on the top edge, pressed by sliding plungers
-    "l1_x": -47.0, "l2_x": -31.5, "r1_x": 47.0, "r2_x": 31.5,
-    "shoulder_w1": 15.0,        # width of the L1 / R1 plungers
-    "shoulder_w2": 12.0,        # width of the L2 / R2 plungers
+    "jst_xy": (-15.5, -16.5),   # battery socket, side entry, its mouth facing LEFT; the plug lies along the bottom edge
+    # shoulder buttons: side-facing switches on the top edge, pressed by sliding plungers whose outer ends
+    # follow the curve of the shoulder
+    "l1_x": -38.5, "l2_x": -25.5, "r1_x": 38.5, "r2_x": 25.5,
+    "shoulder_w1": 12.0,        # width of the L1 / R1 plungers
+    "shoulder_w2": 10.0,        # width of the L2 / R2 plungers
     "shoulder_h": 5.0,          # their height (front to back)
     "shoulder_z0": 0.2,         # bottom of a plunger above the board (the switch's push-button must fall inside
                                 #   shoulder_z0 .. shoulder_z0 + shoulder_h)                   MEASURE
     "shoulder_body_top": 2.0,   # the plunger's catch passes over the switch's body: its height above the board   MEASURE
-    "shoulder_proud": 2.5,      # how far a plunger stands above the top edge
+    "shoulder_proud": 2.2,      # how far a plunger stands out from the case
     "shoulder_tip_y": 25.45,    # Y of the switch's push-button tip when not pressed (body flush with the board edge)
     "plunger_gap": 0.25,        # clearance all round a plunger or button cap in its hole
 
     # ---- screws -------------------------------------------------------------------------------------------
-    "grip_screws": [(-52.0, -42.0), (52.0, -42.0)],
-    "insert_d": 3.2,            # hole for an M2 brass heat-set insert                        MEASURE against your inserts
+    "grip_screws": [(-46.0, -40.0), (46.0, -40.0)],
+    "insert_d": 3.2,            # hole for an M2 x 3 brass heat-set insert (the insert itself is 3.6 mm across)
     "insert_depth": 4.5,
     "boss_d": 6.4,
     "screw_d": 2.4,             # clearance hole for an M2 screw
@@ -130,13 +141,13 @@ P = {
     "seat_below_pcb": 3.5,      # plastic between the board's back face and the screw head's seat (M2 x 8 screws)
 
     # ---- battery ------------------------------------------------------------------------------------------
-    "battery_xy": (6.0, 0.0),
+    "battery_xy": (8.5, 3.5),
     "battery_box": (54.0, 36.0),   # pocket for a 603450 cell: 52 x 34.5 plus 1 mm each way      MEASURE
     "battery_rib_h": 4.0,
     "battery_rib_t": 1.2,
     # posts on the back shell that hold the board up behind the stick and the face buttons, so pressing
     # them does not bend it. Keep these spots on the back of the board free of solder joints.
-    "back_supports": [(38.5, -2.0), (-36.0, 12.0), (-36.0, -16.0)],
+    "back_supports": [(38.5, -2.0), (-30.0, 12.0), (-43.0, -14.0)],
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -304,7 +315,7 @@ def front_shell(p):
     shell = shell.union(cyl(sx, sy, z["front_in"] - p["stick_collar_h"], z["front_in"] + 0.5, collar_od))
     shell = shell.cut(cyl(sx, sy, z["front_in"] - p["stick_collar_h"] - 1, z["front_out"] + 1, p["stick_open_d"]))
 
-    # face buttons, Select, Start, Home, status light, BOOT pin hole
+    # face buttons, Select, Start, Home, status light
     g = p["plunger_gap"]
     for (x, y) in face_centres(p).values():
         shell = shell.cut(cyl(x, y, z["front_in"] - 1, z["front_out"] + 1, p["face_cap_d"] + 2 * g))
@@ -313,13 +324,13 @@ def front_shell(p):
         shell = shell.union(box(rib_x, y, z["front_in"] - 3.0, z["front_in"] + 0.5, 1.0, 6.0))
     for key in ("select_xy", "start_xy"):
         x, y = p[key]
-        shell = shell.cut(slot(x, y, z["front_in"] - 1, z["front_out"] + 1, p["small_cap"][0] + 2 * g, p["small_cap"][1] + 2 * g))
+        shell = shell.cut(cyl(x, y, z["front_in"] - 1, z["front_out"] + 1, p["select_cap_d"] + 2 * g))
     hx, hy = p["home_xy"]
     shell = shell.cut(cyl(hx, hy, z["front_in"] - 1, z["front_out"] + 1, p["home_cap_d"] + 2 * g))
     lx, ly = p["led_xy"]
-    shell = shell.cut(cyl(lx, ly, z["front_in"] - 1, z["front_out"] + 1, 2.0))
-    bx, by = p["boot_xy"]
-    shell = shell.cut(cyl(bx, by, z["front_in"] - 1, z["front_out"] + 1, 1.6))
+    shell = shell.cut(cyl(lx, ly, z["front_in"] - 1, z["front_out"] + 1, 1.6))
+    # (the BOOT switch has no hole: it is only needed if firmware goes badly wrong, and a clean front is
+    # worth opening six screws for on that day)
 
     # ease the rims of the round holes
     e = p["hole_ease"]
@@ -328,6 +339,8 @@ def front_shell(p):
         for (x, y) in face_centres(p).values():
             shell = shell.cut(ease(x, y, z["front_out"], p["face_cap_d"] + 2 * g, e))
         shell = shell.cut(ease(hx, hy, z["front_out"], p["home_cap_d"] + 2 * g, e))
+        for key in ("select_xy", "start_xy"):
+            shell = shell.cut(ease(p[key][0], p[key][1], z["front_out"], p["select_cap_d"] + 2 * g, e))
 
     # top edge: USB-C, charge light, slide switch, four shoulder plungers
     shell = shell.cut(top_wall_cut(p, p["usb_x"], p["usb_z"], *p["usb_open"]))
@@ -338,7 +351,9 @@ def front_shell(p):
     shell = shell.cut(top_wall_cut(p, p["switch_x"], p["switch_z"], *p["switch_slot"]))
     shell = shell.cut(top_wall_cut(p, p["switch_x"], p["switch_z"] + 0.6, p["switch_recess"][0], p["switch_recess"][1], depth=p["switch_recess"][2]))
     for _, x, w in shoulders(p):
-        shell = shell.cut(top_wall_cut(p, x, p["shoulder_z0"] + p["shoulder_h"] / 2, w + 2 * g, p["shoulder_h"] + 2 * g))
+        # cut from well inside the wall to well outside it, so the slot goes right through a curved shoulder too
+        zc = p["shoulder_z0"] + p["shoulder_h"] / 2
+        shell = shell.cut(box(x, p["bar_h"] / 2 - 7.0 + 8.0, zc - p["shoulder_h"] / 2 - g, zc + p["shoulder_h"] / 2 + g, w + 2 * g, 16.0))
 
     # posts: four hold the board, two more sit in the grips. Each takes a brass insert.
     for (x, y) in p["pcb_holes"]:
@@ -403,55 +418,55 @@ def face_cap(p):
     return cap
 
 
-def small_cap(p, round_d=None):
-    """Select / Start (a rounded bar) or Home (round): a wide base that reaches down to the push switch,
-    then the narrower top that shows through the shell. Bottom at Z = 0; print it this way up."""
+def small_cap(p, d):
+    """Select, Start or Home: a wide base that reaches down to the push switch, then the narrower round top
+    that shows through the shell. Bottom at Z = 0; print it this way up."""
     z = z_levels(p)
     height = z["front_out"] + p["small_proud"] - p["tact_top"]
     base_h = z["front_in"] - CAP_REST_GAP - p["tact_top"]
-    if round_d:
-        base = cq.Workplane("XY").circle(round_d / 2 + CAP_BASE_EXTRA).extrude(base_h)
-        top = cq.Workplane("XY").workplane(offset=base_h).circle(round_d / 2).extrude(height - base_h)
-    else:
-        length, width = p["small_cap"]
-        base = cq.Workplane("XY").slot2D(length + 2 * CAP_BASE_EXTRA, width + 2 * CAP_BASE_EXTRA).extrude(base_h)
-        top = cq.Workplane("XY").workplane(offset=base_h).slot2D(length, width).extrude(height - base_h)
+    base = cq.Workplane("XY").circle(d / 2 + CAP_BASE_EXTRA).extrude(base_h)
+    top = cq.Workplane("XY").workplane(offset=base_h).circle(d / 2).extrude(height - base_h)
     return base.union(top).faces(">Z").edges().fillet(0.5)
 
 
-def plunger(p, width, in_place_x=None):
-    """A shoulder button. It slides through the slot in the top wall. Its lower part stops at the switch's
-    push-button; its upper part carries on over the switch's body and ends in a catch that hooks behind
-    the wall, so it cannot be pulled out. With in_place_x it is returned where it sits in the case (for
-    checking); without, lying on its side ready to print."""
+def plunger(p, x, width, in_place=False):
+    """A shoulder button at X = x. It slides through the slot in the top wall. Its lower part stops at the
+    switch's push-button; its upper part carries on over the switch's body and ends in a catch that hooks
+    behind the wall, so it cannot be pulled out. Its outer end is cut to follow the outline of the case,
+    standing shoulder_proud out from it, with its two long edges rounded. With in_place it is returned
+    where it sits in the case (for checking); without, standing on end ready to print."""
     z0 = p["shoulder_z0"]
     z1 = z0 + p["shoulder_h"]
     zb = p["shoulder_body_top"]
-    y_out = p["bar_h"] / 2 + p["shoulder_proud"]
+    y_far = p["bar_h"] / 2 + p["shoulder_proud"] + 6
     y_tip = p["shoulder_tip_y"]
     y_wall = p["bar_h"] / 2 - p["wall"]
-    catch_t, catch_h, back = 1.4, 2.0, 0.25           # catch thickness, how far it stands above the slot, gap to the wall
+    catch_t, catch_h, back = 1.4, 1.6, 0.25           # catch thickness, how far it stands above the slot, gap to the wall
     y_catch0 = y_wall - back - catch_t
-    lower = box(0, (y_out + y_tip) / 2, z0, zb, width, y_out - y_tip)
-    upper = box(0, (y_out + y_catch0) / 2, zb, z1, width, y_out - y_catch0)
-    catch = box(0, y_catch0 + catch_t / 2, zb, z1 + catch_h, width, catch_t)
-    part = lower.union(upper).union(catch)
-    part = part.faces(">Y").edges("|X").fillet(1.2)      # round the two long edges of the end you press
-    if in_place_x is not None:
-        return part.translate((in_place_x, 0, 0))
-    # lie it on one end so the L-shaped side is drawn flat on the plate
-    return part.rotate((0, 0, 0), (0, 1, 0), 90).translate((z0, -(y_out + y_catch0) / 2, width / 2))
+    lower = box(x, (y_far + y_tip) / 2, z0, zb, width, y_far - y_tip)
+    upper = box(x, (y_far + y_catch0) / 2, zb, z1, width, y_far - y_catch0)
+    # the catch is cut to the inside of the wall, so on a curved shoulder it still sits just behind it
+    catch = box(x, y_catch0, zb, z1 + catch_h, width, catch_t + 4).intersect(
+        prism(p, zb - 1, z1 + catch_h + 1, inset=p["wall"] + back)).intersect(box(x, y_catch0 + 20, zb, z1 + catch_h, width, 40))
+    # the shape the outer end is cut to: the case's outline grown by shoulder_proud, with rounded edges
+    skin = prism(p, z0, z1, inset=-p["shoulder_proud"])
+    skin = skin.faces(">Z").edges().fillet(1.2).faces("<Z").edges().fillet(1.2)
+    part = lower.union(upper).intersect(skin).union(catch)
+    if in_place:
+        return part
+    # stand it on one end, the L-shaped side flat against the plate
+    return part.translate((-x, -y_catch0, -z0)).rotate((0, 0, 0), (0, 1, 0), 90).translate((0, 0, width / 2))
 
 
 def coupon(p):
-    """A small test piece to print first: one face-button hole, one Select slot, one insert post and the
+    """A small test piece to print first: one face-button hole, one Select hole, one insert post and the
     USB-C opening, all at the real sizes. Check each against the real part before printing a whole case."""
     z = z_levels(p)
     g = p["plunger_gap"]
     t = p["wall"]
     plate = cq.Workplane("XY").rect(46, 26).extrude(t)
     plate = plate.cut(cyl(-13, 4, -1, t + 1, p["face_cap_d"] + 2 * g))
-    plate = plate.cut(slot(6, 6, -1, t + 1, p["small_cap"][0] + 2 * g, p["small_cap"][1] + 2 * g))
+    plate = plate.cut(cyl(6, 6, -1, t + 1, p["select_cap_d"] + 2 * g))
     plate = plate.union(cyl(16, -5, 0, t + 6, p["boss_d"])).cut(cyl(16, -5, t + 6 - p["insert_depth"], t + 7, p["insert_d"]))
     wall = cq.Workplane("XY").center(-4, -12).rect(24, t).extrude(t + 9)
     usb = cq.Workplane("XY").workplane(offset=t + 4 - p["usb_open"][1] / 2).center(-4, -12).rect(p["usb_open"][0], t + 2).extrude(p["usb_open"][1])
@@ -460,18 +475,44 @@ def coupon(p):
 
 # ------------------------------------------------------------------------------------------------ board
 def board(p):
+    """The circuit board: a rectangle whose top corners are trimmed to follow the inside of the case."""
     y0 = p["pcb_top_y"] - p["pcb_h"]
     yc = p["pcb_top_y"] - p["pcb_h"] / 2
     b = cq.Workplane("XY").workplane(offset=-p["pcb_t"]).center(0, yc).rect(p["pcb_w"], p["pcb_h"]).extrude(p["pcb_t"])
-    b = b.edges("|Z").edges(">Y").fillet(p["pcb_top_corner_r"])
     b = b.edges("|Z").edges("<Y").fillet(p["pcb_corner_r"])
+    b = b.intersect(prism(p, -p["pcb_t"] - 1, 1, inset=p["wall"] + p["pcb_clear"]))
     nx, nw, nd = p["battery_notch"]
     b = b.cut(box(nx, y0 + nd / 2 - 0.5, -p["pcb_t"] - 1, 1, nw, nd + 1))
     ax, aw, ad = p["antenna_notch"]
-    b = b.cut(box(ax, p["pcb_top_y"] - ad / 2 + 0.5, -p["pcb_t"] - 1, 1, aw, ad + 1))
+    b = b.cut(box(ax, y0 + ad / 2 - 0.5, -p["pcb_t"] - 1, 1, aw, ad + 1))
     for (x, y) in p["pcb_holes"]:
         b = b.cut(cyl(x, y, -p["pcb_t"] - 1, 1, p["pcb_hole_d"]))
     return b
+
+
+def board_outline_points(p, x0, y0, step=1.0):
+    """The board's edge as a list of points in board coordinates, going once round it (arcs are broken into
+    short straight steps). board.dxf has the exact curves; this is for drawing it."""
+    from OCP.BRepAdaptor import BRepAdaptor_Curve
+    from OCP.BRepTools import BRepTools_WireExplorer
+    from OCP.TopAbs import TopAbs_REVERSED
+
+    wire = board(p).faces("<Z").val().outerWire()
+    pts = []
+    explorer = BRepTools_WireExplorer(wire.wrapped)
+    while explorer.More():
+        edge = explorer.Current()
+        curve = BRepAdaptor_Curve(edge)
+        a, b = curve.FirstParameter(), curve.LastParameter()
+        n = max(1, int(math.ceil(cq.Edge(edge).Length() / step)))
+        ts = [a + (b - a) * i / n for i in range(n)]
+        if edge.Orientation() == TopAbs_REVERSED:
+            ts = [b - (b - a) * i / n for i in range(n)]
+        for t in ts:
+            q = curve.Value(t)
+            pts.append([round(q.X() - x0, 2), round(q.Y() - y0, 2)])
+        explorer.Next()
+    return pts
 
 
 def stick_holes(p, x0, y0):
@@ -507,22 +548,24 @@ def layout(p):
                  "thickness": round(z_levels(p)["front_out"] - z_levels(p)["back_out"], 2)},
         "origin": "bottom-left corner of the board, seen from the front (the side with the parts)",
         "board": {"width": p["pcb_w"], "height": p["pcb_h"], "thickness": p["pcb_t"],
-                  "corner_radius_bottom": p["pcb_corner_r"], "corner_radius_top": p["pcb_top_corner_r"]},
+                  "corner_radius_bottom": p["pcb_corner_r"],
+                  "top_corners": "follow the inside of the case %.1f mm in: use board.dxf for the exact outline" % p["pcb_clear"]},
+        "board_outline": board_outline_points(p, x0, y0),
         "mounting_holes": {"diameter": p["pcb_hole_d"], "centres": [bc(h) for h in p["pcb_holes"]]},
         "battery_notch": {"centre_x": round(p["battery_notch"][0] - x0, 2), "width": p["battery_notch"][1], "depth": p["battery_notch"][2]},
-        "antenna_notch": {"centre_x": round(p["antenna_notch"][0] - x0, 2), "width": p["antenna_notch"][1], "depth": p["antenna_notch"][2]},
+        "antenna_notch": {"centre_x": round(p["antenna_notch"][0] - x0, 2), "width": p["antenna_notch"][1], "depth": p["antenna_notch"][2], "edge": "bottom"},
         "stick_centre": bc(p["stick_xy"]),
         "stick_holes": stick_holes(p, x0, y0),
         "face_buttons": faces,
         "face_contact_diameter": p["face_contact_d"],
         "select": bc(p["select_xy"]), "start": bc(p["start_xy"]), "home": bc(p["home_xy"]),
         "status_led": bc(p["led_xy"]), "boot_switch": bc(p["boot_xy"]),
-        "radio_module": {"left": round(mx - x0, 2), "bottom": round(my - y0, 2), "width": mw, "height": mh, "antenna": "top edge"},
+        "radio_module": {"left": round(mx - x0, 2), "bottom": round(my - y0, 2), "width": mw, "height": mh, "antenna": "bottom edge"},
         "usb_c_centre_x": round(p["usb_x"] - x0, 2),
         "charge_leds_x": round(p["charge_led_x"] - x0, 2),
         "slide_switch_centre_x": round(p["switch_x"] - x0, 2),
         "battery_socket": bc(p["jst_xy"]),
-        "battery_socket_note": "side entry, mouth facing right; the plug lies along the bottom edge and the lead drops through the notch",
+        "battery_socket_note": "side entry, mouth facing left; the plug lies along the bottom edge and the lead drops through the notch",
         "shoulder_switches_x": {name: round(x - x0, 2) for name, x, _ in shoulders(p)},
         "back_supports": [bc(c) for c in p["back_supports"]],
         "note": "USB-C, the slide switch and the four shoulder switches sit on the top edge, facing off the board.",
@@ -579,19 +622,18 @@ def template_svg(p):
         out.append('<circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (X(x), Y(y), p["face_cap_d"] / 2 + g))
     for key in ("select_xy", "start_xy"):
         x, y = p[key]
-        L, Wd = p["small_cap"][0] + 2 * g, p["small_cap"][1] + 2 * g
-        out.append('<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" rx="%.2f"/>' % (X(x) - L / 2, Y(y) - Wd / 2, L, Wd, Wd / 2))
+        out.append('<circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (X(x), Y(y), p["select_cap_d"] / 2 + g))
     hx, hy = p["home_xy"]
     out.append('<circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (X(hx), Y(hy), p["home_cap_d"] / 2 + g))
     lx, ly = p["led_xy"]
     out.append('<circle cx="%.2f" cy="%.2f" r="1"/>' % (X(lx), Y(ly)))
     for _, x, wd in shoulders(p):
-        out.append('<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" rx="1"/>' % (X(x) - wd / 2, Y(p["bar_h"] / 2) - p["shoulder_proud"], wd, p["shoulder_proud"]))
+        out.append('<path d="M%.2f,%.2f v-3 M%.2f,%.2f v-3"/>' % (X(x - wd / 2), Y(p["bar_h"] / 2 - 2), X(x + wd / 2), Y(p["bar_h"] / 2 - 2)))
     by = h + 2 * m + 4
     out.append('<path d="M%.2f,%.2f h50 M%.2f,%.2f v4 M%.2f,%.2f v4"/>' % (m, by, m, by - 2, m + 50, by - 2))
     out.append('</g>')
     out.append('<text x="%.2f" y="%.2f" font-family="sans-serif" font-size="3">This bar is 50 mm. If it measures anything else, print again at 100 %%.</text>' % (m + 53, by + 1))
-    out.append('<text x="%.2f" y="%.2f" font-family="sans-serif" font-size="3">Project Daedalus, front, full size (%.0f x %.0f mm). Dashed circle: thumb cap.</text>' % (m, by + 8, w, h))
+    out.append('<text x="%.2f" y="%.2f" font-family="sans-serif" font-size="3">Project Daedalus, front, full size (%.0f x %.0f mm). Dashed circle: thumb cap. Ticks at the top: shoulder buttons.</text>' % (m, by + 8, w, h))
     out.append('</svg>')
     return "\n".join(out) + "\n"
 
@@ -607,10 +649,11 @@ def main():
         "front_shell": front_shell(p),
         "back_shell": back_shell(p),
         "face_button": face_cap(p),
-        "select_start_button": small_cap(p),
-        "home_button": small_cap(p, round_d=p["home_cap_d"]),
-        "shoulder_l1_r1": plunger(p, p["shoulder_w1"]),
-        "shoulder_l2_r2": plunger(p, p["shoulder_w2"]),
+        "select_start_button": small_cap(p, p["select_cap_d"]),
+        "home_button": small_cap(p, p["home_cap_d"]),
+        "shoulder_l1": plunger(p, p["l1_x"], p["shoulder_w1"]),      # L1 and R1 are mirror images: their ends
+        "shoulder_r1": plunger(p, p["r1_x"], p["shoulder_w1"]),      #   follow the curve of the shoulder
+        "shoulder_l2_r2": plunger(p, p["l2_x"], p["shoulder_w2"]),
         "coupon": coupon(p),
     }
     for name, shape in parts.items():

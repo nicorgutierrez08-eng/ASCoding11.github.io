@@ -44,7 +44,8 @@ static const bool STICK_INVERT_X = false;
 static const bool STICK_INVERT_Y = false;
 static const bool STICK_SWAP_XY  = false;
 
-static const float INNER_DEADZONE = 0.05f;   // fraction of travel around the centre that reads as zero
+static const float INNER_DEADZONE = 0.08f;   // fraction of travel around the centre that reads as zero
+                                             //   (the stick is specified to return to centre within 6.3 %)
 static const float OUTER_DEADZONE = 0.04f;   // fraction at the edge that already reads as full
 static const float STICK_CURVE    = 1.0f;    // 1 = output follows the stick exactly; 1.5 = finer control near the centre
 static const uint32_t DEBOUNCE_MS = 5;

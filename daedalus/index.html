@@ -37,7 +37,9 @@
 .dd-scroll table{margin:0;min-width:560px}
 .dd-wide{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .dd-wide svg{min-width:640px}
-.guide td.num,.guide th.num{text-align:right;white-space:nowrap}
+.guide td.num,.guide th.num{text-align:right}
+.guide th.num{white-space:nowrap}
+.guide td.num{min-width:5.5em}
 .guide td code,.guide p code,.guide li code{font-family:var(--mono);font-size:.9em;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
 .dd-status{border-left-color:var(--down) !important}
 .dd-code{margin:10px 0 18px}
@@ -79,41 +81,40 @@
 
 <h2>What it is</h2>
 <figure class="dd-fig">
-<svg viewBox="0 0 770 590" role="img" aria-label="Front view of the controller: a wide body with two rounded grips that flare outwards, one stick on the left, four face buttons in a diamond on the right, Select, Start and Home in the middle, and two shoulder buttons on each side of the top edge with the USB-C socket and the on/off switch between them.">
-  <!-- top edge parts (positions as in case/daedalus_case.py) -->
-  <rect class="fillp" x="108" y="62" width="75" height="20" rx="7"/><rect class="fillp" x="193" y="66" width="60" height="16" rx="6"/>
-  <rect class="fillp" x="577" y="62" width="75" height="20" rx="7"/><rect class="fillp" x="507" y="66" width="60" height="16" rx="6"/>
-  <rect class="fillp" x="382" y="70" width="46" height="12" rx="5"/><rect class="fillp" x="465" y="73" width="24" height="9" rx="3"/>
+<svg viewBox="0 0 760 540" role="img" aria-label="Front view of the controller: a compact body whose shoulders sweep round in one curve into two short rounded grips. One stick on the left, four face buttons in a diamond on the right, and in the middle a small diamond of Select, Start, Home and a status light under the USB-C socket. Two shoulder buttons each side of the top edge, with the on/off switch between the left pair and the socket.">
+  <!-- top edge parts (positions as in case/daedalus_case.py: X = 380 + 5x, Y = 215 - 5y) -->
+  <rect class="fillp" x="157" y="68" width="61" height="14" rx="6"/><rect class="fillp" x="227" y="68" width="51" height="14" rx="6"/>
+  <rect class="fillp" x="542" y="68" width="61" height="14" rx="6"/><rect class="fillp" x="482" y="68" width="51" height="14" rx="6"/>
+  <rect class="fillp" x="357" y="71" width="46" height="11" rx="5"/><rect class="fillp" x="298" y="74" width="24" height="8" rx="3"/>
   <!-- body -->
-  <path class="fillp" d="M718.2,146.7 L728.9,372.9 A100.0,100.0 0 0 1 721.6,415.5 L700.6,466.8 A52.5,52.5 0 0 1 644.2,498.9 L616.1,494.7 A52.5,52.5 0 0 1 574.4,460.4 L554.0,403.1 A80.0,80.0 0 0 0 478.6,350.0 L281.4,350.0 A80.0,80.0 0 0 0 206.0,403.1 L185.6,460.4 A52.5,52.5 0 0 1 143.9,494.7 L115.8,498.9 A52.5,52.5 0 0 1 59.4,466.8 L38.4,415.5 A100.0,100.0 0 0 1 31.1,372.9 L41.8,146.7 A70.0,70.0 0 0 1 111.7,80.0 L648.3,80.0 A70.0,70.0 0 0 1 718.2,146.7 Z"/>
+  <path class="fillp" d="M682.0,182.5 L691.0,312.8 A130.0,130.0 0 0 1 686.5,356.5 L665.4,432.7 A45.0,45.0 0 0 1 616.6,465.3 L595.0,462.7 A45.0,45.0 0 0 1 561.3,440.3 L534.4,393.0 A85.0,85.0 0 0 0 460.5,350.0 L299.5,350.0 A85.0,85.0 0 0 0 225.6,393.0 L198.7,440.3 A45.0,45.0 0 0 1 165.0,462.7 L143.4,465.3 A45.0,45.0 0 0 1 94.6,432.7 L73.5,356.5 A130.0,130.0 0 0 1 69.0,312.8 L78.0,182.5 A110.0,110.0 0 0 1 187.7,80.0 L572.3,80.0 A110.0,110.0 0 0 1 682.0,182.5 Z"/>
   <!-- stick -->
-  <circle class="ln" cx="200" cy="225" r="58"/><circle class="fillp" cx="200" cy="225" r="45"/><circle class="thin" cx="200" cy="225" r="28"/>
+  <circle class="ln" cx="230" cy="225" r="62"/><circle class="fillp" cx="230" cy="225" r="47"/><circle class="thin" cx="230" cy="225" r="29"/>
   <!-- face buttons -->
-  <circle class="fillp" cx="560" cy="172" r="27"/><circle class="fillp" cx="628" cy="225" r="27"/><circle class="fillp" cx="560" cy="278" r="27"/><circle class="fillp" cx="492" cy="225" r="27"/>
-  <!-- select, start, home, light -->
-  <rect class="fillp" x="315" y="232" width="40" height="20" rx="10"/><rect class="fillp" x="405" y="232" width="40" height="20" rx="10"/>
-  <circle class="fillp" cx="380" cy="280" r="15"/><circle class="acc" cx="380" cy="242" r="5"/>
+  <circle class="fillp" cx="530" cy="172" r="27"/><circle class="fillp" cx="598" cy="225" r="27"/><circle class="fillp" cx="530" cy="278" r="27"/><circle class="fillp" cx="462" cy="225" r="27"/>
+  <!-- select, start, home, light: a small diamond -->
+  <circle class="fillp" cx="340" cy="153" r="13"/><circle class="fillp" cx="420" cy="153" r="13"/>
+  <circle class="fillp" cx="380" cy="173" r="15.5"/><circle class="acc" cx="380" cy="133" r="4.5"/>
   <!-- labels -->
-  <text x="145" y="52" text-anchor="middle">L1</text><text x="223" y="52" text-anchor="middle">L2</text>
-  <text x="615" y="52" text-anchor="middle">R1</text><text x="537" y="52" text-anchor="middle">R2</text>
-  <text x="405" y="60" text-anchor="middle">USB-C</text><text x="477" y="40" text-anchor="middle">on/off</text>
-  <path class="thin" d="M477,45 V71"/>
-  <text class="t-strong" x="200" y="318" text-anchor="middle">magnetic stick</text><text x="200" y="336" text-anchor="middle">click = L3</text>
-  <text x="335" y="220" text-anchor="middle">Select</text><text x="425" y="220" text-anchor="middle">Start</text>
-  <text x="380" y="318" text-anchor="middle">Home</text><text x="380" y="196" text-anchor="middle">light</text>
-  <path class="thin" d="M380,201 V234"/>
-  <text class="t-strong" x="560" y="334" text-anchor="middle">four face buttons</text>
+  <text x="187" y="54" text-anchor="middle">L1</text><text x="252" y="54" text-anchor="middle">L2</text>
+  <text x="572" y="54" text-anchor="middle">R1</text><text x="507" y="54" text-anchor="middle">R2</text>
+  <text x="380" y="58" text-anchor="middle">USB-C</text><text x="310" y="40" text-anchor="middle">on/off</text>
+  <path class="thin" d="M310,45 V72"/>
+  <text class="t-strong" x="230" y="318" text-anchor="middle">magnetic stick</text><text x="230" y="336" text-anchor="middle">click = L3</text>
+  <text x="322" y="134" text-anchor="end">Select</text><text x="438" y="134" text-anchor="start">Start</text>
+  <text x="380" y="208" text-anchor="middle">Home</text><text x="380" y="116" text-anchor="middle">light</text>
+  <text class="t-strong" x="530" y="334" text-anchor="middle">four face buttons</text>
   <!-- dimensions -->
-  <path class="dim" d="M30,540 H730 M30,532 V548 M730,532 V548"/><text class="dimt" x="380" y="566" text-anchor="middle">140 mm</text>
-  <path class="dim" d="M752,80 V505 M744,80 H760 M744,505 H760"/><text class="dimt" x="756" y="292" text-anchor="middle" transform="rotate(90 756 292)">85 mm</text>
+  <path class="dim" d="M67.5,500 H692.5 M67.5,492 V508 M692.5,492 V508"/><text class="dimt" x="380" y="526" text-anchor="middle">125 mm</text>
+  <path class="dim" d="M722,80 V468 M714,80 H730 M714,468 H730"/><text class="dimt" x="726" y="274" text-anchor="middle" transform="rotate(90 726 274)">78 mm</text>
 </svg>
-<figcaption>Front view, drawn from the same numbers as the case model. The body is 22.7 mm thick. The exact button spacing is set by the rubber pad you buy, so measure the pad before drawing the board.</figcaption>
+<figcaption>Front view, drawn from the same numbers as the case model. The body is 21.7 mm thick. The exact button spacing is set by the rubber pad you buy, so measure the pad before drawing the board.</figcaption>
 </figure>
 <ul>
 <li><b>Inputs:</b> one magnetic stick with a click (L3), four face buttons, L1, R1, L2 and R2, plus Select, Start and Home. No d-pad and no right stick.</li>
 <li><b>Connection:</b> Bluetooth Low Energy, as a standard HID gamepad. Windows and macOS pair with it from their normal Bluetooth settings; nothing to install.</li>
-<li><b>Power:</b> a 1,200 mAh lithium-polymer cell charged through USB-C, a slide switch, and an estimated 25 to 40 hours of play per charge (worked out from typical current figures for this chip, not measured).</li>
-<li><b>Size:</b> 140 × 85 × 22.7 mm and roughly 120 g. That is about the width of a pair of Joy-Cons, with short rounded grips; it is thicker than a Switch Lite because a full-size stick is 19.5 mm tall.</li>
+<li><b>Power:</b> a 1,200 mAh lithium-polymer cell charged through USB-C, a slide switch, and an estimated 30 hours of play per charge (worked out from the datasheets, not measured).</li>
+<li><b>Size:</b> 125 × 78 × 21.7 mm and roughly 105 g: narrower than a pair of Joy-Cons side by side, with short rounded grips. It is thicker than a Switch Lite because a full-size stick is 19.5 mm tall.</li>
 </ul>
 
 <h2>On this page</h2>
@@ -140,11 +141,11 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Group</th><th>Item</th><th>Value</th></tr></thead>
 <tbody>
-<tr><td rowspan="4">Body</td><td>Size</td><td>140 × 85 × 22.7 mm</td></tr>
-<tr><td>Weight</td><td>About 120 g (estimate: case 76 g, battery 21 g, board and parts 17 g, stick and cap 6 g)</td></tr>
+<tr><td rowspan="4">Body</td><td>Size</td><td>125 × 78 × 21.7 mm (version 3; version 2 was 140 × 85 × 22.7 mm)</td></tr>
+<tr><td>Weight</td><td>About 105 g (estimate: case 61 g, battery 21 g, board and parts 16 g, stick and cap 6 g, screws 2 g)</td></tr>
 <tr><td>Case</td><td>PETG, two shells, 2.0 mm walls, six M2 × 8 mm screws into brass inserts</td></tr>
-<tr><td>Print</td><td>About 60 cm³ of plastic (76 g) in 13 pieces, no supports</td></tr>
-<tr><td rowspan="5">Controls</td><td>Stick</td><td>Magnetic (Hall), tilts 26° each way, click at about 750 gf, rated 5 million movements and 1 million clicks</td></tr>
+<tr><td>Print</td><td>About 48 cm³ of plastic (61 g) in 13 pieces, no supports</td></tr>
+<tr><td rowspan="5">Controls</td><td>Stick</td><td>Magnetic (Hall), tilts 26° each way, about 120 gf to move, click at about 750 gf, rated 5 million movements and 1 million clicks; returns to centre within 6.3 %</td></tr>
 <tr><td>Face buttons</td><td>4, silicone domes with carbon contacts on gold board pads, 27 mm apart across and 21 mm top to bottom</td></tr>
 <tr><td>Shoulder buttons</td><td>4 (L1, R1, L2, R2), 160 gf, 0.12 mm travel, rated 500,000 presses</td></tr>
 <tr><td>Small buttons</td><td>Select, Start, Home: 160 gf, 0.2 mm travel, rated 100,000 presses</td></tr>
@@ -152,15 +153,23 @@
 <tr><td rowspan="5">Radio</td><td>Chip</td><td>ESP32-C6-WROOM-1-N8: Bluetooth 5 Low Energy, antenna on the module</td></tr>
 <tr><td>Profile</td><td>HID over GATT, gamepad. Pairs without a code and remembers the computer (bonding, LE Secure Connections)</td></tr>
 <tr><td>Time between radio slots</td><td>7.5 ms asked for first; 11.25 ms, then 15 ms if the computer refuses</td></tr>
-<tr><td>Transmit power</td><td>+3 dBm as set in the firmware<!--SPEC-TX--></td></tr>
+<tr><td>Transmit power</td><td>+3 dBm as set in the firmware (the module can do −16 to +19 dBm); receive sensitivity −98 dBm</td></tr>
 <tr><td>Range</td><td>Not measured. Expect ordinary same-room Bluetooth range; the antenna is closer to the case than Espressif recommends</td></tr>
 <tr><td rowspan="5">Response</td><td>Inputs read</td><td>About 1,000 times a second</td></tr>
 <tr><td>Button clean-up</td><td>First contact reported at once, then that button is ignored for 5 ms</td></tr>
-<tr><td>Stick</td><td>12-bit readings, smoothed over about 2 ms; round dead zone of 5 % at the centre and 4 % at the edge; sent as −32,767 to +32,767</td></tr>
+<tr><td>Stick</td><td>12-bit readings, smoothed over about 2 ms; round dead zone of 8 % at the centre (the stick is specified to re-centre within 6.3 %) and 4 % at the edge; sent as −32,767 to +32,767</td></tr>
 <tr><td>Report</td><td>12 bytes, sent only on change, at most one per radio slot (up to 133 a second at 7.5 ms)</td></tr>
 <tr><td>Added delay</td><td>Estimate: under 1 ms to notice a press, then 3.75 ms on average (7.5 ms at worst) waiting for the next radio slot at 7.5 ms</td></tr>
-<!--SPEC-POWER-->
-<tr><td rowspan="4">Board</td><td>Size</td><td>122 × 46 × 1.2 mm, two layers, gold (ENIG) finish</td></tr>
+<tr><td rowspan="9">Power</td><td>Battery</td><td>One lithium-polymer cell, 3.7 V, 1,200 mAh (4.4 Wh), 6 × 34 × 52 mm</td></tr>
+<tr><td>Charging</td><td>USB-C at 5 V, about 0.37 A (a 3 kΩ resistor on the charger chip); stops when the current falls to a tenth of that. Estimate: about 4 hours from empty</td></tr>
+<tr><td>Draw while playing</td><td>Estimate: about 35 mA. The chip with its radio idle is 14 to 30 mA by its datasheet, the radio adds a few milliamps at this report rate (it draws 130 mA sending and 73 mA listening, but only for a fraction of a millisecond per slot), and the Hall stick adds about 4 mA</td></tr>
+<tr><td>Play time</td><td>Estimate: about 30 hours on 1,200 mAh, about 12 on 500 mAh. A TMR stick saves about 3.6 mA</td></tr>
+<tr><td>Asleep</td><td>Estimate: about 75 µA (regulator 60, chip 7, protection 3, battery sensing 2, charger 1), so over a year on a full cell</td></tr>
+<tr><td>Switched off</td><td>Estimate: about 6 µA</td></tr>
+<tr><td>Battery protection</td><td>Cuts off above 4.30 V, below 2.40 V, and above about 3 A; the cell's own board does the same</td></tr>
+<tr><td>USB-C socket</td><td>Rated 10,000 insertions</td></tr>
+<tr><td>Temperature</td><td>Use −10 to 70 °C (the stick's limit); charge only between 0 and 45 °C (the battery's limit)</td></tr>
+<tr><td rowspan="4">Board</td><td>Size</td><td>108 × 46 × 1.2 mm with its top corners curved to follow the case, two layers, gold (ENIG) finish</td></tr>
 <tr><td>Parts</td><td>About 60, all on the front, placed by the factory; the stick is soldered by hand</td></tr>
 <tr><td>Connectors</td><td>USB-C (16-pin, charging and data), JST-PH 2-pin for the battery</td></tr>
 <tr><td>Spare pins</td><td>GPIO11, GPIO16 and GPIO17 (test pads). L2 and R2 are on pins that can read a voltage, for analog triggers later</td></tr>
@@ -177,7 +186,7 @@
 <li><b>It is a finished, shielded radio with its own antenna and its own FCC ID.</b> You never design radio circuitry, and it matters a great deal if you ever sell a unit (see <a href="#selling">below</a>).</li>
 <li><b>It has USB built in.</b> Each board is flashed through its own USB-C socket. No programmer, no extra chip, which is what makes 30 units practical.</li>
 <li><b>It has enough pins.</b> Twelve buttons, two stick axes, battery sensing and a light need 16 pins. The ESP32-C3 module has 13 free, which would mean adding a second chip to read buttons, and it costs the same. The C6 has more than 20, so every button gets its own pin and the wiring stays simple.</li>
-<li><b>It is easy to program</b> with the free Arduino software, and at $3.48 it is the cheapest module that does all of the above.</li>
+<li><b>It is easy to program</b> with the free Arduino software, and at $3.53 it is among the cheapest modules that do all of the above.</li>
 </ul>
 <p>The smaller MINI version of the same chip would save space, but JLCPCB only fits it on its dearer "Standard" assembly service. The WROOM version is accepted on the cheap "Economic" one.</p>
 <p>What you give up: a Nordic nRF52840 uses roughly a tenth of the power and would run for weeks, not days. It costs about $2 more per unit and needs a separate programmer for every board. Battery life is last on this project's priority list and 25-plus hours is already more than most store-bought pads, so the ESP32-C6 wins. If you want month-long battery life later, the nRF52840 is the upgrade.</p>
@@ -209,7 +218,7 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Ref</th><th>Part</th><th>LCSC no.</th><th class="num">Each</th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td>U1</td><td>ESP32-C6-WROOM-1-N8 radio module</td><td>C5366877</td><td class="num">$3.48</td><td>The biggest single cost</td></tr>
+<tr><td>U1</td><td>ESP32-C6-WROOM-1-N8 radio module</td><td>C5366877</td><td class="num">$3.53</td><td>The biggest single cost</td></tr>
 <tr><td>U2</td><td>TP4056 battery charger (ESOP-8)</td><td>C16581</td><td class="num">$0.19</td><td></td></tr>
 <tr><td>U3</td><td>XB5353A battery protection chip</td><td>C80628</td><td class="num">$0.09</td><td>Protection with the switch built in, so one part, not two</td></tr>
 <tr><td>U4</td><td>ME6211C33 3.3 V regulator</td><td>C82942</td><td class="num">$0.05</td><td>500 mA, loses only 0.12 V</td></tr>
@@ -218,8 +227,8 @@
 <tr><td>J1</td><td>USB-C socket, 16-pin, TYPE-C-31-M-12</td><td>C165948</td><td class="num">$0.19</td><td>Has four legs that go through the board, for strength</td></tr>
 <tr><td>J2</td><td>Battery socket, JST-PH 2-pin, S2B-PH-SM4-TB</td><td>C295747</td><td class="num">$0.21</td><td></td></tr>
 <tr><td>SW1</td><td>Slide switch MSK12C02</td><td>C431540</td><td class="num">$0.06</td><td>Rated only 50 mA, which is why it switches the regulator and not the power</td></tr>
-<tr><td>SW2 to SW5</td><td>Side-facing push switch, SHOU HAN TS3819ZJ, 160 gf</td><td>C6386917</td><td class="num">about $0.10</td><td>L1, L2, R1, R2. Rated 500,000 presses. Price unconfirmed</td></tr>
-<tr><td>SW6 to SW9</td><td>Small push switch, top-facing, XUNPU TS-1088-AR02016, 160 gf, 2.0 mm tall</td><td>C720477</td><td class="num">about $0.03</td><td>Select, Start, Home, BOOT. A Basic part, so no extra fee</td></tr>
+<tr><td>SW2 to SW5</td><td>Side-facing push switch, SHOU HAN TS3819ZJ, 160 gf</td><td>C6386917</td><td class="num">$0.10</td><td>L1, L2, R1, R2. Rated 500,000 presses</td></tr>
+<tr><td>SW6 to SW9</td><td>Small push switch, top-facing, XUNPU TS-1088-AR02016, 160 gf, 2.0 mm tall</td><td>C720477</td><td class="num">$0.04</td><td>Select, Start, Home, BOOT. A Basic part, so no extra fee</td></tr>
 <tr><td>LED1 to LED3</td><td>0603 LEDs: one for status, red and green for charging</td><td>Basic parts</td><td class="num">$0.01</td><td></td></tr>
 <tr><td>R, C</td><td>About 30 resistors and capacitors, size 0603</td><td>10 kΩ C25804, 5.1 kΩ C23186, 100 kΩ C25803, 100 nF C14663, 1 µF C15849, 10 µF C19702</td><td class="num">$0.06 the lot</td><td>All Basic. Pick Basic 0603 parts for the other values (100 Ω, 1 kΩ, 3 kΩ, 1 MΩ) when ordering</td></tr>
 </tbody></table></div>
@@ -229,7 +238,7 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Part</th><th>What to buy</th><th>Where</th><th class="num">Each</th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td>Stick</td><td>YTL 13-series Hall module, YHE-YG13-013 SH3B166A5</td><td>LCSC, no. C42410941</td><td class="num">$1.35 to $2.20</td><td>Runs on 1.7 to 3.6 V. The TMR version, YTMR-YG13-006 (C42411048), uses a tenth of the current and costs about $2.15 to $2.85</td></tr>
+<tr><td>Stick</td><td>YTL 13-series Hall module, YHE-YG13-013 SH3B166A5</td><td>LCSC, no. C42410941</td><td class="num">$1.69 at 30; $2.25 for one</td><td>Runs on 1.7 to 3.6 V. See the <a href="#options">options</a> for the TMR versions</td></tr>
 <tr><td>Thumb cap</td><td>Replacement thumbstick cap for a 4 mm D-shaped shaft</td><td>AliExpress, eBay, Amazon</td><td class="num">about $0.20</td><td>Price unconfirmed. Or print one</td></tr>
 <tr><td>Battery</td><td>3.7 V lithium-polymer cell, size 603450, 1,200 mAh, with protection board and a JST-PH 2.0 plug</td><td>AliExpress; Adafruit in the US</td><td class="num">$3 to $7.41</td><td>See the <a href="#options">options</a>: $7.41 is the cheapest price that could be confirmed; about $3 from marketplace sellers is unconfirmed. Buy all 30 from one listing</td></tr>
 <tr><td>Rubber pad</td><td>Conductive rubber pad set for a Super Nintendo style controller</td><td>eBay, AliExpress, retro repair shops</td><td class="num">$2.25 to $2.99</td><td>$2.99 a set from Hand Held Legend; about $2.25 in a lot of 100 on eBay. Buy one first and measure it</td></tr>
@@ -276,7 +285,7 @@
 <li><b>Battery.</b> Still the weak point of the budget: see the <a href="#options">battery options</a>. The cheapest listing that could be read is $7.41 a cell in a pack of ten; about $3 from marketplace sellers is unconfirmed.</li>
 <li><b>Inserts:</b> <a href="https://www.prusa3d.com/product/heat-set-inserts-m2-short-100-pcs/" rel="noopener">Heat Set Inserts, M2 short, 100 pieces</a>, Prusa, $11.99 (read).</li>
 <li><b>Screws:</b> M2 × 8 mm pan-head machine screws, about $10 a hundred from industrial suppliers.</li>
-<li><b>Filament:</b> <a href="https://www.prusa3d.com/product/prusament-petg-jet-black-1kg/" rel="noopener">Prusament PETG, 1 kg</a>, $23.99 to $29.99 (read). One spool makes about 13 cases.</li>
+<li><b>Filament:</b> <a href="https://www.prusa3d.com/product/prusament-petg-jet-black-1kg/" rel="noopener">Prusament PETG, 1 kg</a>, $23.99 to $29.99 (read). One spool makes about 16 cases.</li>
 <li><b>Rubber pads in bulk:</b> $2.99 a set from Hand Held Legend with no bulk price; an eBay lot of 100 sets for about $225 was seen in a search result only.</li>
 </ul>
 
@@ -287,10 +296,29 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Option</th><th>Listing</th><th>Seller</th><th class="num">Per stick</th><th>Why you would choose it</th></tr></thead>
 <tbody>
-<tr><td><b>Pick</b>: cheapest</td><td><a href="https://www.lcsc.com/product-detail/C42410941.html" rel="noopener">YTL YHE-YG13-013 SH3B166A5</a>, Hall</td><td>LCSC</td><td class="num">about $2.20; less in hundreds</td><td>The one the board's holes are drawn from, with a full datasheet. Ships from China with the other LCSC parts</td></tr>
-<tr><td>Lower power</td><td><a href="https://www.lcsc.com/product-detail/C42411048.html" rel="noopener">YTL YTMR-YG13-006 SH3B174A5</a>, TMR</td><td>LCSC</td><td class="num">about $2.15 to $2.85</td><td>Same holes and pin order. A tenth of the current and a finer signal</td></tr>
+<tr><td><b>Pick</b>: cheapest</td><td><a href="https://www.lcsc.com/product-detail/C42410941.html" rel="noopener">YTL YHE-YG13-013 SH3B166A5</a>, Hall</td><td>LCSC</td><td class="num">$1.69 at 30; $1.47 at 80; $2.25 for one</td><td>The one the board's holes are drawn from, with a full datasheet. 460 in stock. Ships from China with the other LCSC parts</td></tr>
+<tr><td>Lower power</td><td><a href="https://www.lcsc.com/product-detail/C42411048.html" rel="noopener">YTL YTMR-YG13-006 SH3B174A5</a>, TMR</td><td>LCSC</td><td class="num">$2.62 at 30</td><td>Same holes and pin order, a tenth of the current. Only 22 in stock when checked, not enough for a batch; the better-stocked TMR, YTMR-YG13-010 SH3B174A3 (C52677831, $2.86 at 30), has its two sensors wired opposite ways round, so the board would need changing</td></tr>
 <tr><td>Small packs, quicker</td><td><a href="https://aknes.com" rel="noopener">AKNES HallPi V7 TMR Joysticks, without cap</a></td><td>AKNES</td><td class="num">$3.00 ($5.99 a pair)</td><td>Sold as controller repair parts. Check the pin order against the board before soldering: these are made for a PlayStation or Xbox board</td></tr>
 <tr><td>Best known brand</td><td>GuliKit V6 TMR Joystick, 1 pair (NS51)</td><td>AKNES; also <a href="https://handheldlegend.com" rel="noopener">Hand Held Legend</a> with caps at $16.49 a pair</td><td class="num">$5.50 to $8.25</td><td>The brand most repair guides use. Same caution about pin order</td></tr>
+</tbody></table></div>
+
+<h3>Parts on the board</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Job</th><th>Option</th><th>LCSC no.</th><th class="num">Each, at 30 to 50</th><th>Why you would choose it</th></tr></thead>
+<tbody>
+<tr><td rowspan="2">Radio module</td><td><b>Pick</b>: ESP32-C6-WROOM-1-N8</td><td>C5366877</td><td class="num">$3.53</td><td>Same module as the development board, 8 MB of storage, 3,800 in stock</td></tr>
+<tr><td>ESP32-C6-WROOM-1-N4</td><td>C6034714</td><td class="num">$3.26</td><td>Drops straight in and saves $0.27. Set Flash Size to 4 MB when flashing; the firmware needs 0.7 MB. The N16, the external-antenna and the MINI versions are not accepted on JLCPCB's cheap assembly service</td></tr>
+<tr><td rowspan="2">Shoulder switch</td><td><b>Pick</b>: SHOU HAN TS3819ZJ</td><td>C6386917</td><td class="num">$0.10</td><td>500,000 presses, the longest life found. Very short travel, 0.12 mm</td></tr>
+<tr><td>Alps SKRTLAE010, or Panasonic EVQP7C01P</td><td>C110293, C388883</td><td class="num">$0.12, $0.15</td><td>A little more travel (0.2 mm), but rated 100,000 presses. Different footprints</td></tr>
+<tr><td rowspan="2">Select, Start, Home</td><td><b>Pick</b>: XUNPU TS-1088-AR02016</td><td>C720477</td><td class="num">$0.04</td><td>A Basic part (no fee), 100,000 presses</td></tr>
+<tr><td>Panasonic EVQP2202M</td><td>C528967</td><td class="num">$0.30</td><td>1,000,000 presses. Slightly larger, 4.7 × 3.5 mm</td></tr>
+<tr><td rowspan="2">Charger</td><td><b>Pick</b>: TP4056 with a transistor and diode beside it</td><td>C16581</td><td class="num">$0.15</td><td>Cheap, easy to solder and inspect, well understood</td></tr>
+<tr><td>TI BQ24075</td><td>C2865459</td><td class="num">$0.97</td><td>Powers the controller and charges the battery at once by itself, replacing the transistor and diode. A tiny no-lead package, harder to check or rework</td></tr>
+<tr><td rowspan="2">3.3 V regulator</td><td><b>Pick</b>: ME6211C33</td><td>C82942</td><td class="num">$0.05</td><td>500 mA; uses 60 µA itself</td></tr>
+<tr><td>Richtek RT9080-33</td><td>C841192</td><td class="num">$0.10</td><td>Uses 2 µA itself, which would cut the sleeping drain from about 75 µA to about 17 µA. Input limit 5.5 V, which this circuit stays under. Check its pin order against the ME6211 before swapping</td></tr>
+<tr><td>USB protection</td><td>Worth adding: USBLC6-2SC6 (TECH PUBLIC)</td><td>C2827654</td><td class="num">$0.04</td><td>Shields the USB data pins from static when a cable is plugged in. Not in the first design; it adds one Extended part fee to the order (about 10 cents a board at 30)</td></tr>
+<tr><td rowspan="2">Battery socket</td><td><b>Pick</b>: JST S2B-PH-SM4-TB</td><td>C295747</td><td class="num">$0.16</td><td>The original part</td></tr>
+<tr><td>XYECONN XY-S2B-PH-SM4</td><td>C51940124</td><td class="num">$0.04</td><td>A compatible copy; only 180 in stock when checked</td></tr>
 </tbody></table></div>
 
 <h3>Battery</h3>
@@ -298,7 +326,7 @@
 <thead><tr><th>Option</th><th>Listing</th><th>Seller</th><th class="num">Each</th><th>Size, and what to know</th></tr></thead>
 <tbody>
 <tr><td><b>Pick</b>: fits the case</td><td><a href="https://pmdway.com/products/lithium-ion-polymer-battery-3-7v-1200mah" rel="noopener">Lithium Ion Polymer Battery 3.7 V 1200 mAh 603450</a></td><td>PMD Way</td><td class="num">$7.41 in a 10-pack ($74.11); $23.64 for one</td><td>50 × 34 × 6 mm, JST-PH 2.0 plug. Ships from China or Hong Kong in 3 to 4 weeks. The listing does not say whether a protection board is fitted or which way the plug is wired</td></tr>
-<tr><td>Confirmed and quick</td><td><a href="https://www.adafruit.com/product/1578" rel="noopener">Lithium Ion Polymer Battery 3.7 V 500 mAh</a></td><td>Adafruit</td><td class="num">$7.16 in tens; $7.95 for one</td><td>29 × 36 × 4.75 mm, protected, JST-PH, in stock in the US. Fits the pocket with room to spare, for roughly 10 to 16 hours of play</td></tr>
+<tr><td>Confirmed and quick</td><td><a href="https://www.adafruit.com/product/1578" rel="noopener">Lithium Ion Polymer Battery 3.7 V 500 mAh</a></td><td>Adafruit</td><td class="num">$7.16 in tens; $7.95 for one</td><td>29 × 36 × 4.75 mm, protected, JST-PH, in stock in the US. Fits the pocket with room to spare, for roughly 12 hours of play</td></tr>
 <tr><td>Most capacity, wrong shape</td><td><a href="https://www.adafruit.com/product/258" rel="noopener">Lithium Ion Polymer Battery 3.7 V 1200 mAh</a></td><td>Adafruit</td><td class="num">$8.96 in tens</td><td>34 × 62 × 5 mm: 8 mm too long for the pocket as drawn. Usable only if you lengthen <code>battery_box</code> in the case model and check it clears the stick's pins</td></tr>
 <tr><td>Cheapest, unconfirmed</td><td>"603450 1200 mAh PH2.0" cells from Amazon or AliExpress sellers</td><td>Amazon, AliExpress</td><td class="num">about $3 to $5</td><td>Search results only. Often good value, but check for a protection board and test the plug's polarity on every one</td></tr>
 </tbody></table></div>
@@ -354,7 +382,7 @@
 <tr><td>Digital Caliper, 0 to 150 mm</td><td>iFixit</td><td class="num">$39.95</td><td>Reads to 0.01 mm</td></tr>
 <tr><td>Holding the work</td><td>PCB clamp holder, Pro's Kit SN-390; or a "helping hands" stand</td><td>Adafruit</td><td class="num">$19.95; $6.95</td><td>The clamp is much the better of the two for a board this size</td></tr>
 <tr><td>Bench</td><td>Insulated silicone rework mat; safety glasses</td><td>Adafruit; SparkFun</td><td class="num">$9.95; $5.10</td><td>Wear the glasses when cutting leads: the offcuts fly</td></tr>
-<tr><td>Charger for the controller</td><td>Any 5 V USB charger or computer port; for example 5 V 1 A USB power supply</td><td>Adafruit</td><td class="num">$5.95</td><td>The controller takes 0.4 A and does not need a fast charger</td></tr>
+<tr><td>Charger for the controller</td><td>Any 5 V USB charger or computer port; for example 5 V 1 A USB power supply</td><td>Adafruit</td><td class="num">$5.95</td><td>The controller takes under 0.4 A and does not need a fast charger</td></tr>
 </tbody></table></div>
 
 <h3>Who makes the board</h3>
@@ -403,7 +431,7 @@
 <svg viewBox="0 0 760 400" role="img" aria-label="Power diagram. USB-C 5 volts goes to the charger chip, which charges the battery through a protection circuit. The system rail is fed from USB through a diode when the cable is in, and from the battery through transistor Q1 when it is not. The rail feeds a 3.3 volt regulator, which the slide switch turns on and off. The regulator powers the ESP32-C6, and through transistor Q2 the stick.">
   <defs><marker id="dd-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" class="acc"/></marker></defs>
   <rect class="box" x="14" y="40" width="112" height="60" rx="8"/><text class="t-strong" x="70" y="66" text-anchor="middle">USB-C</text><text x="70" y="86" text-anchor="middle">5 V in</text>
-  <rect class="box" x="190" y="40" width="150" height="60" rx="8"/><text class="t-strong" x="265" y="66" text-anchor="middle">TP4056 charger</text><text x="265" y="86" text-anchor="middle">3 kΩ = 400 mA</text>
+  <rect class="box" x="190" y="40" width="150" height="60" rx="8"/><text class="t-strong" x="265" y="66" text-anchor="middle">TP4056 charger</text><text x="265" y="86" text-anchor="middle">3 kΩ = 0.37 A</text>
   <rect class="box" x="404" y="40" width="170" height="60" rx="8"/><text class="t-strong" x="489" y="66" text-anchor="middle">Battery 1,200 mAh</text><text x="489" y="86" text-anchor="middle">+ protection chip</text>
   <rect class="box" x="190" y="160" width="150" height="50" rx="8"/><text class="t-strong" x="265" y="182" text-anchor="middle">D1 diode</text><text x="265" y="200" text-anchor="middle">USB to rail</text>
   <rect class="box" x="404" y="160" width="170" height="50" rx="8"/><text class="t-strong" x="489" y="182" text-anchor="middle">Q1 transistor</text><text x="489" y="200" text-anchor="middle">battery to rail</text>
@@ -430,7 +458,7 @@
 <h3>The rest of the circuit, connection by connection</h3>
 <ul>
 <li><b>USB-C socket:</b> VBUS to the charger's input and to D1. CC1 and CC2 each through their own 5.1 kΩ resistor to ground (without these, a USB-C to USB-C cable supplies no power). D− and D+ to GPIO12 and GPIO13. Shell and GND pins to ground. 10 µF from VBUS to ground.</li>
-<li><b>TP4056 charger:</b> VCC and CE to VBUS. PROG through 3 kΩ to ground (sets 400 mA, a gentle third of the cell's capacity). BAT to battery +, with 10 µF to ground. CHRG and STDBY each pull an LED (red = charging, green = full) through 1 kΩ from VBUS. TEMP to ground.</li>
+<li><b>TP4056 charger:</b> VCC and CE to VBUS. PROG through 3 kΩ to ground (sets about 0.37 A, a gentle third of the cell's capacity; the current is 1,100 divided by the resistance in ohms). BAT to battery +, with 10 µF to ground. CHRG and STDBY each pull an LED (red = charging, green = full) through 1 kΩ from VBUS. TEMP to ground.</li>
 <li><b>Battery protection (XB5353A):</b> the cell's minus lead goes to the chip's GND pin (pin 2) and nowhere else. Pins 4 and 5 (VM) are the circuit's ground. Pin 3 (VDD) connects to battery + through 100 Ω, with 100 nF from pin 3 to pin 2. Pin 1 is left unconnected. It cuts off above 4.30 V, below 2.40 V and at about 3 A.</li>
 <li><b>Q1 (AO3401A) and D1 (Schottky):</b> D1 from VBUS to the system rail. Q1's drain to battery +, source to the system rail, gate to VBUS with 100 kΩ from gate to ground. Cable in: the gate is high, Q1 is off, the rail runs from USB. Cable out: the gate falls, Q1 turns on.</li>
 <li><b>Regulator (ME6211C33):</b> input from the system rail with 10 µF to ground; output is the 3.3 V rail with 10 µF to ground. Its enable pin goes to the middle pin of the slide switch; the switch's two outer pins go to the system rail (on) and ground (off).</li>
@@ -459,7 +487,7 @@
 <tbody>
 <tr><td><code>DEVICE_NAME</code></td><td>"Daedalus"</td><td>The name shown in Bluetooth settings</td></tr>
 <tr><td><code>STICK_INVERT_X</code>, <code>STICK_INVERT_Y</code>, <code>STICK_SWAP_XY</code></td><td>false</td><td>Flip these if a direction comes out backwards or the axes are swapped on your board</td></tr>
-<tr><td><code>INNER_DEADZONE</code></td><td>0.05</td><td>How much of the travel round the centre reads as zero. Raise it if the pointer creeps with the stick at rest</td></tr>
+<tr><td><code>INNER_DEADZONE</code></td><td>0.08</td><td>How much of the travel round the centre reads as zero. Set just above the 6.3 % the stick is specified to re-centre within; raise it if anything creeps with the stick at rest</td></tr>
 <tr><td><code>OUTER_DEADZONE</code></td><td>0.04</td><td>How close to the edge already reads as full</td></tr>
 <tr><td><code>STICK_CURVE</code></td><td>1.0</td><td>1.0 follows the stick exactly. 1.5 gives finer control near the centre</td></tr>
 <tr><td><code>DEBOUNCE_MS</code></td><td>5</td><td>How long a button is ignored after it changes. Raise to 8 if a worn button double-presses</td></tr>
@@ -474,7 +502,7 @@
 <li>Put <code>daedalus.ino</code> in a folder with the same name, <code>daedalus</code>, and open it.</li>
 <li>Under <b>Tools</b>: Board "ESP32C6 Dev Module"; USB CDC On Boot "Enabled"; CPU Frequency "80MHz (WiFi)"; Flash Size "8MB (64Mb)".</li>
 <li>Plug the board in with a USB-C cable that carries data (many charge-only cables do not), pick its port under Tools &gt; Port, and press Upload.</li>
-<li>If the port does not appear or the upload fails: hold the BOOT button, switch the controller off and on, release BOOT, and upload again.</li>
+<li>If the port does not appear or the upload fails: hold the BOOT button, switch the controller off and on, release BOOT, and upload again. On a finished controller that means taking the back off first; it should only ever be needed if firmware has gone badly wrong.</li>
 <li>Open Tools &gt; Serial Monitor. Twice a second the controller prints which buttons are down, the stick position and the battery level. Use this to check a board before it goes in a case.</li>
 <li>On the computer, open Bluetooth settings and add "Daedalus". On Windows, <code>joy.cpl</code> (Set up USB game controllers) shows every button and axis.</li>
 </ol>
@@ -509,14 +537,15 @@
 
 <h3>The board</h3>
 <ul>
-<li><b>Size and build:</b> 122 × 46 mm with its top corners rounded off, two copper layers, <b>1.2 mm thick</b> (the stick's legs are made for a 1.2 mm board), with <b>ENIG gold finish</b>. Gold is not optional: the face buttons press carbon onto bare board contacts, and the ordinary tin finish wears and tarnishes there.</li>
+<li><b>Size and build:</b> 108 × 46 mm, its top corners curved to follow the inside of the case (import board.dxf for the exact edge), two copper layers, <b>1.2 mm thick</b> (the stick's legs are made for a 1.2 mm board), with <b>ENIG gold finish</b>. Gold is not optional: the face buttons press carbon onto bare board contacts, and the ordinary tin finish wears and tarnishes there.</li>
 <li><b>Everything the factory places goes on the front.</b> Assembly on one side is the cheap service; two sides roughly doubles the set-up cost.</li>
-<li><b>Radio module at the top edge, left of centre,</b> antenna end up. The board has a 20 × 6 mm cut-out under the antenna, as Espressif's layout guide asks, and nothing metal should sit near it. Espressif also asks for 15 mm of clear space between the antenna and any housing, which a hand-held case cannot give; expect a little less range than the module's rated best. The USB-C socket goes beside it on the same edge, its mouth about 0.5 mm past the edge.</li>
+<li><b>Radio module at the bottom edge, in the middle,</b> antenna end down, between the grips and away from both hands. The board has a 20 × 6 mm cut-out under the antenna, as Espressif's layout guide asks. Espressif also asks for 15 mm of clear space between the antenna and any housing, which a hand-held case cannot give, and the battery behind the board ends 1.6 mm short of the antenna; expect less range than the module's rated best until it is measured.</li>
+<li><b>USB-C socket in the middle of the top edge,</b> its mouth about 0.5 mm past the edge, with the two charge lights beside it and the slide switch to its left.</li>
 <li><b>Stick on the left, face contacts on the right.</b> The stick needs fourteen holes: four of 1.2 mm for the frame legs, six of 1.0 mm for the sensor pins, four of 0.9 mm for the switch. Their positions, taken from the datasheet, are in <a href="case/layout.json" download>layout.json</a>.</li>
 <li><b>Face contacts:</b> for each button, two interleaved combs of 0.3 mm fingers with 0.3 mm gaps, in a circle about 5.3 mm across, with the green solder mask removed over the whole circle. One comb goes to the pin, the other to ground. The spacing in the drawing below (27 mm left to right, 21 mm top to bottom) is taken from an <a href="https://codeberg.org/taylor-madeak/oshw-snes-controller-pcb" rel="noopener">open-hardware SNES controller board</a> by Taylor Madeak (CC BY-SA 4.0). <b>Check it against the pad you bought</b>, and check whether its domes sit square or slightly tilted, before ordering boards.</li>
-<li><b>Shoulder switches</b> along the top edge, their bodies flush with it and their push-buttons sticking out past it. Small switches for Select, Start, Home and BOOT where the drawing shows them; BOOT is reached with a pin through a hole in the front.</li>
+<li><b>Shoulder switches</b> along the top edge, their bodies flush with it and their push-buttons sticking out past it. Small switches for Select, Start and Home in a diamond with the status light, and BOOT near the bottom edge. BOOT has no hole in the case: it is only for recovering from bad firmware, and you open the case to reach it.</li>
 <li><b>Tracks:</b> 0.5 mm or wider for anything carrying battery or USB power, 0.25 mm for signals, the back layer one solid ground area. Keep the USB data pair short and side by side.</li>
-<li><b>Mounting:</b> four 2.2 mm holes for M2 screws, plus a notch in the bottom edge for the battery lead to pass to the back. Keep the back of the board clear of solder joints at the three support points in the table below.</li>
+<li><b>Mounting:</b> four 2.2 mm holes for M2 screws, plus a notch in the bottom edge, left of the radio module, for the battery lead to pass to the back. Keep the back of the board clear of solder joints at the three support points in the table below.</li>
 <li><b>Test pads:</b> 3.3 V, ground, battery +, TX, RX, labelled in the white print.</li>
 </ul>
 
@@ -543,7 +572,7 @@
 <h3>Ordering from JLCPCB</h3>
 <ol>
 <li>In EasyEDA, run the design check until it reports no errors, then choose "Order at JLCPCB". (From KiCad: export Gerber files, a parts list and a placement file.)</li>
-<li>On the order form: base material FR-4; 2 layers; 122 × 46 mm; <b>thickness 1.2 mm</b>; <b>surface finish ENIG</b>; outer copper 1 oz; any colour; leave everything else as it is.</li>
+<li>On the order form: base material FR-4; 2 layers; 108 × 46 mm; <b>thickness 1.2 mm</b>; <b>surface finish ENIG</b>; outer copper 1 oz; any colour; leave everything else as it is.</li>
 <li>Turn on <b>PCB Assembly</b>: "Economic", top side. For the first order choose 5 boards with 2 assembled; for the batch, assemble all.</li>
 <li>Check the parts list it matched. "Basic" parts carry no extra fee; each different "Extended" part adds a small one-off fee to the order. If a part is out of stock, pick the suggested equivalent and check its footprint is the same.</li>
 <li><b>Look at the placement preview carefully.</b> Check the dot or notch on every chip, the direction of the diode and LEDs, and that the USB-C socket faces off the board. Wrong rotation is the classic first-order mistake.</li>
@@ -552,20 +581,22 @@
 
 <h2 id="case">The case</h2>
 <p>Two shells, front and back, that screw together with the board trapped between them. A first version is modelled and ready to download below. To change it, edit the numbers in the model, or open the STEP file in any 3D design program; Onshape and Fusion are free for personal projects, and FreeCAD is free for any use, which matters if you sell.</p>
-<h3>Case files, version 1</h3>
-<div class="callout dd-status"><p><b>Drawn, not yet printed.</b> These files come from datasheets and estimates. Print <a href="case/coupon.stl" download>coupon.stl</a> first: a small test piece with one button hole, one Select slot, one insert post and the USB-C opening. Then check the sizes marked MEASURE in the model against your real stick, pad and switches before printing a whole case.</p></div>
+<h3>Case files, version 3</h3>
+<div class="callout dd-status"><p><b>Drawn, not yet printed.</b> These files come from datasheets and estimates. Print <a href="case/coupon.stl" download>coupon.stl</a> first: a small test piece with one button hole, one Select hole, one insert post and the USB-C opening. Then check the sizes marked MEASURE in the model against your real stick, pad and switches before printing a whole case.</p></div>
 <ul class="dd-files">
 <li><a href="case/front_shell.stl" download>front_shell.stl</a>, print 1, face down</li>
 <li><a href="case/back_shell.stl" download>back_shell.stl</a>, print 1, outside down</li>
 <li><a href="case/face_button.stl" download>face_button.stl</a>, print 4, as drawn</li>
 <li><a href="case/select_start_button.stl" download>select_start_button.stl</a>, print 2</li>
 <li><a href="case/home_button.stl" download>home_button.stl</a>, print 1</li>
-<li><a href="case/shoulder_l1_r1.stl" download>shoulder_l1_r1.stl</a>, print 2, standing on end</li>
+<li><a href="case/shoulder_l1.stl" download>shoulder_l1.stl</a> and <a href="case/shoulder_r1.stl" download>shoulder_r1.stl</a>, print 1 of each, standing on end</li>
 <li><a href="case/shoulder_l2_r2.stl" download>shoulder_l2_r2.stl</a>, print 2, standing on end</li>
 <li><a href="case/template.svg" download>template.svg</a>, a full-size drawing of the front to print on paper</li>
 <li><a href="case/daedalus_case.step" download>daedalus_case.step</a>, both shells and the board, for any 3D design program</li>
 <li><a href="case/daedalus_case.py" download>daedalus_case.py</a>, the model itself</li>
 </ul>
+<p><b>What changed from version 2.</b> Version 3 is 15 mm narrower, 7 mm shorter and 1 mm thinner. The radio module moved from the top edge to the bottom, which let the USB-C socket go dead centre and the board lose 14 mm of width. The shoulders now sweep round in one curve, and the L1 and R1 buttons are cut to follow it. Select, Start, Home and the status light form a small diamond that echoes the face buttons, and the hole for the BOOT switch is gone from the front. It is this project's own shape: the aim is the same clean, flowing feel as a modern console controller without copying one.</p>
+<p>Version 2 (140 × 85 × 22.7 mm, with the 122 mm board) is kept for reference: <a href="case/v2/daedalus_case.step" download>STEP</a>, <a href="case/v2/front_shell.stl" download>front shell</a>, <a href="case/v2/back_shell.stl" download>back shell</a>, <a href="case/v2/daedalus_case.py" download>model</a>. Running that model writes its buttons and board files too.</p>
 <p><b>Before any plastic:</b> open template.svg in a browser, print it at 100 % (the page has a 50 mm bar to check with a ruler), cut it out and hold it. It shows the real size and how far your thumbs have to reach.</p>
 <p>The model is a short Python program for the free CadQuery library. Every size is a named number at the top: the button spacing, the height of the rubber domes, the insert diameter, the battery pocket. Change a number, run it, and it writes every file above again. None of the parts needs supports.</p>
 <p><button class="dd-btn" id="ddShow" type="button">Show the case in 3D</button></p>
@@ -579,10 +610,10 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Feature</th><th>Size</th><th>Why</th></tr></thead>
 <tbody>
-<tr><td>Outside</td><td>140 wide × 85 tall × 22.7 mm thick. Curved outline; grips flare out 3 mm a side and end in full rounds</td><td>Fits any printer with a 150 mm bed</td></tr>
-<tr><td>Walls and edges</td><td>2.0 mm walls. Front edge: a 2.2 mm flat at 45°, then a 4 mm radius. Back edge: a 3 mm flat, then a 5 mm radius. Hole rims eased by 0.5 mm</td><td>The edge feels rounded in the hand, and the short flat is what lets it print against the plate with no supports</td></tr>
-<tr><td>Front of board to inside of front shell</td><td>About 10 mm</td><td>Room for the stick's body and the button caps. Confirm against your stick</td></tr>
-<tr><td>Back of board to inside of back shell</td><td>7.5 mm</td><td>6 mm battery plus 1 mm foam tape</td></tr>
+<tr><td>Outside</td><td>125 wide × 78 tall × 21.7 mm thick. Shoulders sweep round at a 22 mm radius; the sides flare 3.5 mm to the heel of the hand; grips end in full rounds</td><td>Fits any printer with a 130 mm bed</td></tr>
+<tr><td>Walls and edges</td><td>2.0 mm walls. Front edge: a 2 mm flat at 45°, then a 5 mm radius. Back edge: a 3.2 mm flat, then a 7.5 mm radius. Hole rims eased by 0.5 mm</td><td>The edge feels rounded in the hand, and the short flat is what lets it print against the plate with no supports</td></tr>
+<tr><td>Front of board to inside of front shell</td><td>8.5 mm</td><td>Room for the stick's body and the button caps. Confirm against your stick</td></tr>
+<tr><td>Back of board to inside of back shell</td><td>8.0 mm</td><td>6 mm battery, 0.6 mm of tape under it, and 1.4 mm above it so it clears the USB-C socket's solder legs</td></tr>
 <tr><td>Stick opening</td><td>25 mm circle, its rim thickened to 4 mm by a ring inside the shell</td><td>The rim takes sideways knocks so the stick's solder joints do not</td></tr>
 <tr><td>Face button holes</td><td>Cap diameter + 0.5 mm; caps 10.6 mm across</td><td>Free movement without rattle. Print the coupon first</td></tr>
 <tr><td>Button caps</td><td>A base 2.4 mm wider than the hole, with one flat that runs against a rib in the shell</td><td>The base stops the cap coming out; the flat stops it turning</td></tr>
@@ -596,7 +627,7 @@
 <li><b>Board:</b> sits against four posts in the front shell, located by the four screws that pass through it, and is clamped by matching posts on the back shell. Three more posts on the back shell hold it up behind the stick and the face buttons so pressing them cannot bend it.</li>
 <li><b>Stick:</b> soldered to the board; the cap pushes onto its 4 mm D-shaped shaft after the case is closed.</li>
 <li><b>Face buttons:</b> caps drop into their holes from inside the front shell, the silicone pad lies over them with its pegs through the board, and the board holds the stack in place.</li>
-<li><b>Shoulder buttons:</b> each is a printed plunger sliding in a slot in the top edge, pressing the side-facing switch, with a catch that hooks behind the wall so it cannot pull out. No hinge and no spring: the switch returns it.</li>
+<li><b>Shoulder buttons:</b> each is a printed plunger sliding in a slot in the top edge, pressing the side-facing switch, with a catch that hooks behind the wall so it cannot pull out. Its outer end is cut to the curve of the shoulder, standing 2.2 mm out. No hinge and no spring: the switch returns it.</li>
 <li><b>Battery:</b> in a walled pocket in the back shell, held with thin foam tape. No screw posts, sharp edges or wire ends anywhere near it.</li>
 <li><b>Light:</b> a 2 mm hole over the status LED, filled with a drop of clear glue as a window.</li>
 </ul>
@@ -611,7 +642,7 @@
 <tr><td>Infill</td><td>25 %, gyroid</td><td>Only the posts and button bases have any inside to fill</td></tr>
 <tr><td>Temperatures</td><td>Nozzle 235 to 245 °C, bed 75 to 85 °C; use the filament maker's figures</td><td></td></tr>
 <tr><td>Cooling and speed</td><td>Fan about 40 %; outer walls at 40 to 60 mm/s</td><td>PETG strings and goes brittle with too much fan</td></tr>
-<tr><td>Supports</td><td>None for any part</td><td>Checked in software: no surface overhangs past 45°; the only bridges are the slot tops, 16 mm at most</td></tr>
+<tr><td>Supports</td><td>None for any part</td><td>Checked in software: no surface overhangs past 45°; the only bridges are the slot tops, 13 mm at most</td></tr>
 <tr><td>Plate</td><td>Textured PEI</td><td>Gives the front and back faces an even matt grain that hides layer lines and fingerprints</td></tr>
 <tr><td>First layer</td><td>Turn on "elephant foot compensation", about 0.15 mm</td><td>Stops the button holes printing undersize where they meet the plate</td></tr>
 </tbody></table></div>
@@ -622,11 +653,11 @@
 <tr><td>Back shell</td><td>1</td><td>Back face on the plate</td></tr>
 <tr><td>Face button</td><td>4</td><td>As drawn, wide base on the plate; turn on ironing for a smooth top</td></tr>
 <tr><td>Select / Start button, Home button</td><td>2 and 1</td><td>As drawn, base on the plate</td></tr>
-<tr><td>Shoulder buttons</td><td>2 of each size</td><td>As drawn, standing on end</td></tr>
+<tr><td>Shoulder buttons</td><td>L1, R1, and 2 of the L2 / R2 part</td><td>As drawn, standing on end</td></tr>
 <tr><td>Coupon</td><td>1, first</td><td>Flat</td></tr>
 </tbody></table></div>
 <ul>
-<li>A whole case is about 76 g of filament, so one 1 kg spool makes about 13. Print time depends on the printer; expect 3 to 5 hours a set.</li>
+<li>A whole case is about 61 g of filament, so one 1 kg spool makes about 16. Print time depends on the printer; expect 3 to 4 hours a set.</li>
 <li><b>For a smoother finish still:</b> sand the edges with 400 then 800 grit paper, wet. PETG does not smooth with acetone. A coat of filler primer and paint hides layer lines completely, at the cost of time per unit.</li>
 <li><b>For more grip:</b> some slicers have a "fuzzy skin" setting that roughens outside walls. Applied to the back shell only, it gives the grips a soft texture.</li>
 </ul>
@@ -643,7 +674,7 @@
 <li><b>Charge test:</b> plug in USB with the switch off. Red light on; it turns green when full.</li>
 <li><b>Set the six brass inserts</b> into the front shell's posts with the soldering iron at about 220 °C. Press gently and let the heat do the work.</li>
 <li><b>Load the front shell,</b> lying face-down: four button caps, the silicone pad, the four shoulder plungers, the small button caps, then lower the board onto its posts.</li>
-<li><b>Fit the battery</b> into the back shell with foam tape, bring its lead up through the notch in the board's bottom edge, plug it into the socket beside the notch, and close the case without trapping the lead. Six screws, snug, not tight.</li>
+<li><b>Fit the battery</b> into the back shell with foam tape, bring its lead up through the notch in the board's bottom edge, plug it into the socket beside the notch (the plug goes in from the left), and close the case without trapping the lead. Six screws, snug, not tight.</li>
 <li><b>Push on the thumb cap</b> and run the full test once more.</li>
 </ol>
 <p><b>Time:</b> the first one will take over an hour. Once practised, expect about 20 to 25 minutes of hands-on work per controller, so roughly 12 hours for 30, plus about 100 hours of unattended printing.</p>
@@ -651,7 +682,7 @@
 
 <h2 id="cost">Cost at 10, 30, 50 and 200</h2>
 <div class="callout dd-status">
-<p><b>The $10 to $15 target is not met.</b> A realistic figure at 30 units is <b>$22.50 to $27 per controller with US import duty</b>, depending on the battery: $22.50 if a $3 cell from Amazon or AliExpress proves good, $27 with the cheapest cell whose price could be confirmed ($7.41). Even at 200 units it is about $14.50 before duty with the cheap cell. Four things set it: the radio module ($3.48), the battery, the rubber pad ($3), and the 35 % US import duty JLCPCB adds to boards and assembly at checkout.</p>
+<p><b>The $10 to $15 target is not met.</b> A realistic figure at 30 units is <b>$22.50 to $27 per controller with US import duty</b>, depending on the battery: $22.50 if a $3 cell from Amazon or AliExpress proves good, $27 with the cheapest cell whose price could be confirmed ($7.41). Even at 200 units it is about $14.50 before duty with the cheap cell. Four things set it: the radio module ($3.53), the battery, the rubber pad ($3), and the 35 % US import duty JLCPCB adds to boards and assembly at checkout.</p>
 </div>
 <div class="dd-scroll"><table>
 <thead><tr><th>Batch</th><th class="num">Per unit, before US duty</th><th class="num">Per unit, with duty</th><th class="num">Whole batch, with duty</th><th>Board assembly service</th></tr></thead>
@@ -668,12 +699,12 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Item</th><th class="num">Per unit</th><th>How firm</th></tr></thead>
 <tbody>
-<tr><td>Parts on the board</td><td class="num">$5.05</td><td>Listed prices</td></tr>
+<tr><td>Parts on the board</td><td class="num">$5.00</td><td>Listed prices at 30 to 50 pieces</td></tr>
 <tr><td>Factory fees: set-up $8.18, stencil $1.53, $3.07 for each of 8 Extended parts, soldering</td><td class="num">$1.45</td><td>JLCPCB's published fees</td></tr>
-<tr><td>Bare boards, 122 × 46 mm, 1.2 mm, gold finish</td><td class="num">$1.50</td><td>Estimate; the real figure comes from the quote page</td></tr>
+<tr><td>Bare boards, 108 × 46 mm, 1.2 mm, gold finish</td><td class="num">$1.50</td><td>Estimate; the real figure comes from the quote page</td></tr>
 <tr><td>US import duty, 35 % of the three lines above</td><td class="num">$2.80</td><td>JLCPCB's stated rate; exactly what it is charged on is not stated</td></tr>
 <tr><td>Shipping the boards</td><td class="num">$1.65</td><td>A guess. JLCPCB only shows shipping at checkout, and one buyer reported $169 for express shipping on a 50-board assembled order in April 2026</td></tr>
-<tr><td>Stick and thumb cap</td><td class="num">$2.00</td><td>Listed price for the Hall module</td></tr>
+<tr><td>Stick and thumb cap</td><td class="num">$1.90</td><td>Listed price for the Hall module at 30, plus a cap</td></tr>
 <tr><td>Battery</td><td class="num">$3.00</td><td>Unconfirmed (Amazon or AliExpress). $7.41 from the cheapest listing that could be read</td></tr>
 <tr><td>Rubber pad</td><td class="num">$3.00</td><td>Listed price, $2.99 a set</td></tr>
 <tr><td>Case filament, inserts, screws, tape</td><td class="num">$1.85</td><td>Estimate</td></tr>
@@ -712,7 +743,7 @@
 <li><b>Latency is good, not the best.</b> At 7.5 ms between radio slots a press waits about 4 ms on average, 7.5 ms at worst, before it is sent. That is fine for fast games. A commercial pad on its own USB dongle, or wired, is quicker, and this controller has no wired mode. On a Mac the gap is 11 to 15 ms.</li>
 <li><b>Fewer inputs.</b> No right stick, no d-pad, no analog triggers, no rumble, no motion. Great for platformers, retro and arcade games; wrong for shooters.</li>
 <li><b>Feel.</b> The face buttons use the same rubber-dome method as commercial pads, so the press itself should feel right. The printed shell and caps will not: layer lines, a slightly rough surface and looser fits than injection-moulded plastic.</li>
-<li><b>Thicker and plainer in the hand.</b> About 23 mm, against 14 mm for a Switch Lite, because of the full-size stick. The outline is curved and the edges are rounded, but the back is flat: grips that swell into the palm, like a PlayStation controller's, cannot be printed without supports.</li>
+<li><b>Thicker and plainer in the hand.</b> About 22 mm, against 14 mm for a Switch Lite, because of the full-size stick. The outline is curved and the edges are rounded, but the back is flat: grips that swell into the palm, like a PlayStation controller's, cannot be printed without supports.</li>
 <li><b>Durability is designed in but unproven.</b> PETG shells, brass inserts, a supported USB socket and a contact-free stick are the right choices. A printed case is still weaker between its layers than a moulded one, and none of this has been through a term in a backpack yet.</li>
 <li><b>No safety testing.</b> A commercial controller's battery circuit has been tested and certified. This one uses standard, well-proven parts, but nobody has tested this board. Do not charge the first units unattended.</li>
 </ul>
@@ -758,25 +789,26 @@
     function circle(x,y,d,cls){svg.push('<circle class="'+(cls||'thin')+'" cx="'+X(x)+'" cy="'+Y(y)+'" r="'+(d/2*k).toFixed(1)+'"/>')}
     function rect(x,y,w,h,cls){svg.push('<rect class="'+(cls||'thin')+'" x="'+X(x)+'" y="'+Y(y+h)+'" width="'+(w*k).toFixed(1)+'" height="'+(h*k).toFixed(1)+'" rx="3"/>')}
     function row(n,x,y,note){rows.push([n,x,y,note||''])}
-    var rt=L.board.corner_radius_top*k,rb=L.board.corner_radius_bottom*k,x0=m,y0=m,x1=m+W*k,y1=m+H*k;
-    svg.push('<path class="fillp" d="M'+(x0+rt)+','+y0+' H'+(x1-rt)+' A'+rt+','+rt+' 0 0 1 '+x1+','+(y0+rt)+' V'+(y1-rb)+' A'+rb+','+rb+' 0 0 1 '+(x1-rb)+','+y1+' H'+(x0+rb)+' A'+rb+','+rb+' 0 0 1 '+x0+','+(y1-rb)+' V'+(y0+rt)+' A'+rt+','+rt+' 0 0 1 '+(x0+rt)+','+y0+' Z"/>');
+    var x0=m,y0=m,x1=m+W*k,y1=m+H*k;
+    // the board's edge, point by point (its top corners follow the case, and the notches are part of it)
+    svg.push('<path class="fillp" d="M'+L.board_outline.map(function(q){return X(q[0])+','+Y(q[1])}).join(' L')+' Z"/>');
     L.mounting_holes.centres.forEach(function(c,i){circle(c[0],c[1],L.mounting_holes.diameter,'ln');row('Mounting hole '+(i+1),c[0],c[1],L.mounting_holes.diameter+' mm, for an M2 screw')});
-    var s=L.stick_centre;rect(s[0]-6.55,s[1]-6.55,13.1,13.1,'thin');circle(s[0],s[1],4,'thin');label(s[0],s[1],'stick',-48);row('Stick, centre of the shaft',s[0],s[1],'14 holes round it, below');
+    var s=L.stick_centre;rect(s[0]-6.55,s[1]-6.55,13.1,13.1,'thin');circle(s[0],s[1],4,'thin');label(s[0],s[1],'stick',-50);row('Stick, centre of the shaft',s[0],s[1],'14 holes round it, below');
     (L.stick_holes||[]).forEach(function(h){circle(h.x,h.y,h.diameter,'ln');row('Stick hole: '+h.name,h.x,h.y,h.diameter+' mm')});
     var names={north:'Top face button (GPIO18)',east:'Right face button (GPIO19)',south:'Bottom face button (GPIO20)',west:'Left face button (GPIO21)'};
     Object.keys(names).forEach(function(n){var c=L.face_buttons[n];circle(c[0],c[1],L.face_contact_diameter||5.3,'ln');row(names[n],c[0],c[1],'Gold contact pattern, '+(L.face_contact_diameter||5.3)+' mm across')});
-    label((L.face_buttons.east[0]+L.face_buttons.west[0])/2,L.face_buttons.south[1],'face contacts',34);
-    [['select','Select'],['start','Start'],['home','Home']].forEach(function(a){var c=L[a[0]];rect(c[0]-2,c[1]-2,4,4,'ln');label(c[0],c[1],a[1],26);row(a[1]+' switch',c[0],c[1])});
+    label((L.face_buttons.east[0]+L.face_buttons.west[0])/2,L.face_buttons.north[1],'face contacts',-26);
+    [['select','Select',-7.5,4],['start','Start',7,4],['home','Home',7,4]].forEach(function(a){var c=L[a[0]];rect(c[0]-2,c[1]-1.5,4,3,'ln');label(c[0]+a[2],c[1],a[1],a[3]);row(a[1]+' switch',c[0],c[1])});
     circle(L.status_led[0],L.status_led[1],1.6,'acc');row('Status light',L.status_led[0],L.status_led[1],'0603 LED');
-    rect(L.boot_switch[0]-2,L.boot_switch[1]-2,4,4,'thin');label(L.boot_switch[0]+8,L.boot_switch[1],'BOOT',4);row('BOOT switch',L.boot_switch[0],L.boot_switch[1],'Reached through a pin hole in the front');
-    var M=L.radio_module;rect(M.left,M.bottom,M.width,M.height,'ln');label(M.left+M.width/2,M.bottom+M.height/2,'radio',-2);label(M.left+M.width/2,M.bottom+M.height/2,'module',14);row('Radio module, bottom-left corner',M.left,M.bottom,M.width+' × '+M.height+' mm, antenna at the top edge');
-    rect(L.usb_c_centre_x-4.5,H-7,9,7.6,'ln');label(L.usb_c_centre_x,H,'USB-C',-10);row('USB-C socket, centre',L.usb_c_centre_x,H,'On the top edge, facing off the board');
+    rect(L.boot_switch[0]-2,L.boot_switch[1]-1.5,4,3,'thin');label(L.boot_switch[0]+8,L.boot_switch[1],'BOOT',4);row('BOOT switch',L.boot_switch[0],L.boot_switch[1],'No hole in the case; open it to reach this');
+    var M=L.radio_module;rect(M.left,M.bottom,M.width,M.height,'ln');label(M.left+M.width/2,M.bottom+M.height/2,'radio',-2);label(M.left+M.width/2,M.bottom+M.height/2,'module',14);label(M.left+M.width/2,M.bottom+3,'antenna',4);row('Radio module, bottom-left corner',M.left,M.bottom,M.width+' × '+M.height+' mm, antenna at the '+M.antenna);
+    rect(L.usb_c_centre_x-4.5,H-6.85,9,7.35,'ln');label(L.usb_c_centre_x,H,'USB-C',-10);row('USB-C socket, centre',L.usb_c_centre_x,H,'On the top edge, facing off the board');
     rect(L.slide_switch_centre_x-4,H-2.8,8,2.8,'ln');label(L.slide_switch_centre_x,H,'on/off',-10);row('Slide switch, centre',L.slide_switch_centre_x,H,'On the top edge');
     row('Charge lights',L.charge_leds_x,H-1.6,'Two 0603 LEDs, one above the other, at the top edge');
     Object.keys(L.shoulder_switches_x).forEach(function(n){var x=L.shoulder_switches_x[n];rect(x-1.95,H-2.05,3.9,2.05,'ln');label(x,H,n,-10);row(n+' switch, centre',x,H,'On the top edge, facing off the board')});
-    var J=L.battery_socket;rect(J[0]-3.8,J[1]-3.95,7.6,7.9,'thin');label(J[0]+3,J[1],'battery',38);row('Battery socket',J[0],J[1],L.battery_socket_note||'');
-    var N=L.battery_notch;rect(N.centre_x-N.width/2,0,N.width,N.depth,'dim');row('Notch for the battery lead, centre',N.centre_x,0,N.width+' mm wide, '+N.depth+' mm deep');
-    var A=L.antenna_notch;if(A){rect(A.centre_x-A.width/2,H-A.depth,A.width,A.depth,'dim');row('Cut-out under the antenna, centre',A.centre_x,H,A.width+' mm wide, '+A.depth+' mm deep')}
+    var J=L.battery_socket;rect(J[0]-3.8,J[1]-3.95,7.6,7.9,'thin');label(J[0]-4,J[1],'battery',-28);row('Battery socket',J[0],J[1],L.battery_socket_note||'');
+    var N=L.battery_notch;row('Notch for the battery lead, centre',N.centre_x,0,N.width+' mm wide, '+N.depth+' mm deep');
+    var A=L.antenna_notch;if(A)row('Cut-out under the antenna, centre',A.centre_x,A.edge==='bottom'?0:H,A.width+' mm wide, '+A.depth+' mm deep, in the '+(A.edge||'top')+' edge');
     (L.back_supports||[]).forEach(function(c,i){circle(c[0],c[1],4,'dim');row('Support point '+(i+1)+' (back of the board)',c[0],c[1],'Keep the back clear here')});
     svg.push('<text class="dimt" x="'+X(W/2)+'" y="'+(y1+24)+'" text-anchor="middle">'+W+' mm</text><text class="dimt" x="'+(x0-14)+'" y="'+Y(H/2)+'" text-anchor="middle" transform="rotate(-90 '+(x0-14)+' '+Y(H/2)+')">'+H+' mm</text>');
     host.innerHTML='<svg viewBox="0 0 '+(W*k+2*m)+' '+(H*k+2*m)+'" role="img" aria-label="Front of the circuit board with the position of every part marked. The same positions are listed in the table below.">'+svg.join('')+'</svg>';
