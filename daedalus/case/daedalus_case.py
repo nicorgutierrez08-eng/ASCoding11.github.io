@@ -3,7 +3,8 @@ Project Daedalus: the case, the button caps and the board outline, as one parame
 
 Run with CadQuery 2.x (pip install cadquery):
 
-    python daedalus_case.py            # writes STL and STEP files, board.dxf and layout.json next to this file
+    python daedalus_case.py            # writes the STL and STEP files, board.dxf, layout.json and template.svg
+                                       # next to this file
 
 Every size is in millimetres and lives in the P dictionary below. The same numbers place the parts on the
 circuit board (board.dxf, layout.json) and cut the holes in the case, so the two always agree: change a
@@ -14,8 +15,11 @@ Axes, looking at the front of the controller as you hold it:
     Y  bottom to top, 0 in the middle of the main bar (the grips hang below)
     Z  back to front, 0 = the front face of the circuit board (the side with the parts and the stick)
 
-STATUS: version 0. Drawn from datasheets and estimates, not yet printed or fitted. The values marked MEASURE
+STATUS: version 1. Drawn from datasheets and estimates, not yet printed or fitted. The values marked MEASURE
 must be checked against the real parts with calipers before a full case is printed. Print coupon.stl first.
+Version 1 is the same inside as version 0 with a smoother outside: a curved outline with flared, rounded
+grips, and edges that are rounded instead of bevelled (each starts with a short 45-degree flat where it
+meets the print bed, so the shells still print outside-down with no supports).
 
 Where the numbers come from (read November 2026):
     stick        YTL YHE-YG13-013 / YTMR-YG13-006 datasheets (hole pattern, 13.1 mm frame, 19.45 mm shaft height)
@@ -38,16 +42,26 @@ import cadquery as cq
 
 P = {
     # ---- body ---------------------------------------------------------------------------------------------
-    "body_w": 134.0,            # overall width
-    "bar_h": 54.0,              # height of the main bar
-    "grip_w": 34.0,             # width of each grip
-    "grip_drop": 26.0,          # how far the grips hang below the bar (overall height = bar_h + grip_drop)
-    "corner_r": 12.0,           # radius of the outline's corners, seen from the front
+    "bar_h": 54.0,              # height of the main bar; its top edge is at Y = bar_h / 2
+    # The outline seen from the front: the corners of the right-hand half, going down the right side and
+    # round the grip, each with the radius it is rounded to. The left half is the mirror image.
+    "outline_right": [
+        (67.0, 27.0, 14.0),     # top corner
+        (70.0, -36.0, 20.0),    # the side flares out a little towards the grip
+        (61.0, -58.0, 10.5),    # outer side of the grip's tip
+        (41.0, -55.0, 10.5),    # inner side of the grip's tip
+        (31.0, -27.0, 16.0),    # where the grip meets the underside of the bar
+    ],
     "wall": 2.0,                # wall thickness
     "front_gap": 10.0,          # board front face to the inside of the front shell        MEASURE against the stick
     "back_gap": 7.5,            # board back face to the inside of the back shell (battery 6 + foam 1 + 0.5)
-    "edge_front": 2.0,          # 45-degree bevel on the front face's edge (a bevel prints cleanly face-down; a round does not)
-    "edge_back": 2.5,           # the same on the back face
+    # Outside edges: (flat, radius). The edge starts with a 45-degree flat this wide where it meets the print
+    # bed, then curves into the wall with this radius. A plain round would overhang too steeply to print.
+    "edge_front": (2.2, 4.0),
+    "edge_back": (3.0, 5.0),    # the palm side, so rounder
+    "edge_front_in": 1.2,       # matching bevels inside, which keep the wall an even thickness round the edge
+    "edge_back_in": 2.0,
+    "hole_ease": 0.5,           # small bevel round the stick and button holes, so their rims are not sharp
     "fit": 0.2,                 # clearance between the two shells' lip and groove
 
     # ---- circuit board ------------------------------------------------------------------------------------
@@ -107,7 +121,7 @@ P = {
     "plunger_gap": 0.25,        # clearance all round a plunger or button cap in its hole
 
     # ---- screws -------------------------------------------------------------------------------------------
-    "grip_screws": [(-50.0, -41.0), (50.0, -41.0)],
+    "grip_screws": [(-52.0, -42.0), (52.0, -42.0)],
     "insert_d": 3.2,            # hole for an M2 brass heat-set insert                        MEASURE against your inserts
     "insert_depth": 4.5,
     "boss_d": 6.4,
@@ -139,22 +153,51 @@ def z_levels(p):
     return {"front_in": front_in, "front_out": front_out, "split": pcb_back, "back_in": back_in, "back_out": back_out}
 
 
-def outline_points(p):
-    """The front-view outline as a polygon, before its corners are rounded."""
-    w = p["body_w"] / 2
-    top = p["bar_h"] / 2
-    bar_bottom = -p["bar_h"] / 2
-    grip_bottom = -p["bar_h"] / 2 - p["grip_drop"]
-    gi = p["body_w"] / 2 - p["grip_w"]                  # inner edge of a grip
-    return [(-w, top), (w, top), (w, grip_bottom), (gi, grip_bottom), (gi, bar_bottom),
-            (-gi, bar_bottom), (-gi, grip_bottom), (-w, grip_bottom)]
+def outline_corners(p):
+    """All the outline's corners in order round the shape, as (x, y, radius)."""
+    right = p["outline_right"]
+    left = [(-x, y, r) for (x, y, r) in reversed(right)]
+    return right + left
+
+
+def outline_size(p):
+    xs = [c[0] for c in outline_corners(p)]
+    ys = [c[1] for c in outline_corners(p)]
+    return max(xs) - min(xs), max(ys) - min(ys)
+
+
+def rounded_polygon(corners):
+    """A closed outline through the given corners, each rounded to its own radius: straight lines joined by
+    arcs that meet them smoothly."""
+    n = len(corners)
+    cuts = []
+    for i, (x, y, r) in enumerate(corners):
+        px, py, _ = corners[i - 1]
+        nx, ny, _ = corners[(i + 1) % n]
+        ux, uy = px - x, py - y
+        vx, vy = nx - x, ny - y
+        lu, lv = math.hypot(ux, uy), math.hypot(vx, vy)
+        ux, uy, vx, vy = ux / lu, uy / lu, vx / lv, vy / lv
+        half = math.acos(max(-1.0, min(1.0, ux * vx + uy * vy))) / 2      # half the angle at this corner
+        t = r / math.tan(half)                                            # how far along each side the arc starts
+        bx, by = ux + vx, uy + vy
+        lb = math.hypot(bx, by)
+        bx, by = bx / lb, by / lb
+        k = r / math.sin(half) - r                                        # corner to the middle of the arc
+        cuts.append(((x + ux * t, y + uy * t), (x + bx * k, y + by * k), (x + vx * t, y + vy * t), t, lu))
+    for i in range(n):
+        assert cuts[i][3] + cuts[i - 1][3] <= cuts[i][4] + 1e-6, "outline: the radii at corners %d and %d overlap" % (i - 1, i)
+    w = cq.Workplane("XY").moveTo(*cuts[0][2])
+    for i in range(1, n + 1):
+        a, mid, b, _, _ = cuts[i % n]
+        w = w.lineTo(*a).threePointArc(mid, b)
+    return w.close()
 
 
 def outline_wire(p, inset=0.0):
     """The rounded outline as a closed curve at Z = 0, moved inwards by inset (a true parallel offset, so a
     wall between two of these curves has the same thickness all the way round)."""
-    slab = cq.Workplane("XY").polyline(outline_points(p)).close().extrude(1.0).edges("|Z").fillet(p["corner_r"])
-    wire = slab.faces("<Z").wires().val()
+    wire = rounded_polygon(outline_corners(p)).val()
     if inset:
         wire = wire.offset2D(-inset)[0]
     return wire
@@ -163,6 +206,28 @@ def outline_wire(p, inset=0.0):
 def prism(p, z0, z1, inset=0.0):
     """The outline pulled from z0 to z1."""
     return cq.Workplane("XY").add(outline_wire(p, inset)).toPending().extrude(z1 - z0).translate((0, 0, z0))
+
+
+def ease(x, y, z_face, d, e):
+    """A small bevel round the outside rim of a round hole of diameter d in the front face."""
+    cone = cq.Solid.makeCone(d / 2, d / 2 + e, e, cq.Vector(x, y, z_face - e), cq.Vector(0, 0, 1))
+    return cq.Workplane("XY").add(cone)
+
+
+def half_space(z0, z1):
+    """A slab bigger than the whole case, from z0 to z1."""
+    return box(0, 0, z0, z1, 400, 400)
+
+
+def soft_edge(solid, face, flat, radius):
+    """Round the edge of the given face (">Z" or "<Z"): a 45-degree flat, then a curve into the wall."""
+    zf = solid.faces(face).val().Center().z
+    solid = solid.faces(face).edges().chamfer(flat)
+    if radius:
+        zc = zf - flat if face == ">Z" else zf + flat
+        ring = cq.selectors.BoxSelector((-400, -400, zc - 0.01), (400, 400, zc + 0.01))
+        solid = solid.edges(ring).fillet(radius)
+    return solid
 
 
 def cyl(x, y, z0, z1, d):
@@ -205,27 +270,29 @@ LIP_STOP = 7.0              # the lip and its groove stop this far below the top
 def lip_zone(p, z0, z1):
     """Everything except a strip along the top edge."""
     top = p["bar_h"] / 2 - LIP_STOP
-    bottom = -p["bar_h"] / 2 - p["grip_drop"] - 2
-    return box(0, (top + bottom) / 2, z0, z1, p["body_w"] + 4, top - bottom)
+    bottom = -200.0
+    return box(0, (top + bottom) / 2, z0, z1, 400, top - bottom)
 
 
 def outer_solid(p):
     z = z_levels(p)
     body = prism(p, z["back_out"], z["front_out"])
-    body = body.faces(">Z").edges().chamfer(p["edge_front"])
-    body = body.faces("<Z").edges().chamfer(p["edge_back"])
+    body = soft_edge(body, ">Z", *p["edge_front"])
+    body = soft_edge(body, "<Z", *p["edge_back"])
     return body
 
 
 def cavity(p):
     z = z_levels(p)
-    return prism(p, z["back_in"], z["front_in"], inset=p["wall"])
+    hollow = prism(p, z["back_in"], z["front_in"], inset=p["wall"])
+    hollow = hollow.faces(">Z").edges().chamfer(p["edge_front_in"])
+    hollow = hollow.faces("<Z").edges().chamfer(p["edge_back_in"])
+    return hollow
 
 
 def front_shell(p):
     z = z_levels(p)
-    half = box(0, -p["grip_drop"] / 2, z["split"], z["front_out"] + 1, p["body_w"] + 4, p["bar_h"] + p["grip_drop"] + 4)
-    shell = outer_solid(p).intersect(half).cut(cavity(p))
+    shell = outer_solid(p).intersect(half_space(z["split"], z["front_out"] + 1)).cut(cavity(p))
 
     # groove round the inside of the rim that the back shell's lip slides into
     groove = prism(p, z["split"], z["split"] + LIP_H + 0.3, inset=p["wall"] - LIP_T - p["fit"])
@@ -254,6 +321,14 @@ def front_shell(p):
     bx, by = p["boot_xy"]
     shell = shell.cut(cyl(bx, by, z["front_in"] - 1, z["front_out"] + 1, 1.6))
 
+    # ease the rims of the round holes
+    e = p["hole_ease"]
+    if e:
+        shell = shell.cut(ease(sx, sy, z["front_out"], p["stick_open_d"], e))
+        for (x, y) in face_centres(p).values():
+            shell = shell.cut(ease(x, y, z["front_out"], p["face_cap_d"] + 2 * g, e))
+        shell = shell.cut(ease(hx, hy, z["front_out"], p["home_cap_d"] + 2 * g, e))
+
     # top edge: USB-C, charge light, slide switch, four shoulder plungers
     shell = shell.cut(top_wall_cut(p, p["usb_x"], p["usb_z"], *p["usb_open"]))
     # a shallow pocket round the opening, from the rim upwards, so the moulded end of a cable can seat
@@ -277,8 +352,7 @@ def front_shell(p):
 
 def back_shell(p):
     z = z_levels(p)
-    half = box(0, -p["grip_drop"] / 2, z["back_out"] - 1, z["split"], p["body_w"] + 4, p["bar_h"] + p["grip_drop"] + 4)
-    shell = outer_solid(p).intersect(half).cut(cavity(p))
+    shell = outer_solid(p).intersect(half_space(z["back_out"] - 1, z["split"])).cut(cavity(p))
 
     # lip that slides into the front shell's groove
     lip = prism(p, z["split"] - 0.5, z["split"] + LIP_H, inset=p["wall"] - LIP_T).cut(
@@ -362,7 +436,7 @@ def plunger(p, width, in_place_x=None):
     upper = box(0, (y_out + y_catch0) / 2, zb, z1, width, y_out - y_catch0)
     catch = box(0, y_catch0 + catch_t / 2, zb, z1 + catch_h, width, catch_t)
     part = lower.union(upper).union(catch)
-    part = part.faces(">Y").edges().fillet(1.0)
+    part = part.faces(">Y").edges("|X").fillet(1.2)      # round the two long edges of the end you press
     if in_place_x is not None:
         return part.translate((in_place_x, 0, 0))
     # lie it on one end so the L-shaped side is drawn flat on the plate
@@ -429,6 +503,8 @@ def layout(p):
     mx, my, mw, mh = p["module_box"]
     return {
         "units": "mm",
+        "case": {"width": outline_size(p)[0], "height": outline_size(p)[1],
+                 "thickness": round(z_levels(p)["front_out"] - z_levels(p)["back_out"], 2)},
         "origin": "bottom-left corner of the board, seen from the front (the side with the parts)",
         "board": {"width": p["pcb_w"], "height": p["pcb_h"], "thickness": p["pcb_t"],
                   "corner_radius_bottom": p["pcb_corner_r"], "corner_radius_top": p["pcb_top_corner_r"]},
@@ -453,9 +529,76 @@ def layout(p):
     }
 
 
+def outline_path(p, ox, oy):
+    """The outline as an SVG path, in millimetres, with the top-left of the drawing at (ox, oy)."""
+    corners = outline_corners(p)
+    n = len(corners)
+    xs = [c[0] for c in corners]
+    top = max(c[1] for c in corners)
+    left = min(xs)
+    cuts = []
+    for i, (x, y, r) in enumerate(corners):
+        px, py, _ = corners[i - 1]
+        nx, ny, _ = corners[(i + 1) % n]
+        ux, uy, vx, vy = px - x, py - y, nx - x, ny - y
+        lu, lv = math.hypot(ux, uy), math.hypot(vx, vy)
+        ux, uy, vx, vy = ux / lu, uy / lu, vx / lv, vy / lv
+        t = r / math.tan(math.acos(max(-1.0, min(1.0, ux * vx + uy * vy))) / 2)
+        cuts.append(((x + ux * t, y + uy * t), (x + vx * t, y + vy * t), r, ux * vy - uy * vx))
+
+    def pt(q):
+        return "%.2f,%.2f" % (ox + q[0] - left, oy + top - q[1])
+
+    d = "M" + pt(cuts[0][1])
+    for i in range(1, n + 1):
+        a, b, r, cross = cuts[i % n]
+        d += " L%s A%.2f,%.2f 0 0 %d %s" % (pt(a), r, r, 1 if cross > 0 else 0, pt(b))
+    return d + " Z", left, top
+
+
+def template_svg(p):
+    """A full-size drawing of the front: print it at 100 % (check the 50 mm bar with a ruler), cut it out
+    and hold it, to judge the size and the reach to each button before printing anything in plastic."""
+    w, h = outline_size(p)
+    m = 12.0
+    d, left, top = outline_path(p, m, m)
+
+    def X(x):
+        return m + x - left
+
+    def Y(y):
+        return m + top - y
+
+    g = p["plunger_gap"]
+    out = ['<svg xmlns="http://www.w3.org/2000/svg" width="%.1fmm" height="%.1fmm" viewBox="0 0 %.1f %.1f">' % (w + 2 * m, h + 2 * m + 20, w + 2 * m, h + 2 * m + 20),
+           '<g fill="none" stroke="#000" stroke-width="0.3">', '<path d="%s"/>' % d]
+    sx, sy = p["stick_xy"]
+    out.append('<circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (X(sx), Y(sy), p["stick_open_d"] / 2))
+    out.append('<circle cx="%.2f" cy="%.2f" r="9.5" stroke-dasharray="1 1"/>' % (X(sx), Y(sy)))
+    for (x, y) in face_centres(p).values():
+        out.append('<circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (X(x), Y(y), p["face_cap_d"] / 2 + g))
+    for key in ("select_xy", "start_xy"):
+        x, y = p[key]
+        L, Wd = p["small_cap"][0] + 2 * g, p["small_cap"][1] + 2 * g
+        out.append('<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" rx="%.2f"/>' % (X(x) - L / 2, Y(y) - Wd / 2, L, Wd, Wd / 2))
+    hx, hy = p["home_xy"]
+    out.append('<circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (X(hx), Y(hy), p["home_cap_d"] / 2 + g))
+    lx, ly = p["led_xy"]
+    out.append('<circle cx="%.2f" cy="%.2f" r="1"/>' % (X(lx), Y(ly)))
+    for _, x, wd in shoulders(p):
+        out.append('<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" rx="1"/>' % (X(x) - wd / 2, Y(p["bar_h"] / 2) - p["shoulder_proud"], wd, p["shoulder_proud"]))
+    by = h + 2 * m + 4
+    out.append('<path d="M%.2f,%.2f h50 M%.2f,%.2f v4 M%.2f,%.2f v4"/>' % (m, by, m, by - 2, m + 50, by - 2))
+    out.append('</g>')
+    out.append('<text x="%.2f" y="%.2f" font-family="sans-serif" font-size="3">This bar is 50 mm. If it measures anything else, print again at 100 %%.</text>' % (m + 53, by + 1))
+    out.append('<text x="%.2f" y="%.2f" font-family="sans-serif" font-size="3">Project Daedalus, front, full size (%.0f x %.0f mm). Dashed circle: thumb cap.</text>' % (m, by + 8, w, h))
+    out.append('</svg>')
+    return "\n".join(out) + "\n"
+
+
 # ------------------------------------------------------------------------------------------------ output
-def export(shape, name, tolerance=0.08):
-    cq.exporters.export(shape, os.path.join(HERE, name), tolerance=tolerance, angularTolerance=0.25)
+def export(shape, name, tolerance=0.03):
+    cq.exporters.export(shape, os.path.join(HERE, name), tolerance=tolerance, angularTolerance=0.15)
 
 
 def main():
@@ -484,11 +627,14 @@ def main():
 
     outline = cq.Workplane("XY").add(board(p)).section()
     cq.exporters.export(outline, os.path.join(HERE, "board.dxf"))
+    with open(os.path.join(HERE, "template.svg"), "w") as f:
+        f.write(template_svg(p))
     with open(os.path.join(HERE, "layout.json"), "w") as f:
         json.dump(layout(p), f, indent=2)
         f.write("\n")
     z = z_levels(p)
-    print("thickness %.1f mm, overall %.0f x %.0f mm" % (z["front_out"] - z["back_out"], p["body_w"], p["bar_h"] + p["grip_drop"]))
+    w, h = outline_size(p)
+    print("thickness %.1f mm, overall %.0f x %.0f mm" % (z["front_out"] - z["back_out"], w, h))
 
 
 if __name__ == "__main__":

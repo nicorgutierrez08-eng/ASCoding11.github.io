@@ -79,13 +79,13 @@
 
 <h2>What it is</h2>
 <figure class="dd-fig">
-<svg viewBox="0 0 760 560" role="img" aria-label="Front view of the controller: a wide body with two short grips, one stick on the left, four face buttons in a diamond on the right, Select, Start and Home in the middle, and two shoulder buttons on each side of the top edge with the USB-C socket and the on/off switch between them.">
+<svg viewBox="0 0 770 590" role="img" aria-label="Front view of the controller: a wide body with two rounded grips that flare outwards, one stick on the left, four face buttons in a diamond on the right, Select, Start and Home in the middle, and two shoulder buttons on each side of the top edge with the USB-C socket and the on/off switch between them.">
   <!-- top edge parts (positions as in case/daedalus_case.py) -->
   <rect class="fillp" x="108" y="62" width="75" height="20" rx="7"/><rect class="fillp" x="193" y="66" width="60" height="16" rx="6"/>
   <rect class="fillp" x="577" y="62" width="75" height="20" rx="7"/><rect class="fillp" x="507" y="66" width="60" height="16" rx="6"/>
   <rect class="fillp" x="382" y="70" width="46" height="12" rx="5"/><rect class="fillp" x="465" y="73" width="24" height="9" rx="3"/>
   <!-- body -->
-  <path class="fillp" d="M105,80 H655 Q715,80 715,140 V420 Q715,480 655,480 H605 Q545,480 545,420 V410 Q545,350 485,350 H275 Q215,350 215,410 V420 Q215,480 155,480 H105 Q45,480 45,420 V140 Q45,80 105,80 Z"/>
+  <path class="fillp" d="M718.2,146.7 L728.9,372.9 A100.0,100.0 0 0 1 721.6,415.5 L700.6,466.8 A52.5,52.5 0 0 1 644.2,498.9 L616.1,494.7 A52.5,52.5 0 0 1 574.4,460.4 L554.0,403.1 A80.0,80.0 0 0 0 478.6,350.0 L281.4,350.0 A80.0,80.0 0 0 0 206.0,403.1 L185.6,460.4 A52.5,52.5 0 0 1 143.9,494.7 L115.8,498.9 A52.5,52.5 0 0 1 59.4,466.8 L38.4,415.5 A100.0,100.0 0 0 1 31.1,372.9 L41.8,146.7 A70.0,70.0 0 0 1 111.7,80.0 L648.3,80.0 A70.0,70.0 0 0 1 718.2,146.7 Z"/>
   <!-- stick -->
   <circle class="ln" cx="200" cy="225" r="58"/><circle class="fillp" cx="200" cy="225" r="45"/><circle class="thin" cx="200" cy="225" r="28"/>
   <!-- face buttons -->
@@ -104,20 +104,21 @@
   <path class="thin" d="M380,201 V234"/>
   <text class="t-strong" x="560" y="334" text-anchor="middle">four face buttons</text>
   <!-- dimensions -->
-  <path class="dim" d="M45,512 H715 M45,504 V520 M715,504 V520"/><text class="dimt" x="380" y="536" text-anchor="middle">134 mm</text>
-  <path class="dim" d="M738,80 V480 M730,80 H746 M730,480 H746"/><text class="dimt" x="742" y="286" text-anchor="middle" transform="rotate(90 742 286)">80 mm</text>
+  <path class="dim" d="M30,540 H730 M30,532 V548 M730,532 V548"/><text class="dimt" x="380" y="566" text-anchor="middle">140 mm</text>
+  <path class="dim" d="M752,80 V505 M744,80 H760 M744,505 H760"/><text class="dimt" x="756" y="292" text-anchor="middle" transform="rotate(90 756 292)">85 mm</text>
 </svg>
-<figcaption>Front view, drawn from the same numbers as the case model. The body is about 23 mm thick. The exact button spacing is set by the rubber pad you buy, so measure the pad before drawing the board.</figcaption>
+<figcaption>Front view, drawn from the same numbers as the case model. The body is 22.7 mm thick. The exact button spacing is set by the rubber pad you buy, so measure the pad before drawing the board.</figcaption>
 </figure>
 <ul>
 <li><b>Inputs:</b> one magnetic stick with a click (L3), four face buttons, L1, R1, L2 and R2, plus Select, Start and Home. No d-pad and no right stick.</li>
 <li><b>Connection:</b> Bluetooth Low Energy, as a standard HID gamepad. Windows and macOS pair with it from their normal Bluetooth settings; nothing to install.</li>
 <li><b>Power:</b> a 1,200 mAh lithium-polymer cell charged through USB-C, a slide switch, and an estimated 25 to 40 hours of play per charge (worked out from typical current figures for this chip, not measured).</li>
-<li><b>Size:</b> about 134 × 80 × 23 mm and roughly 110 g. That is Joy-Con-pair width with short grips; it is thicker than a Switch Lite because a full-size stick is 19.5 mm tall.</li>
+<li><b>Size:</b> 140 × 85 × 22.7 mm and roughly 120 g. That is about the width of a pair of Joy-Cons, with short rounded grips; it is thicker than a Switch Lite because a full-size stick is 19.5 mm tall.</li>
 </ul>
 
 <h2>On this page</h2>
 <ol class="dd-toc">
+<li><a href="#specs">Specifications</a></li>
 <li><a href="#decisions">The five design decisions</a></li>
 <li><a href="#parts">Parts list</a></li>
 <li><a href="#shop">What to buy first, with links</a></li>
@@ -132,6 +133,40 @@
 <li><a href="#tradeoffs">Honest trade-offs</a></li>
 <li><a href="#order">What to do first</a></li>
 </ol>
+
+<h2 id="specs">Specifications</h2>
+<p>Design figures: what the drawings, datasheets and firmware say. None has been measured on a built controller yet. "Estimate" marks a figure worked out, not read from a datasheet.</p>
+<div class="dd-scroll"><table>
+<thead><tr><th>Group</th><th>Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td rowspan="4">Body</td><td>Size</td><td>140 × 85 × 22.7 mm</td></tr>
+<tr><td>Weight</td><td>About 120 g (estimate: case 76 g, battery 21 g, board and parts 17 g, stick and cap 6 g)</td></tr>
+<tr><td>Case</td><td>PETG, two shells, 2.0 mm walls, six M2 × 8 mm screws into brass inserts</td></tr>
+<tr><td>Print</td><td>About 60 cm³ of plastic (76 g) in 13 pieces, no supports</td></tr>
+<tr><td rowspan="5">Controls</td><td>Stick</td><td>Magnetic (Hall), tilts 26° each way, click at about 750 gf, rated 5 million movements and 1 million clicks</td></tr>
+<tr><td>Face buttons</td><td>4, silicone domes with carbon contacts on gold board pads, 27 mm apart across and 21 mm top to bottom</td></tr>
+<tr><td>Shoulder buttons</td><td>4 (L1, R1, L2, R2), 160 gf, 0.12 mm travel, rated 500,000 presses</td></tr>
+<tr><td>Small buttons</td><td>Select, Start, Home: 160 gf, 0.2 mm travel, rated 100,000 presses</td></tr>
+<tr><td>Reported as</td><td>13 buttons, stick X and Y, and L2 / R2 again as fully pressed triggers</td></tr>
+<tr><td rowspan="5">Radio</td><td>Chip</td><td>ESP32-C6-WROOM-1-N8: Bluetooth 5 Low Energy, antenna on the module</td></tr>
+<tr><td>Profile</td><td>HID over GATT, gamepad. Pairs without a code and remembers the computer (bonding, LE Secure Connections)</td></tr>
+<tr><td>Time between radio slots</td><td>7.5 ms asked for first; 11.25 ms, then 15 ms if the computer refuses</td></tr>
+<tr><td>Transmit power</td><td>+3 dBm as set in the firmware<!--SPEC-TX--></td></tr>
+<tr><td>Range</td><td>Not measured. Expect ordinary same-room Bluetooth range; the antenna is closer to the case than Espressif recommends</td></tr>
+<tr><td rowspan="5">Response</td><td>Inputs read</td><td>About 1,000 times a second</td></tr>
+<tr><td>Button clean-up</td><td>First contact reported at once, then that button is ignored for 5 ms</td></tr>
+<tr><td>Stick</td><td>12-bit readings, smoothed over about 2 ms; round dead zone of 5 % at the centre and 4 % at the edge; sent as −32,767 to +32,767</td></tr>
+<tr><td>Report</td><td>12 bytes, sent only on change, at most one per radio slot (up to 133 a second at 7.5 ms)</td></tr>
+<tr><td>Added delay</td><td>Estimate: under 1 ms to notice a press, then 3.75 ms on average (7.5 ms at worst) waiting for the next radio slot at 7.5 ms</td></tr>
+<!--SPEC-POWER-->
+<tr><td rowspan="4">Board</td><td>Size</td><td>122 × 46 × 1.2 mm, two layers, gold (ENIG) finish</td></tr>
+<tr><td>Parts</td><td>About 60, all on the front, placed by the factory; the stick is soldered by hand</td></tr>
+<tr><td>Connectors</td><td>USB-C (16-pin, charging and data), JST-PH 2-pin for the battery</td></tr>
+<tr><td>Spare pins</td><td>GPIO11, GPIO16 and GPIO17 (test pads). L2 and R2 are on pins that can read a voltage, for analog triggers later</td></tr>
+<tr><td rowspan="3">Firmware</td><td>Built with</td><td>Arduino, esp32 board package 3.3.12, NimBLE-Arduino 2.5.2</td></tr>
+<tr><td>Size</td><td>719 KB of the 1,310 KB available (55 %); 24.7 KB of memory in use at start</td></tr>
+<tr><td>Saved on the chip</td><td>Stick calibration and the paired computers</td></tr>
+</tbody></table></div>
 
 <h2 id="decisions">The five design decisions</h2>
 
@@ -323,9 +358,24 @@
 <li>Sends a report only when something changed, and at most once per radio slot, so reports never queue up.</li>
 <li>Asks the computer for the shortest gap between radio slots: 7.5 ms, which Windows allows; if that is refused, 11.25 ms, then 15 ms, which are what Apple's rules allow.</li>
 <li>Remembers the stick's centre and range. Hold Start + Select for 3 seconds to calibrate: leave the stick alone while the light is solid, then roll it around its edge while the light flickers.</li>
+<li>Gives the stick a round dead zone, measured on how far it is pushed and not on each axis separately, so slow diagonal moves do not snap to up, down, left or right.</li>
 <li>Reports the battery level to the computer and double-blinks the light under 10 %.</li>
 <li>Sleeps after 10 minutes untouched or 3 minutes with no computer found. Home or Start wakes it. Hold Home for 5 seconds to forget every paired computer.</li>
 </ul>
+
+<h3>Settings at the top of the sketch</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Name</th><th>Set to</th><th>What it changes</th></tr></thead>
+<tbody>
+<tr><td><code>DEVICE_NAME</code></td><td>"Daedalus"</td><td>The name shown in Bluetooth settings</td></tr>
+<tr><td><code>STICK_INVERT_X</code>, <code>STICK_INVERT_Y</code>, <code>STICK_SWAP_XY</code></td><td>false</td><td>Flip these if a direction comes out backwards or the axes are swapped on your board</td></tr>
+<tr><td><code>INNER_DEADZONE</code></td><td>0.05</td><td>How much of the travel round the centre reads as zero. Raise it if the pointer creeps with the stick at rest</td></tr>
+<tr><td><code>OUTER_DEADZONE</code></td><td>0.04</td><td>How close to the edge already reads as full</td></tr>
+<tr><td><code>STICK_CURVE</code></td><td>1.0</td><td>1.0 follows the stick exactly. 1.5 gives finer control near the centre</td></tr>
+<tr><td><code>DEBOUNCE_MS</code></td><td>5</td><td>How long a button is ignored after it changes. Raise to 8 if a worn button double-presses</td></tr>
+<tr><td><code>TX_POWER_DBM</code></td><td>3</td><td>Radio power. Raise for more range, at the cost of battery life</td></tr>
+<tr><td><code>IDLE_SLEEP_MS</code>, <code>SEARCH_SLEEP_MS</code></td><td>10 minutes, 3 minutes</td><td>How long before it sleeps when untouched, or when no computer is found</td></tr>
+</tbody></table></div>
 
 <h3>Setting up and flashing</h3>
 <ol>
@@ -380,6 +430,20 @@
 <li><b>Test pads:</b> 3.3 V, ground, battery +, TX, RX, labelled in the white print.</li>
 </ul>
 
+<h3>Numbers to draw it to</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Item</th><th>Value</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Signal tracks</td><td>0.25 mm wide, 0.2 mm apart or more</td><td>Well inside what JLCPCB can make, so a small error still gets made correctly</td></tr>
+<tr><td>Power tracks</td><td>0.5 mm; 0.8 mm for USB power and the battery</td><td>The radio draws short bursts of a few hundred milliamps</td></tr>
+<tr><td>USB data pair</td><td>0.25 mm tracks side by side, under 20 mm long, same length within 1 mm</td><td>At this short length nothing more exact is needed</td></tr>
+<tr><td>Vias</td><td>0.3 mm hole, 0.6 mm pad</td><td></td></tr>
+<tr><td>Ground</td><td>Filled copper on both layers, stitched together with vias every 10 mm or so</td><td>Not under the antenna, and not under the face contacts' combs</td></tr>
+<tr><td>Copper to board edge</td><td>0.4 mm or more</td><td>Except the USB-C socket and shoulder switches, which sit at the edge by design</td></tr>
+<tr><td>Capacitors</td><td>10 µF + 100 nF within 3 mm of the module's 3V3 pin; 10 µF at the regulator's input and output; 10 µF at the charger's input and at the battery</td><td></td></tr>
+<tr><td>White print</td><td>Label the battery socket + and −, every test pad, and the board's version</td><td>The + and − marks are what you check the battery plug against</td></tr>
+</tbody></table></div>
+
 <h3>Where everything goes</h3>
 <p>The case model and the board are drawn from one list of numbers, so they cannot drift apart. This drawing and table are read from that list (<a href="case/layout.json" download>layout.json</a>); <a href="case/board.dxf" download>board.dxf</a> is the board's outline and holes, ready to import into EasyEDA or KiCad as the board edge. Positions are in millimetres from the board's bottom-left corner, seen from the front.</p>
 <figure class="dd-fig"><div id="ddLayout" class="dd-wide"><p>The drawing needs JavaScript. The numbers are in layout.json.</p></div>
@@ -389,7 +453,7 @@
 <h3>Ordering from JLCPCB</h3>
 <ol>
 <li>In EasyEDA, run the design check until it reports no errors, then choose "Order at JLCPCB". (From KiCad: export Gerber files, a parts list and a placement file.)</li>
-<li>Choose 2 layers, <b>1.2 mm</b> thickness, <b>ENIG</b> finish. Any colour.</li>
+<li>On the order form: base material FR-4; 2 layers; 122 × 46 mm; <b>thickness 1.2 mm</b>; <b>surface finish ENIG</b>; outer copper 1 oz; any colour; leave everything else as it is.</li>
 <li>Turn on <b>PCB Assembly</b>: "Economic", top side. For the first order choose 5 boards with 2 assembled; for the batch, assemble all.</li>
 <li>Check the parts list it matched. "Basic" parts carry no extra fee; each different "Extended" part adds a small one-off fee to the order. If a part is out of stock, pick the suggested equivalent and check its footprint is the same.</li>
 <li><b>Look at the placement preview carefully.</b> Check the dot or notch on every chip, the direction of the diode and LEDs, and that the USB-C socket faces off the board. Wrong rotation is the classic first-order mistake.</li>
@@ -398,7 +462,7 @@
 
 <h2 id="case">The case</h2>
 <p>Two shells, front and back, that screw together with the board trapped between them. A first version is modelled and ready to download below. To change it, edit the numbers in the model, or open the STEP file in any 3D design program; Onshape and Fusion are free for personal projects, and FreeCAD is free for any use, which matters if you sell.</p>
-<h3>Case files, version 0</h3>
+<h3>Case files, version 1</h3>
 <div class="callout dd-status"><p><b>Drawn, not yet printed.</b> These files come from datasheets and estimates. Print <a href="case/coupon.stl" download>coupon.stl</a> first: a small test piece with one button hole, one Select slot, one insert post and the USB-C opening. Then check the sizes marked MEASURE in the model against your real stick, pad and switches before printing a whole case.</p></div>
 <ul class="dd-files">
 <li><a href="case/front_shell.stl" download>front_shell.stl</a>, print 1, face down</li>
@@ -408,9 +472,11 @@
 <li><a href="case/home_button.stl" download>home_button.stl</a>, print 1</li>
 <li><a href="case/shoulder_l1_r1.stl" download>shoulder_l1_r1.stl</a>, print 2, standing on end</li>
 <li><a href="case/shoulder_l2_r2.stl" download>shoulder_l2_r2.stl</a>, print 2, standing on end</li>
+<li><a href="case/template.svg" download>template.svg</a>, a full-size drawing of the front to print on paper</li>
 <li><a href="case/daedalus_case.step" download>daedalus_case.step</a>, both shells and the board, for any 3D design program</li>
 <li><a href="case/daedalus_case.py" download>daedalus_case.py</a>, the model itself</li>
 </ul>
+<p><b>Before any plastic:</b> open template.svg in a browser, print it at 100 % (the page has a 50 mm bar to check with a ruler), cut it out and hold it. It shows the real size and how far your thumbs have to reach.</p>
 <p>The model is a short Python program for the free CadQuery library. Every size is a named number at the top: the button spacing, the height of the rubber domes, the insert diameter, the battery pocket. Change a number, run it, and it writes every file above again. None of the parts needs supports.</p>
 <p><button class="dd-btn" id="ddShow" type="button">Show the case in 3D</button></p>
 <div class="dd-view" id="ddView" hidden>
@@ -423,8 +489,8 @@
 <div class="dd-scroll"><table>
 <thead><tr><th>Feature</th><th>Size</th><th>Why</th></tr></thead>
 <tbody>
-<tr><td>Outside</td><td>134 wide × 80 tall × 22.7 mm thick, the same thickness all over</td><td>Fits any printer with a 150 mm bed. Shaped grips are a later refinement</td></tr>
-<tr><td>Walls</td><td>2.0 mm, with 2 to 2.5 mm bevels on the outside edges</td><td>A bevel prints cleanly against the plate; a rounded edge there does not</td></tr>
+<tr><td>Outside</td><td>140 wide × 85 tall × 22.7 mm thick. Curved outline; grips flare out 3 mm a side and end in full rounds</td><td>Fits any printer with a 150 mm bed</td></tr>
+<tr><td>Walls and edges</td><td>2.0 mm walls. Front edge: a 2.2 mm flat at 45°, then a 4 mm radius. Back edge: a 3 mm flat, then a 5 mm radius. Hole rims eased by 0.5 mm</td><td>The edge feels rounded in the hand, and the short flat is what lets it print against the plate with no supports</td></tr>
 <tr><td>Front of board to inside of front shell</td><td>About 10 mm</td><td>Room for the stick's body and the button caps. Confirm against your stick</td></tr>
 <tr><td>Back of board to inside of back shell</td><td>7.5 mm</td><td>6 mm battery plus 1 mm foam tape</td></tr>
 <tr><td>Stick opening</td><td>25 mm circle, its rim thickened to 4 mm by a ring inside the shell</td><td>The rim takes sideways knocks so the stick's solder joints do not</td></tr>
@@ -446,11 +512,33 @@
 </ul>
 
 <h3>Printing</h3>
+<div class="dd-scroll"><table>
+<thead><tr><th>Setting</th><th>Value</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Material</td><td>PETG</td><td>PLA softens at about 55 °C, which a car in summer reaches. PETG is tougher and bends before it snaps</td></tr>
+<tr><td>Nozzle and layers</td><td>0.4 mm nozzle, 0.2 mm layers; 0.12 mm for the face buttons</td><td>Thinner layers make the rounded edges and button tops smoother</td></tr>
+<tr><td>Walls</td><td>4 perimeters, 5 top and 5 bottom layers</td><td>The 2 mm walls come out solid</td></tr>
+<tr><td>Infill</td><td>25 %, gyroid</td><td>Only the posts and button bases have any inside to fill</td></tr>
+<tr><td>Temperatures</td><td>Nozzle 235 to 245 °C, bed 75 to 85 °C; use the filament maker's figures</td><td></td></tr>
+<tr><td>Cooling and speed</td><td>Fan about 40 %; outer walls at 40 to 60 mm/s</td><td>PETG strings and goes brittle with too much fan</td></tr>
+<tr><td>Supports</td><td>None for any part</td><td>Checked in software: no surface overhangs past 45°; the only bridges are the slot tops, 16 mm at most</td></tr>
+<tr><td>Plate</td><td>Textured PEI</td><td>Gives the front and back faces an even matt grain that hides layer lines and fingerprints</td></tr>
+<tr><td>First layer</td><td>Turn on "elephant foot compensation", about 0.15 mm</td><td>Stops the button holes printing undersize where they meet the plate</td></tr>
+</tbody></table></div>
+<div class="dd-scroll"><table>
+<thead><tr><th>Part</th><th>How many</th><th>Which way up</th></tr></thead>
+<tbody>
+<tr><td>Front shell</td><td>1</td><td>Front face on the plate</td></tr>
+<tr><td>Back shell</td><td>1</td><td>Back face on the plate</td></tr>
+<tr><td>Face button</td><td>4</td><td>As drawn, wide base on the plate; turn on ironing for a smooth top</td></tr>
+<tr><td>Select / Start button, Home button</td><td>2 and 1</td><td>As drawn, base on the plate</td></tr>
+<tr><td>Shoulder buttons</td><td>2 of each size</td><td>As drawn, standing on end</td></tr>
+<tr><td>Coupon</td><td>1, first</td><td>Flat</td></tr>
+</tbody></table></div>
 <ul>
-<li><b>PETG, not PLA.</b> PLA softens at about 55 °C, which a car in summer reaches. PETG is tougher and bends before it snaps.</li>
-<li>0.2 mm layers, 4 walls, 25 % infill, front shell printed face-down on a textured plate so the face comes out even.</li>
-<li>Print one small test piece first with a button hole, a screw post and the USB opening, and adjust the clearances for your printer before printing 30 cases.</li>
-<li>Each case is roughly 3 to 4 hours and about 75 g of filament.</li>
+<li>A whole case is about 76 g of filament, so one 1 kg spool makes about 13. Print time depends on the printer; expect 3 to 5 hours a set.</li>
+<li><b>For a smoother finish still:</b> sand the edges with 400 then 800 grit paper, wet. PETG does not smooth with acetone. A coat of filler primer and paint hides layer lines completely, at the cost of time per unit.</li>
+<li><b>For more grip:</b> some slicers have a "fuzzy skin" setting that roughens outside walls. Applied to the back shell only, it gives the grips a soft texture.</li>
 </ul>
 
 <h2 id="assembly">Assembly, step by step</h2>
@@ -534,7 +622,7 @@
 <li><b>Latency is good, not the best.</b> At 7.5 ms between radio slots a press waits about 4 ms on average, 7.5 ms at worst, before it is sent. That is fine for fast games. A commercial pad on its own USB dongle, or wired, is quicker, and this controller has no wired mode. On a Mac the gap is 11 to 15 ms.</li>
 <li><b>Fewer inputs.</b> No right stick, no d-pad, no analog triggers, no rumble, no motion. Great for platformers, retro and arcade games; wrong for shooters.</li>
 <li><b>Feel.</b> The face buttons use the same rubber-dome method as commercial pads, so the press itself should feel right. The printed shell and caps will not: layer lines, a slightly rough surface and looser fits than injection-moulded plastic.</li>
-<li><b>Thicker.</b> About 23 mm, against 14 mm for a Switch Lite, because of the full-size stick.</li>
+<li><b>Thicker and plainer in the hand.</b> About 23 mm, against 14 mm for a Switch Lite, because of the full-size stick. The outline is curved and the edges are rounded, but the back is flat: grips that swell into the palm, like a PlayStation controller's, cannot be printed without supports.</li>
 <li><b>Durability is designed in but unproven.</b> PETG shells, brass inserts, a supported USB socket and a contact-free stick are the right choices. A printed case is still weaker between its layers than a moulded one, and none of this has been through a term in a backpack yet.</li>
 <li><b>No safety testing.</b> A commercial controller's battery circuit has been tested and certified. This one uses standard, well-proven parts, but nobody has tested this board. Do not charge the first units unattended.</li>
 </ul>

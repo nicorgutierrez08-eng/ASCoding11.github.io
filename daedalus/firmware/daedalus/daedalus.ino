@@ -46,6 +46,7 @@ static const bool STICK_SWAP_XY  = false;
 
 static const float INNER_DEADZONE = 0.05f;   // fraction of travel around the centre that reads as zero
 static const float OUTER_DEADZONE = 0.04f;   // fraction at the edge that already reads as full
+static const float STICK_CURVE    = 1.0f;    // 1 = output follows the stick exactly; 1.5 = finer control near the centre
 static const uint32_t DEBOUNCE_MS = 5;
 static const uint32_t IDLE_SLEEP_MS = 10UL * 60UL * 1000UL;
 static const uint32_t SEARCH_SLEEP_MS = 3UL * 60UL * 1000UL;
@@ -253,17 +254,11 @@ static void readButtons(uint32_t now) {
   }
 }
 
-static int16_t scaleAxis(float mv, int centre, int lo, int hi, bool invert) {
+// One axis as a fraction of its travel: -1 at one end, 0 at the centre, +1 at the other end.
+static float axisFraction(float mv, int centre, int lo, int hi) {
   float span = mv >= centre ? (float)(hi - centre) : (float)(centre - lo);
   if (span < 50) span = 50;
-  float v = (mv - centre) / span;                                // -1 .. 1, before the dead zones
-  float mag = fabsf(v);
-  if (mag <= INNER_DEADZONE) return 0;
-  mag = (mag - INNER_DEADZONE) / (1.0f - INNER_DEADZONE - OUTER_DEADZONE);
-  if (mag > 1.0f) mag = 1.0f;
-  float out = (v < 0 ? -mag : mag) * 32767.0f;
-  if (invert) out = -out;
-  return (int16_t)out;
+  return (mv - centre) / span;
 }
 
 static void readStick(Report &r) {
@@ -271,8 +266,24 @@ static void readStick(Report &r) {
   int rawY = analogReadMilliVolts(PIN_STICK_Y);
   filtX += (rawX - filtX) * 0.5f;                                // light smoothing: about 2 ms
   filtY += (rawY - filtY) * 0.5f;
-  int16_t x = scaleAxis(filtX, cal.cx, cal.minX, cal.maxX, STICK_INVERT_X);
-  int16_t y = scaleAxis(filtY, cal.cy, cal.minY, cal.maxY, STICK_INVERT_Y);
+  float vx = axisFraction(filtX, cal.cx, cal.minX, cal.maxX);
+  float vy = axisFraction(filtY, cal.cy, cal.minY, cal.maxY);
+
+  // The dead zones work on how far the stick is pushed, whatever the direction (a round dead zone). Treating
+  // each axis on its own would leave a cross-shaped dead area and make slow diagonal moves snap to the axes.
+  float push = sqrtf(vx * vx + vy * vy);
+  float out = 0.0f;
+  if (push > INNER_DEADZONE) {
+    out = (push - INNER_DEADZONE) / (1.0f - INNER_DEADZONE - OUTER_DEADZONE);
+    if (out > 1.0f) out = 1.0f;
+    if (STICK_CURVE != 1.0f) out = powf(out, STICK_CURVE);
+  }
+  float k = push > 0.0f ? out / push : 0.0f;
+  float fx = vx * k * 32767.0f, fy = vy * k * 32767.0f;
+  if (STICK_INVERT_X) fx = -fx;
+  if (STICK_INVERT_Y) fy = -fy;
+  int16_t x = (int16_t)constrain(fx, -32767.0f, 32767.0f);
+  int16_t y = (int16_t)constrain(fy, -32767.0f, 32767.0f);
   if (STICK_SWAP_XY) { int16_t t = x; x = y; y = t; }
   r.x = x;
   r.y = y;

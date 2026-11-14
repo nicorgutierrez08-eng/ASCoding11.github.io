@@ -1,5 +1,10 @@
 {
   "units": "mm",
+  "case": {
+    "width": 140.0,
+    "height": 85.0,
+    "thickness": 22.7
+  },
   "origin": "bottom-left corner of the board, seen from the front (the side with the parts)",
   "board": {
     "width": 122.0,
